@@ -1,3 +1,4 @@
 <Solution>
-  <Project Path="Carniceria.Web.csproj" />
+  <Project Path="Carniceria.Modelos/Carniceria.Modelos.csproj" />
+  <Project Path="Carniceria.Web/Carniceria.Web.csproj" />
 </Solution>
