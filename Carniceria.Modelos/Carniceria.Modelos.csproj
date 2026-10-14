@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entidades\" />
-    <Folder Include="Enumeraciones\" />
     <Folder Include="Catalogos\" />
     <Folder Include="Formularios\" />
     <Folder Include="Consultas\" />
