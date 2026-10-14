@@ -7,9 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Catalogos\" />
-    <Folder Include="Formularios\" />
-    <Folder Include="Consultas\" />
     <Folder Include="Resultados\" />
     <Folder Include="Validacion\" />
   </ItemGroup>
