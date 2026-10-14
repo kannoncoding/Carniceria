@@ -1,18 +1,35 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Carniceria.Modelos.Enumeraciones;
+using Carniceria.Modelos.Validacion;
+using TipoDocumento = Carniceria.Modelos.Enumeraciones.TipoIdentificacion;
 
 namespace Carniceria.Modelos.Formularios;
 
-public abstract class PersonaFormulario
+public abstract class PersonaFormulario : IValidatableObject
 {
+    private string _identificacion = string.Empty;
+    private string _nombre = string.Empty;
+    private string _primerApellido = string.Empty;
+    private string _segundoApellido = string.Empty;
+    private DateTime? _fechaNacimiento;
+
+    protected abstract TipoDocumento[] TiposPermitidos { get; }
+
     [Display(Name = "Tipo de identificación")]
     [Required(ErrorMessage = "Seleccione un tipo de identificación.")]
-    public TipoIdentificacion? TipoIdentificacion { get; set; }
+    [EnumDataType(
+        typeof(TipoDocumento),
+        ErrorMessage = "Seleccione un tipo de identificación válido.")]
+    public TipoDocumento? TipoIdentificacion { get; set; }
 
     [Display(Name = "Identificación")]
     [Required(ErrorMessage = "La identificación es obligatoria.")]
-    public string Identificacion { get; set; } = string.Empty;
+    public string Identificacion
+    {
+        get => _identificacion;
+        set => _identificacion = ReglasTexto.Normalizar(value);
+    }
 
     [Display(Name = "Nombre")]
     [Required(ErrorMessage = "El nombre es obligatorio.")]
@@ -20,7 +37,11 @@ public abstract class PersonaFormulario
         50,
         MinimumLength = 3,
         ErrorMessage = "El nombre debe tener entre 3 y 50 caracteres.")]
-    public string Nombre { get; set; } = string.Empty;
+    public string Nombre
+    {
+        get => _nombre;
+        set => _nombre = ReglasTexto.Normalizar(value);
+    }
 
     [Display(Name = "Primer apellido")]
     [Required(ErrorMessage = "El primer apellido es obligatorio.")]
@@ -28,7 +49,11 @@ public abstract class PersonaFormulario
         75,
         MinimumLength = 3,
         ErrorMessage = "El primer apellido debe tener entre 3 y 75 caracteres.")]
-    public string PrimerApellido { get; set; } = string.Empty;
+    public string PrimerApellido
+    {
+        get => _primerApellido;
+        set => _primerApellido = ReglasTexto.Normalizar(value);
+    }
 
     [Display(Name = "Segundo apellido")]
     [Required(ErrorMessage = "El segundo apellido es obligatorio.")]
@@ -36,10 +61,27 @@ public abstract class PersonaFormulario
         75,
         MinimumLength = 3,
         ErrorMessage = "El segundo apellido debe tener entre 3 y 75 caracteres.")]
-    public string SegundoApellido { get; set; } = string.Empty;
+    public string SegundoApellido
+    {
+        get => _segundoApellido;
+        set => _segundoApellido = ReglasTexto.Normalizar(value);
+    }
 
     [Display(Name = "Fecha de nacimiento")]
     [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
     [DataType(DataType.Date)]
-    public DateTime? FechaNacimiento { get; set; }
+    public DateTime? FechaNacimiento
+    {
+        get => _fechaNacimiento;
+        set => _fechaNacimiento = value?.Date;
+    }
+
+    public virtual IEnumerable<ValidationResult> Validate(
+        ValidationContext validationContext)
+    {
+        return ReglasIdentificacion.Validar(
+            TipoIdentificacion,
+            Identificacion,
+            TiposPermitidos);
+    }
 }
