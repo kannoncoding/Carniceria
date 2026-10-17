@@ -1,0 +1,156 @@
+﻿@model ClienteFormulario
+
+@{
+    ViewData["Title"] = "Editar cliente";
+
+    string? idCliente = ViewContext.RouteData.Values["id"]?.ToString();
+}
+
+<h1>Editar cliente</h1>
+
+<p>
+    Actualice los datos del cliente. Todos los campos son obligatorios.
+</p>
+
+<form asp-area=""
+      asp-controller="Clientes"
+      asp-action="Editar"
+      asp-route-id="@idCliente"
+      method="post"
+      asp-antiforgery="true"
+      class="formulario"
+      novalidate>
+
+    <partial name="_ResumenValidacion" />
+
+    <div class="campo">
+        <label asp-for="TipoIdentificacion"></label>
+
+        <select asp-for="TipoIdentificacion"
+                asp-items="Html.TiposIdentificacionCliente()"
+                class="control"
+                required
+                aria-describedby="error-tipo-identificacion">
+            <option value="">Seleccione un tipo de identificación</option>
+        </select>
+
+        <span asp-validation-for="TipoIdentificacion"
+              id="error-tipo-identificacion"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="Identificacion"></label>
+
+        <input asp-for="Identificacion"
+               type="text"
+               class="control"
+               maxlength="50"
+               autocomplete="off"
+               spellcheck="false"
+               required
+               aria-describedby="ayuda-identificacion error-identificacion" />
+
+        <span id="ayuda-identificacion" class="ayuda-campo">
+            Cédula nacional: 1-1111-0909.
+            DIMEX: exactamente 12 dígitos.
+            Pasaporte: entre 1 y 50 letras o números, sin espacios ni signos.
+        </span>
+
+        <span asp-validation-for="Identificacion"
+              id="error-identificacion"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="Nombre"></label>
+
+        <input asp-for="Nombre"
+               type="text"
+               class="control"
+               minlength="3"
+               maxlength="50"
+               required
+               aria-describedby="ayuda-nombre error-nombre" />
+
+        <span id="ayuda-nombre" class="ayuda-campo">
+            Entre 3 y 50 caracteres.
+        </span>
+
+        <span asp-validation-for="Nombre"
+              id="error-nombre"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="PrimerApellido"></label>
+
+        <input asp-for="PrimerApellido"
+               type="text"
+               class="control"
+               minlength="3"
+               maxlength="75"
+               required
+               aria-describedby="ayuda-primer-apellido error-primer-apellido" />
+
+        <span id="ayuda-primer-apellido" class="ayuda-campo">
+            Entre 3 y 75 caracteres.
+        </span>
+
+        <span asp-validation-for="PrimerApellido"
+              id="error-primer-apellido"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="SegundoApellido"></label>
+
+        <input asp-for="SegundoApellido"
+               type="text"
+               class="control"
+               minlength="3"
+               maxlength="75"
+               required
+               aria-describedby="ayuda-segundo-apellido error-segundo-apellido" />
+
+        <span id="ayuda-segundo-apellido" class="ayuda-campo">
+            Entre 3 y 75 caracteres.
+        </span>
+
+        <span asp-validation-for="SegundoApellido"
+              id="error-segundo-apellido"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="FechaNacimiento"></label>
+
+        <input asp-for="FechaNacimiento"
+               type="date"
+               asp-format="{0:yyyy-MM-dd}"
+               class="control"
+               required
+               data-fecha-resumen="resumen-fecha-nacimiento"
+               aria-describedby="resumen-fecha-nacimiento error-fecha-nacimiento" />
+
+        <span id="resumen-fecha-nacimiento"
+              class="ayuda-campo"
+              aria-live="polite"
+              aria-atomic="true">
+            Fecha seleccionada:
+            @(Model.FechaNacimiento?.ToString("dd/MM/yyyy") ?? "sin seleccionar").
+        </span>
+
+        <span asp-validation-for="FechaNacimiento"
+              id="error-fecha-nacimiento"></span>
+    </div>
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Guardar cambios
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Clientes"
+           asp-action="Detalles"
+           asp-route-id="@idCliente">
+            Cancelar
+        </a>
+    </div>
+</form>

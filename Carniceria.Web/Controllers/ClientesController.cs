@@ -1,11 +1,13 @@
 ﻿using System;
 using Carniceria.Modelos.Consultas;
 using Carniceria.Modelos.Entidades;
+using Carniceria.Modelos.Enumeraciones;
 using Carniceria.Modelos.Formularios;
 using Carniceria.Modelos.Validacion;
 using Carniceria.Web.Data;
 using Carniceria.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
@@ -110,5 +112,129 @@ public class ClientesController : Controller
         modelo.BusquedaRealizada = true;
 
         return View(modelo);
+    }
+
+    [HttpGet]
+    public IActionResult Editar([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del cliente no contiene un identificador válido.");
+        }
+
+        var cliente = _almacen.ObtenerCliente(id);
+
+        if (cliente is null)
+        {
+            return this.RegistroNoEncontrado(
+                "El cliente solicitado no existe o ya fue eliminado.");
+        }
+
+        // Copiar los datos guardados al modelo del formulario.
+        var formulario = new ClienteFormulario
+        {
+            TipoIdentificacion = cliente.TipoIdentificacion,
+            Identificacion = cliente.Identificacion,
+            Nombre = cliente.Nombre,
+            PrimerApellido = cliente.PrimerApellido,
+            SegundoApellido = cliente.SegundoApellido,
+            FechaNacimiento = cliente.FechaNacimiento
+        };
+
+        return View(formulario);
+    }
+
+    [HttpPost]
+    public IActionResult Editar(
+        [FromRoute] Guid id,
+        [FromForm] ClienteFormulario formulario)
+    {
+        // Revisar el identificador de la ruta por separado de los campos.
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del cliente no contiene un identificador válido.");
+        }
+
+        // Comprobar que el cliente todavía exista.
+        if (_almacen.ObtenerCliente(id) is null)
+        {
+            return this.RegistroNoEncontrado(
+                "El cliente solicitado no existe o ya fue eliminado.");
+        }
+
+        // Conservar los valores enviados cuando haya errores.
+        if (!ModelState.IsValid)
+        {
+            return View(formulario);
+        }
+
+        var resultado = _almacen.ActualizarCliente(id, formulario);
+
+        // El cliente podría desaparecer entre la consulta y la actualización.
+        if (resultado.Estado == EstadoOperacion.NoEncontrado)
+        {
+            return this.RegistroNoEncontrado(resultado.Mensaje);
+        }
+
+        if (!resultado.EsExitoso)
+        {
+            ModelState.AgregarErrores(resultado);
+
+            return View(formulario);
+        }
+
+        TempData["MensajeExito"] = resultado.Mensaje;
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public IActionResult Eliminar([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del cliente no contiene un identificador válido.");
+        }
+
+        var cliente = _almacen.ObtenerCliente(id);
+
+        if (cliente is null)
+        {
+            return this.RegistroNoEncontrado(
+                "El cliente solicitado no existe o ya fue eliminado.");
+        }
+
+        // Mostrar la confirmación sin modificar los registros.
+        return View(cliente);
+    }
+
+    [HttpPost]
+    public IActionResult EliminarConfirmado([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del cliente no contiene un identificador válido.");
+        }
+
+        // El almacén busca y elimina el registro dentro de la misma operación.
+        var resultado = _almacen.EliminarCliente(id);
+
+        // La eliminación falla si el cliente ya no existe.
+        if (!resultado.EsExitoso)
+        {
+            return this.RegistroNoEncontrado(resultado.Mensaje);
+        }
+
+        TempData["MensajeExito"] = resultado.Mensaje;
+
+        return RedirectToAction(nameof(Index));
     }
 }

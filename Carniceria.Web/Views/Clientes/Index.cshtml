@@ -68,14 +68,34 @@ else
                             @cliente.FechaNacimiento.ToString("dd/MM/yyyy")
                         </td>
                         <td>
-                            <a class="boton boton-secundario"
-                               asp-area=""
-                               asp-controller="Clientes"
-                               asp-action="Detalles"
-                               asp-route-id="@cliente.Id"
-                               aria-label="Ver detalles del cliente @cliente.Identificacion">
-                                Ver detalles
-                            </a>
+                            <div class="acciones">
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Clientes"
+                                   asp-action="Detalles"
+                                   asp-route-id="@cliente.Id"
+                                   aria-label="Ver detalles del cliente @cliente.Identificacion">
+                                    Ver detalles
+                                </a>
+
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Clientes"
+                                   asp-action="Editar"
+                                   asp-route-id="@cliente.Id"
+                                   aria-label="Editar el cliente @cliente.Identificacion">
+                                    Editar
+                                </a>
+
+                                <a class="boton boton-peligro"
+                                   asp-area=""
+                                   asp-controller="Clientes"
+                                   asp-action="Eliminar"
+                                   asp-route-id="@cliente.Id"
+                                   aria-label="Eliminar el cliente @cliente.Identificacion">
+                                    Eliminar
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }
