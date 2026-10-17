@@ -75,6 +75,22 @@
 </dl>
 
 <div class="acciones">
+    <a class="boton"
+       asp-area=""
+       asp-controller="Empleados"
+       asp-action="Editar"
+       asp-route-id="@Model.Id">
+        Editar empleado
+    </a>
+
+    <a class="boton boton-peligro"
+       asp-area=""
+       asp-controller="Empleados"
+       asp-action="Eliminar"
+       asp-route-id="@Model.Id">
+        Eliminar empleado
+    </a>
+
     <a class="boton boton-secundario"
        asp-area=""
        asp-controller="Empleados"

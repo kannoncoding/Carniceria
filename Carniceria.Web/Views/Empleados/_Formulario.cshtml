@@ -213,3 +213,20 @@
     <span asp-validation-for="Turno"
           id="error-turno"></span>
 </fieldset>
+@{
+    var puestosPorArea =
+        new Dictionary<string, IReadOnlyList<string>>();
+
+    foreach (var area in Enum.GetValues<AreaTrabajo>())
+    {
+        string clave = ((int)area).ToString(
+            System.Globalization.CultureInfo.InvariantCulture);
+
+        puestosPorArea[clave] =
+            Carniceria.Modelos.Catalogos.CatalogoPuestos.ObtenerPuestos(area);
+    }
+}
+
+<script id="catalogo-puestos-empleado" type="application/json">
+    @Json.Serialize(puestosPorArea)
+</script>

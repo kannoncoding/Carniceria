@@ -1,0 +1,46 @@
+﻿@model EmpleadoFormulario
+
+@{
+    ViewData["Title"] = "Editar empleado";
+
+    string? idEmpleado = ViewContext.RouteData.Values["id"]?.ToString();
+}
+
+<h1>Editar empleado</h1>
+
+<p>
+    Actualice los datos del empleado. Todos los campos son obligatorios.
+</p>
+
+<form asp-area=""
+      asp-controller="Empleados"
+      asp-action="Editar"
+      asp-route-id="@idEmpleado"
+      method="post"
+      asp-antiforgery="true"
+      class="formulario"
+      novalidate>
+
+    <partial name="_ResumenValidacion" />
+
+    <partial name="_Formulario" model="@Model" />
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Guardar cambios
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Empleados"
+           asp-action="Detalles"
+           asp-route-id="@idEmpleado">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/empleados.js"
+            asp-append-version="true"></script>
+}

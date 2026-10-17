@@ -1,0 +1,85 @@
+﻿@model Empleado
+
+@{
+    ViewData["Title"] = "Eliminar empleado";
+}
+
+<h1>Eliminar empleado</h1>
+
+<div class="mensaje mensaje-advertencia">
+    <p>
+        <strong>¿Desea eliminar este empleado?</strong>
+    </p>
+
+    <p>
+        Revise la información antes de confirmar.
+        Esta acción no se puede deshacer.
+    </p>
+</div>
+
+<dl class="detalle-registro">
+    <div>
+        <dt>Tipo de identificación</dt>
+        <dd>
+            @Html.DisplayFor(model => model.TipoIdentificacion)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Identificación</dt>
+        <dd>@Model.Identificacion</dd>
+    </div>
+
+    <div>
+        <dt>Nombre completo</dt>
+        <dd>
+            @Model.Nombre @Model.PrimerApellido @Model.SegundoApellido
+        </dd>
+    </div>
+
+    <div>
+        <dt>Área de trabajo</dt>
+        <dd>
+            @Html.DisplayFor(model => model.AreaTrabajo)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Puesto</dt>
+        <dd>@Model.Puesto</dd>
+    </div>
+
+    <div>
+        <dt>Turno</dt>
+        <dd>
+            @Html.DisplayFor(model => model.Turno)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Fecha de ingreso</dt>
+        <dd>@Model.FechaIngreso.ToString("dd/MM/yyyy")</dd>
+    </div>
+</dl>
+
+<form asp-area=""
+      asp-controller="Empleados"
+      asp-action="EliminarConfirmado"
+      asp-route-id="@Model.Id"
+      method="post"
+      asp-antiforgery="true">
+
+    <div class="acciones">
+        <button type="submit" class="boton boton-peligro">
+            Confirmar eliminación
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Empleados"
+           asp-action="Index"
+           asp-route-id="">
+            Cancelar
+        </a>
+    </div>
+</form>

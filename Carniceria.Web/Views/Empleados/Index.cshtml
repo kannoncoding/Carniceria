@@ -6,6 +6,24 @@
 
 <h1>Empleados</h1>
 
+<div class="acciones">
+    <a class="boton"
+       asp-area=""
+       asp-controller="Empleados"
+       asp-action="Crear"
+       asp-route-id="">
+        Registrar empleado
+    </a>
+
+    <a class="boton boton-secundario"
+       asp-area=""
+       asp-controller="Empleados"
+       asp-action="Buscar"
+       asp-route-id="">
+        Buscar empleados
+    </a>
+</div>
+
 @if (Model.Count == 0)
 {
     <p class="estado-vacio">
@@ -60,14 +78,34 @@ else
                             @empleado.FechaIngreso.ToString("dd/MM/yyyy")
                         </td>
                         <td>
-                            <a class="boton boton-secundario"
-                               asp-area=""
-                               asp-controller="Empleados"
-                               asp-action="Detalles"
-                               asp-route-id="@empleado.Id"
-                               aria-label="Ver detalles del empleado @empleado.Identificacion">
-                                Ver detalles
-                            </a>
+                            <div class="acciones">
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Empleados"
+                                   asp-action="Detalles"
+                                   asp-route-id="@empleado.Id"
+                                   aria-label="Ver detalles del empleado @empleado.Identificacion">
+                                    Ver detalles
+                                </a>
+
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Empleados"
+                                   asp-action="Editar"
+                                   asp-route-id="@empleado.Id"
+                                   aria-label="Editar el empleado @empleado.Identificacion">
+                                    Editar
+                                </a>
+
+                                <a class="boton boton-peligro"
+                                   asp-area=""
+                                   asp-controller="Empleados"
+                                   asp-action="Eliminar"
+                                   asp-route-id="@empleado.Id"
+                                   aria-label="Eliminar el empleado @empleado.Identificacion">
+                                    Eliminar
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }

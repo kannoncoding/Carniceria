@@ -1,0 +1,43 @@
+﻿@model EmpleadoFormulario
+
+@{
+    ViewData["Title"] = "Registrar empleado";
+}
+
+<h1>Registrar empleado</h1>
+
+<p>
+    Complete los datos del empleado. Todos los campos son obligatorios.
+</p>
+
+<form asp-area=""
+      asp-controller="Empleados"
+      asp-action="Crear"
+      asp-route-id=""
+      method="post"
+      asp-antiforgery="true"
+      class="formulario"
+      novalidate>
+
+    <partial name="_ResumenValidacion" />
+
+    <partial name="_Formulario" model="@Model" />
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Guardar empleado
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Empleados"
+           asp-action="Index"
+           asp-route-id="">
+            Cancelar
+        </a>
+    </div>
+</form>
+@section Scripts {
+    <script src="~/js/empleados.js"
+            asp-append-version="true"></script>
+}
