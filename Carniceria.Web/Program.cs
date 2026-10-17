@@ -5,8 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Registrar los servicios de MVC.
 builder.Services.AddControllersWithViews();
 
-// Compartir una instancia del almacén durante la ejecución de la aplicación.
-builder.Services.AddSingleton<AlmacenCarniceria>();
+// Compartir una instancia del almacén mediante su interfaz.
+builder.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
 var app = builder.Build();
 
