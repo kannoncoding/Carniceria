@@ -1,0 +1,38 @@
+﻿@model System.Collections.Generic.IReadOnlyList<Carniceria.Modelos.Entidades.Cliente>
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<h1>Clientes</h1>
+
+@if (Model.Count == 0)
+{
+    <p>Todavía no hay clientes registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Identificación</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Primer apellido</th>
+                <th scope="col">Segundo apellido</th>
+                <th scope="col">Fecha de nacimiento</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in Model)
+            {
+                <tr>
+                    <td>@cliente.Identificacion</td>
+                    <td>@cliente.Nombre</td>
+                    <td>@cliente.PrimerApellido</td>
+                    <td>@cliente.SegundoApellido</td>
+                    <td>@cliente.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

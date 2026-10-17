@@ -1,0 +1,49 @@
+﻿@model System.Collections.Generic.IReadOnlyList<Carniceria.Modelos.Entidades.Producto>
+
+@{
+    ViewData["Title"] = "Inventario de Productos";
+}
+
+<h1>Inventario de Productos</h1>
+
+@if (Model.Count == 0)
+{
+    <p>Todavía no hay productos registrados en el inventario.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Unidad de medida</th>
+                <th scope="col">Existencia actual</th>
+                <th scope="col">Existencia mínima</th>
+                <th scope="col">Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in Model)
+            {
+                <tr>
+                    <td>@producto.Codigo</td>
+                    <td>@producto.Nombre</td>
+                    <td>@producto.UnidadMedida</td>
+                    <td>@producto.ExistenciaActual</td>
+                    <td>@producto.ExistenciaMinima</td>
+                    <td>
+                        @if (producto.TieneExistenciaBaja)
+                        {
+                            <strong>Existencia baja</strong>
+                        }
+                        else
+                        {
+                            <span>Existencia suficiente</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
