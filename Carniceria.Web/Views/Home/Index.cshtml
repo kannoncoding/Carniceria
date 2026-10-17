@@ -1,8 +1,79 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="presentacion">
+    <h1>Carnicería</h1>
+
+    <p>
+        Seleccione un módulo para consultar la información registrada.
+    </p>
+</section>
+
+<section class="modulos" aria-label="Módulos de la aplicación">
+    <article class="tarjeta-modulo">
+        <h2>Clientes</h2>
+
+        <p>
+            Consulte los clientes registrados y sus datos personales.
+        </p>
+
+        <a class="enlace-modulo"
+           asp-area=""
+           asp-controller="Clientes"
+           asp-action="Index">
+            Ver clientes
+        </a>
+    </article>
+
+    <article class="tarjeta-modulo">
+        <h2>Empleados</h2>
+
+        <p>
+            Consulte el personal registrado, sus puestos y fechas de ingreso.
+        </p>
+
+        <a class="enlace-modulo"
+           asp-area=""
+           asp-controller="Empleados"
+           asp-action="Index">
+            Ver empleados
+        </a>
+    </article>
+
+    <article class="tarjeta-modulo">
+        <h2>Inventario de Productos</h2>
+
+        <p>
+            Revise las existencias de productos e identifique los niveles bajos.
+        </p>
+
+        <a class="enlace-modulo"
+           asp-area=""
+           asp-controller="Productos"
+           asp-action="Index">
+            Ver inventario
+        </a>
+    </article>
+
+    <article class="tarjeta-modulo">
+        <h2>Proveedores</h2>
+
+        <p>
+            Consulte los proveedores registrados y sus datos de contacto.
+        </p>
+
+        <a class="enlace-modulo"
+           asp-area=""
+           asp-controller="Proveedores"
+           asp-action="Index">
+            Ver proveedores
+        </a>
+    </article>
+</section>
+
+<aside class="aviso" aria-label="Conservación de los datos">
+    <p>
+        Los registros se perderán al reiniciar el servidor de la aplicación.
+    </p>
+</aside>
