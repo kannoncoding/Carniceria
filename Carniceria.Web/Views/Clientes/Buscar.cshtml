@@ -1,0 +1,147 @@
+﻿@model BusquedaViewModel<Cliente>
+
+@{
+    ViewData["Title"] = "Buscar clientes";
+}
+
+<h1>Buscar clientes</h1>
+
+<p>
+    Busque un cliente mediante su identificación completa.
+</p>
+
+<form asp-area=""
+      asp-controller="Clientes"
+      asp-action="Buscar"
+      asp-route-id=""
+      method="get"
+      asp-antiforgery="false"
+      class="formulario"
+      novalidate>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" role="alert">
+            <p>
+                No se pudo realizar la búsqueda.
+                Revise los siguientes errores:
+            </p>
+        </div>
+    }
+
+    <div class="campo">
+        <label asp-for="Consulta">Identificación</label>
+
+        <input asp-for="Consulta"
+               name="consulta"
+               type="search"
+               class="control"
+               autocomplete="off"
+               spellcheck="false"
+               required
+               aria-describedby="ayuda-consulta error-consulta" />
+
+        <span id="ayuda-consulta" class="ayuda-campo">
+            Ingrese la cédula nacional con sus guiones, el DIMEX
+            o el pasaporte completo. La búsqueda no distingue entre
+            mayúsculas y minúsculas.
+        </span>
+
+        <span asp-validation-for="Consulta"
+              id="error-consulta"></span>
+    </div>
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Buscar
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Clientes"
+           asp-action="Buscar"
+           asp-route-id="">
+            Limpiar búsqueda
+        </a>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Clientes"
+           asp-action="Index"
+           asp-route-id="">
+            Volver a Clientes
+        </a>
+    </div>
+</form>
+
+@if (!Model.BusquedaRealizada && ViewData.ModelState.IsValid)
+{
+    <p class="estado-vacio">
+        Ingrese una identificación y presione Buscar para consultar
+        los clientes registrados.
+    </p>
+}
+else if (Model.BusquedaRealizada && Model.Resultados.Count == 0)
+{
+    <p class="estado-vacio" role="status">
+        No se encontraron clientes con la identificación
+        <strong>@Model.Consulta</strong>.
+    </p>
+}
+else if (Model.BusquedaRealizada)
+{
+    <h2>Resultados de la búsqueda</h2>
+
+    <p>
+        Identificación consultada:
+        <strong>@Model.Consulta</strong>.
+        Clientes encontrados:
+        <strong>@Model.Resultados.Count</strong>.
+    </p>
+
+    <div class="tabla-contenedor"
+         role="region"
+         aria-label="Resultados de la búsqueda de clientes"
+         tabindex="0">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Tipo de identificación</th>
+                    <th scope="col">Identificación</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Primer apellido</th>
+                    <th scope="col">Segundo apellido</th>
+                    <th scope="col">Fecha de nacimiento</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Model.Resultados)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => cliente.TipoIdentificacion)
+                        </td>
+                        <td>@cliente.Identificacion</td>
+                        <td>@cliente.Nombre</td>
+                        <td>@cliente.PrimerApellido</td>
+                        <td>@cliente.SegundoApellido</td>
+                        <td>
+                            @cliente.FechaNacimiento.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            <a class="boton boton-secundario"
+                               asp-area=""
+                               asp-controller="Clientes"
+                               asp-action="Detalles"
+                               asp-route-id="@cliente.Id"
+                               aria-label="Ver detalles del cliente @cliente.Identificacion">
+                                Ver detalles
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

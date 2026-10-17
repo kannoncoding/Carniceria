@@ -1,5 +1,8 @@
 ﻿using System;
+using Carniceria.Modelos.Consultas;
+using Carniceria.Modelos.Entidades;
 using Carniceria.Modelos.Formularios;
+using Carniceria.Modelos.Validacion;
 using Carniceria.Web.Data;
 using Carniceria.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -74,5 +77,38 @@ public class ClientesController : Controller
 
         // Redirigir después de guardar para evitar repetir el envío al actualizar.
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public IActionResult Buscar([FromQuery] string? consulta)
+    {
+        var modelo = new BusquedaViewModel<Cliente>
+        {
+            Criterio = "Identificacion",
+            Consulta = ReglasTexto.Normalizar(consulta)
+        };
+
+        // Al abrir la página por primera vez, mostrar las instrucciones.
+        if (!Request.Query.ContainsKey(nameof(consulta)))
+        {
+            return View(modelo);
+        }
+
+        // Distinguir una búsqueda vacía de una búsqueda sin coincidencias.
+        if (modelo.Consulta.Length == 0)
+        {
+            ModelState.AddModelError(
+                nameof(modelo.Consulta),
+                "Ingrese una identificación para buscar.");
+
+            return View(modelo);
+        }
+
+        modelo.Resultados = _almacen.BuscarClientesPorIdentificacion(
+            modelo.Consulta);
+
+        modelo.BusquedaRealizada = true;
+
+        return View(modelo);
     }
 }
