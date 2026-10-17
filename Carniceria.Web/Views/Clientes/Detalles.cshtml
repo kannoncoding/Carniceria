@@ -1,0 +1,56 @@
+﻿@model Cliente
+
+@{
+    ViewData["Title"] = "Detalles del cliente";
+}
+
+<h1>Detalles del cliente</h1>
+
+<dl class="detalle-registro">
+    <div>
+        <dt>Tipo de identificación</dt>
+        <dd>
+            @Html.DisplayFor(model => model.TipoIdentificacion)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Identificación</dt>
+        <dd>@Model.Identificacion</dd>
+    </div>
+
+    <div>
+        <dt>Nombre</dt>
+        <dd>@Model.Nombre</dd>
+    </div>
+
+    <div>
+        <dt>Primer apellido</dt>
+        <dd>@Model.PrimerApellido</dd>
+    </div>
+
+    <div>
+        <dt>Segundo apellido</dt>
+        <dd>@Model.SegundoApellido</dd>
+    </div>
+
+    <div>
+        <dt>Fecha de nacimiento</dt>
+        <dd>@Model.FechaNacimiento.ToString("dd/MM/yyyy")</dd>
+    </div>
+
+    <div>
+        <dt>Identificador interno</dt>
+        <dd>@Model.Id</dd>
+    </div>
+</dl>
+
+<div class="acciones">
+    <a class="boton boton-secundario"
+       asp-area=""
+       asp-controller="Clientes"
+       asp-action="Index"
+       asp-route-id="">
+        Volver a Clientes
+    </a>
+</div>

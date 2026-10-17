@@ -14,6 +14,11 @@
 }
 else
 {
+    <p>
+        Total de clientes registrados:
+        <strong>@Model.Count</strong>
+    </p>
+
     <div class="tabla-contenedor"
          role="region"
          aria-label="Listado de clientes"
@@ -21,22 +26,39 @@ else
         <table>
             <thead>
                 <tr>
+                    <th scope="col">Tipo de identificación</th>
                     <th scope="col">Identificación</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Primer apellido</th>
                     <th scope="col">Segundo apellido</th>
                     <th scope="col">Fecha de nacimiento</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var cliente in Model)
                 {
                     <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => cliente.TipoIdentificacion)
+                        </td>
                         <td>@cliente.Identificacion</td>
                         <td>@cliente.Nombre</td>
                         <td>@cliente.PrimerApellido</td>
                         <td>@cliente.SegundoApellido</td>
-                        <td>@cliente.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @cliente.FechaNacimiento.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            <a class="boton boton-secundario"
+                               asp-area=""
+                               asp-controller="Clientes"
+                               asp-action="Detalles"
+                               asp-route-id="@cliente.Id"
+                               aria-label="Ver detalles del cliente @cliente.Identificacion">
+                                Ver detalles
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>
