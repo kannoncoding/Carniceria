@@ -1,6 +1,7 @@
 ﻿using System;
 using Carniceria.Modelos.Consultas;
 using Carniceria.Modelos.Entidades;
+using Carniceria.Modelos.Enumeraciones;
 using Carniceria.Modelos.Formularios;
 using Carniceria.Modelos.Validacion;
 using Carniceria.Web.Data;
@@ -139,5 +140,133 @@ public class ProductosController : Controller
         modelo.BusquedaRealizada = true;
 
         return View(modelo);
+    }
+
+    [HttpGet]
+    public IActionResult Editar([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) ==
+                ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del producto no contiene un identificador válido.");
+        }
+
+        var producto = _almacen.ObtenerProducto(id);
+
+        if (producto is null)
+        {
+            return this.RegistroNoEncontrado(
+                "El producto solicitado no existe o ya fue eliminado.");
+        }
+
+        // Copiar todos los campos editables al modelo del formulario.
+        var formulario = new ProductoFormulario
+        {
+            Codigo = producto.Codigo,
+            Nombre = producto.Nombre,
+            Categoria = producto.Categoria,
+            UnidadMedida = producto.UnidadMedida,
+            PrecioUnidadMedida = producto.PrecioUnidadMedida,
+            ExistenciaActual = producto.ExistenciaActual,
+            ExistenciaMinima = producto.ExistenciaMinima
+        };
+
+        return View(formulario);
+    }
+
+    [HttpPost]
+    public IActionResult Editar(
+        [FromRoute] Guid id,
+        [FromForm] ProductoFormulario formulario)
+    {
+        // Revisar el identificador de la ruta por separado de los campos.
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) ==
+                ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del producto no contiene un identificador válido.");
+        }
+
+        // Comprobar que el producto todavía exista.
+        if (_almacen.ObtenerProducto(id) is null)
+        {
+            return this.RegistroNoEncontrado(
+                "El producto solicitado no existe o ya fue eliminado.");
+        }
+
+        // Conservar los valores enviados cuando haya errores.
+        if (!ModelState.IsValid)
+        {
+            return View(formulario);
+        }
+
+        var resultado = _almacen.ActualizarProducto(id, formulario);
+
+        // El producto podría desaparecer entre la consulta y la actualización.
+        if (resultado.Estado == EstadoOperacion.NoEncontrado)
+        {
+            return this.RegistroNoEncontrado(resultado.Mensaje);
+        }
+
+        if (!resultado.EsExitoso)
+        {
+            ModelState.AgregarErrores(resultado);
+
+            return View(formulario);
+        }
+
+        TempData["MensajeExito"] = resultado.Mensaje;
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public IActionResult Eliminar([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) ==
+                ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del producto no contiene un identificador válido.");
+        }
+
+        var producto = _almacen.ObtenerProducto(id);
+
+        if (producto is null)
+        {
+            return this.RegistroNoEncontrado(
+                "El producto solicitado no existe o ya fue eliminado.");
+        }
+
+        // Mostrar la confirmación sin modificar los registros.
+        return View(producto);
+    }
+
+    [HttpPost]
+    public IActionResult EliminarConfirmado([FromRoute] Guid id)
+    {
+        if (id == Guid.Empty ||
+            ModelState.GetFieldValidationState(nameof(id)) ==
+                ModelValidationState.Invalid)
+        {
+            return this.RegistroNoEncontrado(
+                "El enlace del producto no contiene un identificador válido.");
+        }
+
+        // Buscar y eliminar dentro de la misma operación del almacén.
+        var resultado = _almacen.EliminarProducto(id);
+
+        if (!resultado.EsExitoso)
+        {
+            return this.RegistroNoEncontrado(resultado.Mensaje);
+        }
+
+        TempData["MensajeExito"] = resultado.Mensaje;
+
+        return RedirectToAction(nameof(Index));
     }
 }

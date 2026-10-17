@@ -96,14 +96,34 @@ else
                             }
                         </td>
                         <td>
-                            <a class="boton boton-secundario"
-                               asp-area=""
-                               asp-controller="Productos"
-                               asp-action="Detalles"
-                               asp-route-id="@producto.Id"
-                               aria-label="Ver detalles del producto @producto.Codigo">
-                                Ver detalles
-                            </a>
+                            <div class="acciones">
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Productos"
+                                   asp-action="Detalles"
+                                   asp-route-id="@producto.Id"
+                                   aria-label="Ver detalles del producto @producto.Codigo">
+                                    Ver detalles
+                                </a>
+
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Productos"
+                                   asp-action="Editar"
+                                   asp-route-id="@producto.Id"
+                                   aria-label="Editar el producto @producto.Codigo">
+                                    Editar
+                                </a>
+
+                                <a class="boton boton-peligro"
+                                   asp-area=""
+                                   asp-controller="Productos"
+                                   asp-action="Eliminar"
+                                   asp-route-id="@producto.Id"
+                                   aria-label="Eliminar el producto @producto.Codigo">
+                                    Eliminar
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }

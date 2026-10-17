@@ -1,0 +1,90 @@
+﻿@model Producto
+
+@{
+    ViewData["Title"] = "Eliminar producto";
+}
+
+<h1>Eliminar producto</h1>
+
+<div class="mensaje mensaje-advertencia">
+    <p>
+        <strong>¿Desea eliminar este producto?</strong>
+    </p>
+
+    <p>
+        Revise la información antes de confirmar.
+        Esta acción no se puede deshacer.
+    </p>
+</div>
+
+<dl class="detalle-registro">
+    <div>
+        <dt>Código</dt>
+        <dd>@Model.Codigo</dd>
+    </div>
+
+    <div>
+        <dt>Nombre</dt>
+        <dd>@Model.Nombre</dd>
+    </div>
+
+    <div>
+        <dt>Categoría</dt>
+        <dd>
+            @Html.DisplayFor(model => model.Categoria)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Unidad de medida</dt>
+        <dd>
+            @Html.DisplayFor(model => model.UnidadMedida)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Precio por unidad de medida</dt>
+        <dd>
+            ₡@Model.PrecioUnidadMedida.ToString("G")
+            / @Html.DisplayFor(model => model.UnidadMedida)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Existencia actual</dt>
+        <dd>
+            @Model.ExistenciaActual.ToString("G")
+            (@Html.DisplayFor(model => model.UnidadMedida))
+        </dd>
+    </div>
+
+    <div>
+        <dt>Existencia mínima</dt>
+        <dd>
+            @Model.ExistenciaMinima.ToString("G")
+            (@Html.DisplayFor(model => model.UnidadMedida))
+        </dd>
+    </div>
+</dl>
+
+<form asp-area=""
+      asp-controller="Productos"
+      asp-action="EliminarConfirmado"
+      asp-route-id="@Model.Id"
+      method="post"
+      asp-antiforgery="true">
+
+    <div class="acciones">
+        <button type="submit" class="boton boton-peligro">
+            Confirmar eliminación
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Productos"
+           asp-action="Index"
+           asp-route-id="">
+            Cancelar
+        </a>
+    </div>
+</form>

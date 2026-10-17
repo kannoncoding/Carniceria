@@ -1,0 +1,47 @@
+﻿@model ProductoFormulario
+
+@{
+    ViewData["Title"] = "Editar producto";
+
+    string? idProducto =
+        ViewContext.RouteData.Values["id"]?.ToString();
+}
+
+<h1>Editar producto</h1>
+
+<p>
+    Actualice los datos del producto. Todos los campos son obligatorios.
+</p>
+
+<form asp-area=""
+      asp-controller="Productos"
+      asp-action="Editar"
+      asp-route-id="@idProducto"
+      method="post"
+      asp-antiforgery="true"
+      class="formulario"
+      novalidate>
+
+    <partial name="_ResumenValidacion" />
+
+    <partial name="_Formulario" model="@Model" />
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Guardar cambios
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Productos"
+           asp-action="Detalles"
+           asp-route-id="@idProducto">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/productos.js"
+            asp-append-version="true"></script>
+}

@@ -84,6 +84,22 @@ else
     <a class="boton boton-secundario"
        asp-area=""
        asp-controller="Productos"
+       asp-action="Editar"
+       asp-route-id="@Model.Id">
+        Editar producto
+    </a>
+
+    <a class="boton boton-peligro"
+       asp-area=""
+       asp-controller="Productos"
+       asp-action="Eliminar"
+       asp-route-id="@Model.Id">
+        Eliminar producto
+    </a>
+
+    <a class="boton boton-secundario"
+       asp-area=""
+       asp-controller="Productos"
        asp-action="Index"
        asp-route-id="">
         Volver al Inventario de Productos
