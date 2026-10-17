@@ -96,17 +96,17 @@ var app = builder.Build();
 // Configurar el manejo de errores fuera del entorno de desarrollo.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Inicio/Error");
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 
-// Establecer la cultura antes de procesar los controladores y sus formularios.
+// Establecer la cultura antes de procesar los controladores.
 app.UseRequestLocalization();
 
-// Mostrar una página de la aplicación para respuestas de error sin contenido.
-app.UseStatusCodePagesWithReExecute("/Home/EstadoHttp/{0}");
+// Mostrar los errores HTTP mediante una página de la aplicación.
+app.UseStatusCodePagesWithReExecute("/Inicio/EstadoHttp/{0}");
 
 app.UseRouting();
 
@@ -114,9 +114,69 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+// Página inicial mediante la dirección raíz.
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    name: "raiz",
+    pattern: "",
+    defaults: new
+    {
+        controller = "Home",
+        action = "Index"
+    })
+    .WithStaticAssets();
+
+// Página inicial mediante una dirección en español.
+app.MapControllerRoute(
+    name: "inicio",
+    pattern: "Inicio",
+    defaults: new
+    {
+        controller = "Home",
+        action = "Index"
+    })
+    .WithStaticAssets();
+
+// Páginas de error de la aplicación.
+app.MapControllerRoute(
+    name: "errores",
+    pattern: "Inicio/{action}/{id?}",
+    defaults: new
+    {
+        controller = "Home"
+    },
+    constraints: new
+    {
+        action = "^(Error|EstadoHttp)$"
+    })
+    .WithStaticAssets();
+
+// Limitar las rutas de módulos a los cuatro controladores del proyecto.
+const string controladoresModulos =
+    "^(Clientes|Empleados|Productos|Proveedores)$";
+
+// Listados: /Clientes, /Empleados, /Productos y /Proveedores.
+app.MapControllerRoute(
+    name: "listados",
+    pattern: "{controller}",
+    defaults: new
+    {
+        action = "Index"
+    },
+    constraints: new
+    {
+        controller = controladoresModulos
+    })
+    .WithStaticAssets();
+
+// Operaciones de los módulos mediante nombres en español.
+app.MapControllerRoute(
+    name: "operaciones",
+    pattern: "{controller}/{action}/{id?}",
+    constraints: new
+    {
+        controller = controladoresModulos,
+        action = "^(Detalles|Crear|Buscar|Editar|Eliminar|EliminarConfirmado)$"
+    })
     .WithStaticAssets();
 
 app.Run();

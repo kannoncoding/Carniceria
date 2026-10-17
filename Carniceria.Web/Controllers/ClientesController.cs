@@ -1,4 +1,5 @@
 ﻿using System;
+using Carniceria.Modelos.Formularios;
 using Carniceria.Web.Data;
 using Carniceria.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -40,5 +41,38 @@ public class ClientesController : Controller
         }
 
         return View(cliente);
+    }
+
+    [HttpGet]
+    public IActionResult Crear()
+    {
+        var formulario = new ClienteFormulario();
+
+        return View(formulario);
+    }
+
+    [HttpPost]
+    public IActionResult Crear([FromForm] ClienteFormulario formulario)
+    {
+        // Conservar el formulario y sus errores cuando los datos sean inválidos.
+        if (!ModelState.IsValid)
+        {
+            return View(formulario);
+        }
+
+        var resultado = _almacen.CrearCliente(formulario);
+
+        // Incorporar errores del almacén, como una identificación duplicada.
+        if (!resultado.EsExitoso)
+        {
+            ModelState.AgregarErrores(resultado);
+
+            return View(formulario);
+        }
+
+        TempData["MensajeExito"] = resultado.Mensaje;
+
+        // Redirigir después de guardar para evitar repetir el envío al actualizar.
+        return RedirectToAction(nameof(Index));
     }
 }
