@@ -10,8 +10,4 @@
     <ProjectReference Include="..\Carniceria.Modelos\Carniceria.Modelos.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
-
 </Project>
