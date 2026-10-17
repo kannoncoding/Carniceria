@@ -64,18 +64,28 @@
             asp-items="Html.GetEnumSelectList<UnidadMedida>()"
             class="control"
             required
-            aria-describedby="ayuda-unidad-medida error-unidad-medida">
+            aria-describedby="ayuda-unidad-medida aviso-cambio-unidad error-unidad-medida">
         <option value="">Seleccione una unidad de medida</option>
     </select>
 
-    <span id="ayuda-unidad-medida" class="ayuda-campo">
+    <span id="ayuda-unidad-medida"
+          class="ayuda-campo"
+          aria-live="polite"
+          aria-atomic="true">
         El precio, la existencia actual y la existencia mínima
-        corresponden a esta misma unidad de medida.
+        corresponden a la unidad de medida seleccionada.
     </span>
 
     <span asp-validation-for="UnidadMedida"
           id="error-unidad-medida"></span>
 </div>
+
+<p id="aviso-cambio-unidad" class="aviso">
+    <strong>Al cambiar la unidad de medida:</strong>
+    revise el precio y ambas existencias.
+    Los números ingresados se conservan y pasan a corresponder
+    a la nueva unidad. No se realiza una conversión automática.
+</p>
 
 <p id="ayuda-decimales" class="ayuda-campo">
     Use coma para los decimales, por ejemplo: 4500,50 o 0,125.
@@ -83,7 +93,7 @@
 </p>
 
 <div class="campo">
-    <label asp-for="PrecioUnidadMedida">
+    <label asp-for="PrecioUnidadMedida" id="etiqueta-precio">
         Precio por unidad de medida (₡)
     </label>
 
@@ -93,7 +103,7 @@
            asp-format="{0:G}"
            class="control"
            required
-           aria-describedby="ayuda-decimales ayuda-precio error-precio" />
+           aria-describedby="ayuda-unidad-medida ayuda-decimales ayuda-precio error-precio" />
 
     <span id="ayuda-precio" class="ayuda-campo">
         Monto en colones por la unidad de medida seleccionada.
@@ -105,7 +115,9 @@
 </div>
 
 <div class="campo">
-    <label asp-for="ExistenciaActual"></label>
+    <label asp-for="ExistenciaActual" id="etiqueta-existencia-actual">
+        Existencia actual
+    </label>
 
     <input asp-for="ExistenciaActual"
            type="text"
@@ -113,7 +125,7 @@
            asp-format="{0:G}"
            class="control"
            required
-           aria-describedby="ayuda-decimales ayuda-existencia-actual error-existencia-actual" />
+           aria-describedby="ayuda-unidad-medida ayuda-decimales ayuda-existencia-actual error-existencia-actual" />
 
     <span id="ayuda-existencia-actual" class="ayuda-campo">
         Cantidad disponible en la unidad de medida seleccionada.
@@ -125,7 +137,9 @@
 </div>
 
 <div class="campo">
-    <label asp-for="ExistenciaMinima"></label>
+    <label asp-for="ExistenciaMinima" id="etiqueta-existencia-minima">
+        Existencia mínima
+    </label>
 
     <input asp-for="ExistenciaMinima"
            type="text"
@@ -133,7 +147,7 @@
            asp-format="{0:G}"
            class="control"
            required
-           aria-describedby="ayuda-decimales ayuda-existencia-minima error-existencia-minima" />
+           aria-describedby="ayuda-unidad-medida ayuda-decimales ayuda-existencia-minima error-existencia-minima" />
 
     <span id="ayuda-existencia-minima" class="ayuda-campo">
         Cantidad mínima de referencia en la unidad de medida seleccionada.
