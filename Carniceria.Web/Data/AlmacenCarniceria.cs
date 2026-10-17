@@ -6,7 +6,7 @@ using Carniceria.Modelos.Validacion;
 
 namespace Carniceria.Web.Data;
 
-public class AlmacenCarniceria
+public partial class AlmacenCarniceria
 {
     private readonly object _sincronizacion = new();
 
