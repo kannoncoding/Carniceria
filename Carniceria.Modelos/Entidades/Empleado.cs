@@ -20,4 +20,9 @@ public class Empleado : Persona
     public string Puesto { get; set; } = string.Empty;
 
     public Turno Turno { get; set; }
+
+    public Empleado Copiar()
+    {
+        return (Empleado)MemberwiseClone();
+    }
 }

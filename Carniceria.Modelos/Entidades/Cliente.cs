@@ -2,4 +2,8 @@
 
 public class Cliente : Persona
 {
+    public Cliente Copiar()
+    {
+        return (Cliente)MemberwiseClone();
+    }
 }

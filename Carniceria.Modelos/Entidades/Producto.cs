@@ -22,4 +22,9 @@ public class Producto
     public decimal ExistenciaMinima { get; set; }
 
     public bool TieneExistenciaBaja => ExistenciaActual <= ExistenciaMinima;
+
+    public Producto Copiar()
+    {
+        return (Producto)MemberwiseClone();
+    }
 }

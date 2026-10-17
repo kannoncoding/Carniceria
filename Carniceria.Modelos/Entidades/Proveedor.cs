@@ -22,4 +22,9 @@ public class Proveedor
     public TipoSuministro TipoSuministro { get; set; }
 
     public FrecuenciaEntrega FrecuenciaEntrega { get; set; }
+
+    public Proveedor Copiar()
+    {
+        return (Proveedor)MemberwiseClone();
+    }
 }
