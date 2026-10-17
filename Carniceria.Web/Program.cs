@@ -105,6 +105,9 @@ app.UseHttpsRedirection();
 // Establecer la cultura antes de procesar los controladores y sus formularios.
 app.UseRequestLocalization();
 
+// Mostrar una página de la aplicación para respuestas de error sin contenido.
+app.UseStatusCodePagesWithReExecute("/Home/EstadoHttp/{0}");
+
 app.UseRouting();
 
 app.UseAuthorization();
