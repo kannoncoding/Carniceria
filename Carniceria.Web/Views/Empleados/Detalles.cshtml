@@ -1,0 +1,85 @@
+﻿@model Empleado
+
+@{
+    ViewData["Title"] = "Detalles del empleado";
+}
+
+<h1>Detalles del empleado</h1>
+
+<dl class="detalle-registro">
+    <div>
+        <dt>Tipo de identificación</dt>
+        <dd>
+            @Html.DisplayFor(model => model.TipoIdentificacion)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Identificación</dt>
+        <dd>@Model.Identificacion</dd>
+    </div>
+
+    <div>
+        <dt>Nombre</dt>
+        <dd>@Model.Nombre</dd>
+    </div>
+
+    <div>
+        <dt>Primer apellido</dt>
+        <dd>@Model.PrimerApellido</dd>
+    </div>
+
+    <div>
+        <dt>Segundo apellido</dt>
+        <dd>@Model.SegundoApellido</dd>
+    </div>
+
+    <div>
+        <dt>Fecha de nacimiento</dt>
+        <dd>@Model.FechaNacimiento.ToString("dd/MM/yyyy")</dd>
+    </div>
+
+    <div>
+        <dt>Salario mensual</dt>
+        <dd>₡@Model.SalarioMensual.ToString("N2")</dd>
+    </div>
+
+    <div>
+        <dt>Fecha de ingreso</dt>
+        <dd>@Model.FechaIngreso.ToString("dd/MM/yyyy")</dd>
+    </div>
+
+    <div>
+        <dt>Área de trabajo</dt>
+        <dd>
+            @Html.DisplayFor(model => model.AreaTrabajo)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Puesto</dt>
+        <dd>@Model.Puesto</dd>
+    </div>
+
+    <div>
+        <dt>Turno</dt>
+        <dd>
+            @Html.DisplayFor(model => model.Turno)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Identificador interno</dt>
+        <dd>@Model.Id</dd>
+    </div>
+</dl>
+
+<div class="acciones">
+    <a class="boton boton-secundario"
+       asp-area=""
+       asp-controller="Empleados"
+       asp-action="Index"
+       asp-route-id="">
+        Volver a Empleados
+    </a>
+</div>

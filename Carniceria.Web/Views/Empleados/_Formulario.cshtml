@@ -1,0 +1,215 @@
+﻿@model EmpleadoFormulario
+
+<div class="campo">
+    <label asp-for="TipoIdentificacion"></label>
+
+    <select asp-for="TipoIdentificacion"
+            asp-items="Html.TiposIdentificacionEmpleado()"
+            class="control"
+            required
+            aria-describedby="error-tipo-identificacion">
+        <option value="">Seleccione un tipo de identificación</option>
+    </select>
+
+    <span asp-validation-for="TipoIdentificacion"
+          id="error-tipo-identificacion"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Identificacion"></label>
+
+    <input asp-for="Identificacion"
+           type="text"
+           class="control"
+           maxlength="12"
+           autocomplete="off"
+           spellcheck="false"
+           required
+           aria-describedby="ayuda-identificacion error-identificacion" />
+
+    <span id="ayuda-identificacion" class="ayuda-campo">
+        Cédula nacional: 1-1111-0909.
+        DIMEX: exactamente 12 dígitos.
+    </span>
+
+    <span asp-validation-for="Identificacion"
+          id="error-identificacion"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Nombre"></label>
+
+    <input asp-for="Nombre"
+           type="text"
+           class="control"
+           minlength="3"
+           maxlength="50"
+           required
+           aria-describedby="ayuda-nombre error-nombre" />
+
+    <span id="ayuda-nombre" class="ayuda-campo">
+        Entre 3 y 50 caracteres.
+    </span>
+
+    <span asp-validation-for="Nombre"
+          id="error-nombre"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="PrimerApellido"></label>
+
+    <input asp-for="PrimerApellido"
+           type="text"
+           class="control"
+           minlength="3"
+           maxlength="75"
+           required
+           aria-describedby="ayuda-primer-apellido error-primer-apellido" />
+
+    <span id="ayuda-primer-apellido" class="ayuda-campo">
+        Entre 3 y 75 caracteres.
+    </span>
+
+    <span asp-validation-for="PrimerApellido"
+          id="error-primer-apellido"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="SegundoApellido"></label>
+
+    <input asp-for="SegundoApellido"
+           type="text"
+           class="control"
+           minlength="3"
+           maxlength="75"
+           required
+           aria-describedby="ayuda-segundo-apellido error-segundo-apellido" />
+
+    <span id="ayuda-segundo-apellido" class="ayuda-campo">
+        Entre 3 y 75 caracteres.
+    </span>
+
+    <span asp-validation-for="SegundoApellido"
+          id="error-segundo-apellido"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="FechaNacimiento"></label>
+
+    <input asp-for="FechaNacimiento"
+           type="date"
+           asp-format="{0:yyyy-MM-dd}"
+           class="control"
+           required
+           data-fecha-resumen="resumen-fecha-nacimiento"
+           aria-describedby="resumen-fecha-nacimiento error-fecha-nacimiento" />
+
+    <span id="resumen-fecha-nacimiento"
+          class="ayuda-campo"
+          aria-live="polite"
+          aria-atomic="true">
+        Fecha seleccionada:
+        @(Model.FechaNacimiento?.ToString("dd/MM/yyyy") ?? "sin seleccionar").
+    </span>
+
+    <span asp-validation-for="FechaNacimiento"
+          id="error-fecha-nacimiento"></span>
+</div>
+<div class="campo">
+    <label asp-for="SalarioMensual"></label>
+
+    <input asp-for="SalarioMensual"
+           type="text"
+           inputmode="decimal"
+           class="control"
+           required
+           aria-describedby="ayuda-salario error-salario" />
+
+    <span id="ayuda-salario" class="ayuda-campo">
+        Monto en colones entre 0 y 5000000, inclusive.
+        Use coma para los decimales, por ejemplo: 450000,50.
+        No escriba el símbolo ₡ ni separadores de miles.
+    </span>
+
+    <span asp-validation-for="SalarioMensual"
+          id="error-salario"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="FechaIngreso"></label>
+
+    <input asp-for="FechaIngreso"
+           type="date"
+           asp-format="{0:yyyy-MM-dd}"
+           class="control"
+           required
+           data-fecha-resumen="resumen-fecha-ingreso"
+           aria-describedby="resumen-fecha-ingreso error-fecha-ingreso" />
+
+    <span id="resumen-fecha-ingreso"
+          class="ayuda-campo"
+          aria-live="polite"
+          aria-atomic="true">
+        Fecha seleccionada:
+        @(Model.FechaIngreso?.ToString("dd/MM/yyyy") ?? "sin seleccionar").
+    </span>
+
+    <span asp-validation-for="FechaIngreso"
+          id="error-fecha-ingreso"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="AreaTrabajo"></label>
+
+    <select asp-for="AreaTrabajo"
+            asp-items="Html.GetEnumSelectList<AreaTrabajo>()"
+            class="control"
+            required
+            aria-describedby="error-area-trabajo">
+        <option value="">Seleccione un área de trabajo</option>
+    </select>
+
+    <span asp-validation-for="AreaTrabajo"
+          id="error-area-trabajo"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Puesto"></label>
+
+    <select asp-for="Puesto"
+            asp-items="OpcionesFormulario.PuestosEmpleado(Model.AreaTrabajo)"
+            class="control"
+            required
+            aria-describedby="ayuda-puesto error-puesto">
+        <option value="">Seleccione un puesto</option>
+    </select>
+
+    <span id="ayuda-puesto" class="ayuda-campo">
+        Seleccione un puesto correspondiente al área de trabajo.
+    </span>
+
+    <span asp-validation-for="Puesto"
+          id="error-puesto"></span>
+</div>
+
+<fieldset aria-describedby="error-turno">
+    <legend>Turno</legend>
+
+    <div class="opciones">
+        @foreach (var opcion in Html.GetEnumSelectList<Turno>())
+        {
+            <label for="turno-@opcion.Value">
+                <input asp-for="Turno"
+                       type="radio"
+                       id="turno-@opcion.Value"
+                       value="@opcion.Value"
+                       required />
+
+                @opcion.Text
+            </label>
+        }
+    </div>
+
+    <span asp-validation-for="Turno"
+          id="error-turno"></span>
+</fieldset>

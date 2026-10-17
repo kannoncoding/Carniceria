@@ -14,6 +14,11 @@
 }
 else
 {
+    <p>
+        Total de empleados registrados:
+        <strong>@Model.Count</strong>
+    </p>
+
     <div class="tabla-contenedor"
          role="region"
          aria-label="Listado de empleados"
@@ -23,8 +28,12 @@ else
                 <tr>
                     <th scope="col">Identificación</th>
                     <th scope="col">Nombre completo</th>
+                    <th scope="col">Área de trabajo</th>
                     <th scope="col">Puesto</th>
+                    <th scope="col">Turno</th>
+                    <th scope="col">Salario mensual</th>
                     <th scope="col">Fecha de ingreso</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -37,8 +46,29 @@ else
                             @empleado.PrimerApellido
                             @empleado.SegundoApellido
                         </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => empleado.AreaTrabajo)
+                        </td>
                         <td>@empleado.Puesto</td>
-                        <td>@empleado.FechaIngreso.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @Html.DisplayFor(modelItem => empleado.Turno)
+                        </td>
+                        <td>
+                            ₡@empleado.SalarioMensual.ToString("N2")
+                        </td>
+                        <td>
+                            @empleado.FechaIngreso.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            <a class="boton boton-secundario"
+                               asp-area=""
+                               asp-controller="Empleados"
+                               asp-action="Detalles"
+                               asp-route-id="@empleado.Id"
+                               aria-label="Ver detalles del empleado @empleado.Identificacion">
+                                Ver detalles
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>
