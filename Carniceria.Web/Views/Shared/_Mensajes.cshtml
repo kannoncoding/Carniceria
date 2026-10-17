@@ -1,0 +1,13 @@
+﻿@{
+    string? mensajeExito = TempData["MensajeExito"] as string;
+}
+
+@if (!string.IsNullOrWhiteSpace(mensajeExito))
+{
+    <div class="mensaje mensaje-exito"
+         role="status"
+         aria-live="polite"
+         aria-atomic="true">
+        <p>@mensajeExito</p>
+    </div>
+}

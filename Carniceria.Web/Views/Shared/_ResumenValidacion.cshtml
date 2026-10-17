@@ -1,0 +1,9 @@
+﻿@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="All" role="alert">
+        <p>
+            No se pudieron guardar los datos.
+            Revise los siguientes errores:
+        </p>
+    </div>
+}
