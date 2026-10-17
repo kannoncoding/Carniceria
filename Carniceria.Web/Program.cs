@@ -1,9 +1,14 @@
 using Carniceria.Web.Data;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Registrar los servicios de MVC.
-builder.Services.AddControllersWithViews();
+// Registrar MVC y validar automáticamente los tokens antifalsificación
+// en las solicitudes que pueden modificar datos.
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
 
 // Compartir una instancia del almacén mediante su interfaz.
 builder.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
