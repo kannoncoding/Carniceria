@@ -1,4 +1,4 @@
-﻿@model System.Collections.Generic.IReadOnlyList<Carniceria.Modelos.Entidades.Producto>
+﻿@model IReadOnlyList<Producto>
 
 @{
     ViewData["Title"] = "Inventario de Productos";
@@ -8,42 +8,53 @@
 
 @if (Model.Count == 0)
 {
-    <p>Todavía no hay productos registrados en el inventario.</p>
+    <p class="estado-vacio">
+        Todavía no hay productos registrados en el inventario.
+    </p>
 }
 else
 {
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">Código</th>
-                <th scope="col">Nombre</th>
-                <th scope="col">Unidad de medida</th>
-                <th scope="col">Existencia actual</th>
-                <th scope="col">Existencia mínima</th>
-                <th scope="col">Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var producto in Model)
-            {
+    <div class="tabla-contenedor"
+         role="region"
+         aria-label="Inventario de productos"
+         tabindex="0">
+        <table>
+            <thead>
                 <tr>
-                    <td>@producto.Codigo</td>
-                    <td>@producto.Nombre</td>
-                    <td>@producto.UnidadMedida</td>
-                    <td>@producto.ExistenciaActual</td>
-                    <td>@producto.ExistenciaMinima</td>
-                    <td>
-                        @if (producto.TieneExistenciaBaja)
-                        {
-                            <strong>Existencia baja</strong>
-                        }
-                        else
-                        {
-                            <span>Existencia suficiente</span>
-                        }
-                    </td>
+                    <th scope="col">Código</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Unidad de medida</th>
+                    <th scope="col">Existencia actual</th>
+                    <th scope="col">Existencia mínima</th>
+                    <th scope="col">Estado</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var producto in Model)
+                {
+                    <tr>
+                        <td>@producto.Codigo</td>
+                        <td>@producto.Nombre</td>
+                        <td>@producto.UnidadMedida</td>
+                        <td>@producto.ExistenciaActual</td>
+                        <td>@producto.ExistenciaMinima</td>
+                        <td>
+                            @if (producto.TieneExistenciaBaja)
+                            {
+                                <strong class="estado-stock estado-stock-bajo">
+                                    Existencia baja
+                                </strong>
+                            }
+                            else
+                            {
+                                <span class="estado-stock estado-stock-normal">
+                                    Existencia suficiente
+                                </span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }

@@ -1,4 +1,4 @@
-﻿@model System.Collections.Generic.IReadOnlyList<Carniceria.Modelos.Entidades.Proveedor>
+﻿@model IReadOnlyList<Proveedor>
 
 @{
     ViewData["Title"] = "Proveedores";
@@ -8,31 +8,38 @@
 
 @if (Model.Count == 0)
 {
-    <p>Todavía no hay proveedores registrados.</p>
+    <p class="estado-vacio">
+        Todavía no hay proveedores registrados.
+    </p>
 }
 else
 {
-    <table>
-        <thead>
-            <tr>
-                <th scope="col">Identificación</th>
-                <th scope="col">Razón social o nombre comercial</th>
-                <th scope="col">Nombre de contacto</th>
-                <th scope="col">Teléfono</th>
-                <th scope="col">Correo electrónico</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var proveedor in Model)
-            {
+    <div class="tabla-contenedor"
+         role="region"
+         aria-label="Listado de proveedores"
+         tabindex="0">
+        <table>
+            <thead>
                 <tr>
-                    <td>@proveedor.Identificacion</td>
-                    <td>@proveedor.RazonSocial</td>
-                    <td>@proveedor.NombreContacto</td>
-                    <td>@proveedor.Telefono</td>
-                    <td>@proveedor.CorreoElectronico</td>
+                    <th scope="col">Identificación</th>
+                    <th scope="col">Razón social o nombre comercial</th>
+                    <th scope="col">Nombre de contacto</th>
+                    <th scope="col">Teléfono</th>
+                    <th scope="col">Correo electrónico</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var proveedor in Model)
+                {
+                    <tr>
+                        <td>@proveedor.Identificacion</td>
+                        <td>@proveedor.RazonSocial</td>
+                        <td>@proveedor.NombreContacto</td>
+                        <td>@proveedor.Telefono</td>
+                        <td>@proveedor.CorreoElectronico</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
