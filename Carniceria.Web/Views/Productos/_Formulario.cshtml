@@ -1,0 +1,147 @@
+﻿@model ProductoFormulario
+
+<div class="campo">
+    <label asp-for="Codigo"></label>
+
+    <input asp-for="Codigo"
+           type="text"
+           class="control"
+           minlength="1"
+           maxlength="20"
+           autocomplete="off"
+           spellcheck="false"
+           required
+           aria-describedby="ayuda-codigo error-codigo" />
+
+    <span id="ayuda-codigo" class="ayuda-campo">
+        Entre 1 y 20 letras o números, sin espacios ni signos.
+        Ejemplo: RES001. El código debe ser único entre los productos.
+    </span>
+
+    <span asp-validation-for="Codigo"
+          id="error-codigo"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Nombre"></label>
+
+    <input asp-for="Nombre"
+           type="text"
+           class="control"
+           minlength="3"
+           maxlength="80"
+           required
+           aria-describedby="ayuda-nombre error-nombre" />
+
+    <span id="ayuda-nombre" class="ayuda-campo">
+        Entre 3 y 80 letras o números, sin espacios ni signos.
+        Ejemplo: CarneMolida.
+    </span>
+
+    <span asp-validation-for="Nombre"
+          id="error-nombre"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Categoria"></label>
+
+    <select asp-for="Categoria"
+            asp-items="Html.GetEnumSelectList<CategoriaProducto>()"
+            class="control"
+            required
+            aria-describedby="error-categoria">
+        <option value="">Seleccione una categoría</option>
+    </select>
+
+    <span asp-validation-for="Categoria"
+          id="error-categoria"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="UnidadMedida"></label>
+
+    <select asp-for="UnidadMedida"
+            asp-items="Html.GetEnumSelectList<UnidadMedida>()"
+            class="control"
+            required
+            aria-describedby="ayuda-unidad-medida error-unidad-medida">
+        <option value="">Seleccione una unidad de medida</option>
+    </select>
+
+    <span id="ayuda-unidad-medida" class="ayuda-campo">
+        El precio, la existencia actual y la existencia mínima
+        corresponden a esta misma unidad de medida.
+    </span>
+
+    <span asp-validation-for="UnidadMedida"
+          id="error-unidad-medida"></span>
+</div>
+
+<p id="ayuda-decimales" class="ayuda-campo">
+    Use coma para los decimales, por ejemplo: 4500,50 o 0,125.
+    No escriba el símbolo ₡ ni separadores de miles en los campos numéricos.
+</p>
+
+<div class="campo">
+    <label asp-for="PrecioUnidadMedida">
+        Precio por unidad de medida (₡)
+    </label>
+
+    <input asp-for="PrecioUnidadMedida"
+           type="text"
+           inputmode="decimal"
+           asp-format="{0:G}"
+           class="control"
+           required
+           aria-describedby="ayuda-decimales ayuda-precio error-precio" />
+
+    <span id="ayuda-precio" class="ayuda-campo">
+        Monto en colones por la unidad de medida seleccionada.
+        Debe ser mayor que cero.
+    </span>
+
+    <span asp-validation-for="PrecioUnidadMedida"
+          id="error-precio"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="ExistenciaActual"></label>
+
+    <input asp-for="ExistenciaActual"
+           type="text"
+           inputmode="decimal"
+           asp-format="{0:G}"
+           class="control"
+           required
+           aria-describedby="ayuda-decimales ayuda-existencia-actual error-existencia-actual" />
+
+    <span id="ayuda-existencia-actual" class="ayuda-campo">
+        Cantidad disponible en la unidad de medida seleccionada.
+        Debe ser mayor o igual que cero. Se permiten cantidades decimales.
+    </span>
+
+    <span asp-validation-for="ExistenciaActual"
+          id="error-existencia-actual"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="ExistenciaMinima"></label>
+
+    <input asp-for="ExistenciaMinima"
+           type="text"
+           inputmode="decimal"
+           asp-format="{0:G}"
+           class="control"
+           required
+           aria-describedby="ayuda-decimales ayuda-existencia-minima error-existencia-minima" />
+
+    <span id="ayuda-existencia-minima" class="ayuda-campo">
+        Cantidad mínima de referencia en la unidad de medida seleccionada.
+        Debe ser mayor o igual que cero. Se permiten cantidades decimales.
+        Una existencia actual igual o inferior a este valor genera
+        una advertencia.
+    </span>
+
+    <span asp-validation-for="ExistenciaMinima"
+          id="error-existencia-minima"></span>
+</div>

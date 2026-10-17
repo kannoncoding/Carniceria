@@ -14,6 +14,16 @@
 }
 else
 {
+    <p>
+        Total de productos registrados:
+        <strong>@Model.Count</strong>
+    </p>
+
+    <p>
+        El precio y ambas existencias corresponden a la unidad
+        de medida indicada en cada fila.
+    </p>
+
     <div class="tabla-contenedor"
          role="region"
          aria-label="Inventario de productos"
@@ -23,10 +33,13 @@ else
                 <tr>
                     <th scope="col">Código</th>
                     <th scope="col">Nombre</th>
+                    <th scope="col">Categoría</th>
                     <th scope="col">Unidad de medida</th>
+                    <th scope="col">Precio por unidad de medida</th>
                     <th scope="col">Existencia actual</th>
                     <th scope="col">Existencia mínima</th>
                     <th scope="col">Estado</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,22 +48,44 @@ else
                     <tr>
                         <td>@producto.Codigo</td>
                         <td>@producto.Nombre</td>
-                        <td>@producto.UnidadMedida</td>
-                        <td>@producto.ExistenciaActual</td>
-                        <td>@producto.ExistenciaMinima</td>
+                        <td>
+                            @Html.DisplayFor(modelItem => producto.Categoria)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => producto.UnidadMedida)
+                        </td>
+                        <td>
+                            ₡@producto.PrecioUnidadMedida.ToString("G")
+                        </td>
+                        <td>
+                            @producto.ExistenciaActual.ToString("G")
+                        </td>
+                        <td>
+                            @producto.ExistenciaMinima.ToString("G")
+                        </td>
                         <td>
                             @if (producto.TieneExistenciaBaja)
                             {
                                 <strong class="estado-stock estado-stock-bajo">
-                                    Existencia baja
+                                    Existencia baja: igual o inferior al mínimo.
                                 </strong>
                             }
                             else
                             {
                                 <span class="estado-stock estado-stock-normal">
-                                    Existencia suficiente
+                                    Existencia suficiente: superior al mínimo.
                                 </span>
                             }
+                        </td>
+                        <td>
+                            <a class="boton boton-secundario"
+                               asp-area=""
+                               asp-controller="Productos"
+                               asp-action="Detalles"
+                               asp-route-id="@producto.Id"
+                               aria-label="Ver detalles del producto @producto.Codigo">
+                                Ver detalles
+                            </a>
                         </td>
                     </tr>
                 }
