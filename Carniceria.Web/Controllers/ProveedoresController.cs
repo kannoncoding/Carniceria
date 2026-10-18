@@ -1,4 +1,5 @@
 ﻿using System;
+using Carniceria.Modelos.Formularios;
 using Carniceria.Web.Data;
 using Carniceria.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
@@ -43,5 +44,38 @@ public class ProveedoresController : Controller
         }
 
         return View(proveedor);
+    }
+
+    [HttpGet]
+    public IActionResult Crear()
+    {
+        var formulario = new ProveedorFormulario();
+
+        return View(formulario);
+    }
+
+    [HttpPost]
+    public IActionResult Crear([FromForm] ProveedorFormulario formulario)
+    {
+        // Conservar los valores enviados y mostrar los errores del formulario.
+        if (!ModelState.IsValid)
+        {
+            return View(formulario);
+        }
+
+        var resultado = _almacen.CrearProveedor(formulario);
+
+        // Incorporar errores del almacén, como una identificación duplicada.
+        if (!resultado.EsExitoso)
+        {
+            ModelState.AgregarErrores(resultado);
+
+            return View(formulario);
+        }
+
+        TempData["MensajeExito"] = resultado.Mensaje;
+
+        // Redirigir después de guardar para evitar repetir el envío.
+        return RedirectToAction(nameof(Index));
     }
 }

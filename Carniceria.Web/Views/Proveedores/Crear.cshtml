@@ -1,0 +1,39 @@
+﻿@model ProveedorFormulario
+
+@{
+    ViewData["Title"] = "Registrar proveedor";
+}
+
+<h1>Registrar proveedor</h1>
+
+<p>
+    Complete los datos del proveedor. Todos los campos son obligatorios.
+</p>
+
+<form asp-area=""
+      asp-controller="Proveedores"
+      asp-action="Crear"
+      asp-route-id=""
+      method="post"
+      asp-antiforgery="true"
+      class="formulario"
+      novalidate>
+
+    <partial name="_ResumenValidacion" />
+
+    <partial name="_Formulario" model="@Model" />
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Guardar proveedor
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Proveedores"
+           asp-action="Index"
+           asp-route-id="">
+            Cancelar
+        </a>
+    </div>
+</form>
