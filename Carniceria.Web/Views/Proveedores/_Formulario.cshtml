@@ -1,0 +1,149 @@
+﻿@model ProveedorFormulario
+
+<div class="campo">
+    <label asp-for="TipoIdentificacion"></label>
+
+    <select asp-for="TipoIdentificacion"
+            asp-items="Html.TiposIdentificacionProveedor()"
+            class="control"
+            required
+            aria-describedby="error-tipo-identificacion">
+        <option value="">Seleccione un tipo de identificación</option>
+    </select>
+
+    <span asp-validation-for="TipoIdentificacion"
+          id="error-tipo-identificacion"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Identificacion"></label>
+
+    <input asp-for="Identificacion"
+           type="text"
+           class="control"
+           autocomplete="off"
+           spellcheck="false"
+           required
+           aria-describedby="ayuda-identificacion error-identificacion" />
+
+    <span id="ayuda-identificacion" class="ayuda-campo">
+        Cédula nacional: 1-1111-0909.
+        Cédula jurídica: 3-101-123456.
+        DIMEX: exactamente 12 dígitos.
+        La identificación debe ser única entre los proveedores.
+    </span>
+
+    <span asp-validation-for="Identificacion"
+          id="error-identificacion"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="RazonSocial"></label>
+
+    <input asp-for="RazonSocial"
+           type="text"
+           class="control"
+           minlength="3"
+           maxlength="100"
+           required
+           aria-describedby="ayuda-razon-social error-razon-social" />
+
+    <span id="ayuda-razon-social" class="ayuda-campo">
+        Entre 3 y 100 letras o números, sin espacios ni signos.
+        Ejemplo: CarnesGuanacaste.
+    </span>
+
+    <span asp-validation-for="RazonSocial"
+          id="error-razon-social"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="NombreContacto"></label>
+
+    <input asp-for="NombreContacto"
+           type="text"
+           class="control"
+           minlength="3"
+           maxlength="100"
+           required
+           aria-describedby="ayuda-nombre-contacto error-nombre-contacto" />
+
+    <span id="ayuda-nombre-contacto" class="ayuda-campo">
+        Entre 3 y 100 caracteres.
+        Puede incluir espacios y tildes.
+        Ejemplo: María Rodríguez.
+    </span>
+
+    <span asp-validation-for="NombreContacto"
+          id="error-nombre-contacto"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="Telefono"></label>
+
+    <input asp-for="Telefono"
+           type="tel"
+           inputmode="numeric"
+           class="control"
+           autocomplete="tel-national"
+           required
+           aria-describedby="ayuda-telefono error-telefono" />
+
+    <span id="ayuda-telefono" class="ayuda-campo">
+        Exactamente 8 dígitos, sin espacios, guiones ni código de país.
+        Ejemplo: 22223333.
+    </span>
+
+    <span asp-validation-for="Telefono"
+          id="error-telefono"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="CorreoElectronico"></label>
+
+    <input asp-for="CorreoElectronico"
+           type="email"
+           class="control"
+           autocomplete="email"
+           spellcheck="false"
+           required
+           aria-describedby="ayuda-correo-electronico error-correo-electronico" />
+
+    <span id="ayuda-correo-electronico" class="ayuda-campo">
+        Ingrese una dirección de correo electrónico válida.
+        Ejemplo: ventas@example.com.
+    </span>
+
+    <span asp-validation-for="CorreoElectronico"
+          id="error-correo-electronico"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="TipoSuministro"></label>
+
+    <select asp-for="TipoSuministro"
+            asp-items="Html.GetEnumSelectList<TipoSuministro>()"
+            class="control"
+            required
+            aria-describedby="error-tipo-suministro">
+        <option value="">Seleccione un tipo de suministro</option>
+    </select>
+
+    <span asp-validation-for="TipoSuministro"
+          id="error-tipo-suministro"></span>
+</div>
+
+<div class="campo">
+    <label asp-for="FrecuenciaEntrega"></label>
+
+    <select asp-for="FrecuenciaEntrega"
+            asp-items="Html.GetEnumSelectList<FrecuenciaEntrega>()"
+            class="control"
+            required
+            aria-describedby="error-frecuencia-entrega">
+        <option value="">Seleccione una frecuencia de entrega</option>
+    </select>
+
+    <span asp-validation-for="FrecuenciaEntrega"
+          id="error-frecuencia-entrega"></span>
+</div>

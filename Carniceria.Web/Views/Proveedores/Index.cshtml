@@ -14,6 +14,11 @@
 }
 else
 {
+    <p>
+        Total de proveedores registrados:
+        <strong>@Model.Count</strong>
+    </p>
+
     <div class="tabla-contenedor"
          role="region"
          aria-label="Listado de proveedores"
@@ -21,22 +26,48 @@ else
         <table>
             <thead>
                 <tr>
+                    <th scope="col">Tipo de identificación</th>
                     <th scope="col">Identificación</th>
                     <th scope="col">Razón social o nombre comercial</th>
                     <th scope="col">Nombre de contacto</th>
                     <th scope="col">Teléfono</th>
                     <th scope="col">Correo electrónico</th>
+                    <th scope="col">Tipo de suministro</th>
+                    <th scope="col">Frecuencia de entrega</th>
+                    <th scope="col">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var proveedor in Model)
                 {
                     <tr>
+                        <td>
+                            @Html.DisplayFor(
+                                modelItem => proveedor.TipoIdentificacion)
+                        </td>
                         <td>@proveedor.Identificacion</td>
                         <td>@proveedor.RazonSocial</td>
                         <td>@proveedor.NombreContacto</td>
                         <td>@proveedor.Telefono</td>
                         <td>@proveedor.CorreoElectronico</td>
+                        <td>
+                            @Html.DisplayFor(
+                                modelItem => proveedor.TipoSuministro)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(
+                                modelItem => proveedor.FrecuenciaEntrega)
+                        </td>
+                        <td>
+                            <a class="boton boton-secundario"
+                               asp-area=""
+                               asp-controller="Proveedores"
+                               asp-action="Detalles"
+                               asp-route-id="@proveedor.Id"
+                               aria-label="Ver detalles del proveedor @proveedor.RazonSocial">
+                                Ver detalles
+                            </a>
+                        </td>
                     </tr>
                 }
             </tbody>
