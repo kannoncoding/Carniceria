@@ -1,0 +1,215 @@
+﻿@model BusquedaViewModel<Proveedor>
+
+@{
+    ViewData["Title"] = "Buscar proveedores";
+}
+
+<h1>Buscar proveedores</h1>
+
+<p>
+    Busque proveedores por su identificación completa o por una parte
+    de su razón social o nombre comercial.
+</p>
+
+<form asp-area=""
+      asp-controller="Proveedores"
+      asp-action="Buscar"
+      asp-route-id=""
+      method="get"
+      asp-antiforgery="false"
+      class="formulario"
+      novalidate>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" role="alert">
+            <p>
+                No se pudo realizar la búsqueda.
+                Revise los siguientes errores:
+            </p>
+        </div>
+    }
+
+    <div class="campo">
+        <label asp-for="Criterio"></label>
+
+        <select asp-for="Criterio"
+                name="criterio"
+                class="control"
+                required
+                aria-describedby="ayuda-criterio error-criterio">
+            <option value="">Seleccione un criterio de búsqueda</option>
+            <option value="Identificacion">Identificación</option>
+            <option value="RazonSocial">Razón social o nombre comercial</option>
+        </select>
+
+        <span id="ayuda-criterio" class="ayuda-campo">
+            Identificación busca una coincidencia exacta.
+            Razón social busca todos los proveedores que contengan
+            el texto ingresado.
+        </span>
+
+        <span asp-validation-for="Criterio"
+              id="error-criterio"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="Consulta">
+            Identificación o razón social
+        </label>
+
+        <input asp-for="Consulta"
+               name="consulta"
+               type="search"
+               class="control"
+               autocomplete="off"
+               spellcheck="false"
+               required
+               aria-describedby="ayuda-consulta error-consulta" />
+
+        <span id="ayuda-consulta" class="ayuda-campo">
+            Ingrese la identificación completa, incluidos sus guiones
+            cuando corresponda, o una parte de la razón social.
+            La búsqueda no distingue entre mayúsculas y minúsculas.
+        </span>
+
+        <span asp-validation-for="Consulta"
+              id="error-consulta"></span>
+    </div>
+
+    <div class="acciones">
+        <button type="submit" class="boton">
+            Buscar
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Proveedores"
+           asp-action="Buscar"
+           asp-route-id=""
+           asp-route-criterio=""
+           asp-route-consulta="">
+            Limpiar búsqueda
+        </a>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Proveedores"
+           asp-action="Index"
+           asp-route-id="">
+            Volver a Proveedores
+        </a>
+    </div>
+</form>
+
+@if (!Model.BusquedaRealizada && ViewData.ModelState.IsValid)
+{
+    <p class="estado-vacio">
+        Seleccione un criterio, ingrese el texto y presione Buscar
+        para consultar los proveedores registrados.
+    </p>
+}
+else if (Model.BusquedaRealizada && Model.Resultados.Count == 0)
+{
+    <p class="estado-vacio" role="status">
+        No se encontraron proveedores para la búsqueda por
+        <strong>
+            @(Model.Criterio == "Identificacion"
+                ? "identificación"
+                : "razón social o nombre comercial")
+        </strong>
+        con el texto <strong>@Model.Consulta</strong>.
+    </p>
+}
+else if (Model.BusquedaRealizada)
+{
+    <h2>Resultados de la búsqueda</h2>
+
+    <p>
+        Criterio:
+        <strong>
+            @(Model.Criterio == "Identificacion"
+                ? "Identificación"
+                : "Razón social o nombre comercial")
+        </strong>.
+        Texto consultado:
+        <strong>@Model.Consulta</strong>.
+        Proveedores encontrados:
+        <strong>@Model.Resultados.Count</strong>.
+    </p>
+
+    <div class="tabla-contenedor"
+         role="region"
+         aria-label="Resultados de la búsqueda de proveedores"
+         tabindex="0">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Tipo de identificación</th>
+                    <th scope="col">Identificación</th>
+                    <th scope="col">Razón social o nombre comercial</th>
+                    <th scope="col">Nombre de contacto</th>
+                    <th scope="col">Teléfono</th>
+                    <th scope="col">Correo electrónico</th>
+                    <th scope="col">Tipo de suministro</th>
+                    <th scope="col">Frecuencia de entrega</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var proveedor in Model.Resultados)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(
+                                modelItem => proveedor.TipoIdentificacion)
+                        </td>
+                        <td>@proveedor.Identificacion</td>
+                        <td>@proveedor.RazonSocial</td>
+                        <td>@proveedor.NombreContacto</td>
+                        <td>@proveedor.Telefono</td>
+                        <td>@proveedor.CorreoElectronico</td>
+                        <td>
+                            @Html.DisplayFor(
+                                modelItem => proveedor.TipoSuministro)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(
+                                modelItem => proveedor.FrecuenciaEntrega)
+                        </td>
+                        <td>
+                            <div class="acciones">
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Proveedores"
+                                   asp-action="Detalles"
+                                   asp-route-id="@proveedor.Id"
+                                   aria-label="Ver detalles del proveedor @proveedor.RazonSocial">
+                                    Ver detalles
+                                </a>
+
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Proveedores"
+                                   asp-action="Editar"
+                                   asp-route-id="@proveedor.Id"
+                                   aria-label="Editar el proveedor @proveedor.RazonSocial">
+                                    Editar
+                                </a>
+
+                                <a class="boton boton-peligro"
+                                   asp-area=""
+                                   asp-controller="Proveedores"
+                                   asp-action="Eliminar"
+                                   asp-route-id="@proveedor.Id"
+                                   aria-label="Eliminar el proveedor @proveedor.RazonSocial">
+                                    Eliminar
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

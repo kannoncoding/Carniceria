@@ -14,6 +14,14 @@
        asp-route-id="">
         Registrar proveedor
     </a>
+
+    <a class="boton boton-secundario"
+       asp-area=""
+       asp-controller="Proveedores"
+       asp-action="Buscar"
+       asp-route-id="">
+        Buscar proveedores
+    </a>
 </div>
 
 @if (Model.Count == 0)
@@ -69,14 +77,34 @@ else
                                 modelItem => proveedor.FrecuenciaEntrega)
                         </td>
                         <td>
-                            <a class="boton boton-secundario"
-                               asp-area=""
-                               asp-controller="Proveedores"
-                               asp-action="Detalles"
-                               asp-route-id="@proveedor.Id"
-                               aria-label="Ver detalles del proveedor @proveedor.RazonSocial">
-                                Ver detalles
-                            </a>
+                            <div class="acciones">
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Proveedores"
+                                   asp-action="Detalles"
+                                   asp-route-id="@proveedor.Id"
+                                   aria-label="Ver detalles del proveedor @proveedor.RazonSocial">
+                                    Ver detalles
+                                </a>
+
+                                <a class="boton boton-secundario"
+                                   asp-area=""
+                                   asp-controller="Proveedores"
+                                   asp-action="Editar"
+                                   asp-route-id="@proveedor.Id"
+                                   aria-label="Editar el proveedor @proveedor.RazonSocial">
+                                    Editar
+                                </a>
+
+                                <a class="boton boton-peligro"
+                                   asp-area=""
+                                   asp-controller="Proveedores"
+                                   asp-action="Eliminar"
+                                   asp-route-id="@proveedor.Id"
+                                   aria-label="Eliminar el proveedor @proveedor.RazonSocial">
+                                    Eliminar
+                                </a>
+                            </div>
                         </td>
                     </tr>
                 }

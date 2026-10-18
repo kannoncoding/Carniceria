@@ -1,0 +1,88 @@
+﻿@model Proveedor
+
+@{
+    ViewData["Title"] = "Eliminar proveedor";
+}
+
+<h1>Eliminar proveedor</h1>
+
+<div class="mensaje mensaje-advertencia">
+    <p>
+        <strong>¿Desea eliminar este proveedor?</strong>
+    </p>
+
+    <p>
+        Revise la información antes de confirmar.
+        Esta acción no se puede deshacer.
+    </p>
+</div>
+
+<dl class="detalle-registro">
+    <div>
+        <dt>Tipo de identificación</dt>
+        <dd>
+            @Html.DisplayFor(model => model.TipoIdentificacion)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Identificación</dt>
+        <dd>@Model.Identificacion</dd>
+    </div>
+
+    <div>
+        <dt>Razón social o nombre comercial</dt>
+        <dd>@Model.RazonSocial</dd>
+    </div>
+
+    <div>
+        <dt>Nombre de contacto</dt>
+        <dd>@Model.NombreContacto</dd>
+    </div>
+
+    <div>
+        <dt>Teléfono</dt>
+        <dd>@Model.Telefono</dd>
+    </div>
+
+    <div>
+        <dt>Correo electrónico</dt>
+        <dd>@Model.CorreoElectronico</dd>
+    </div>
+
+    <div>
+        <dt>Tipo de suministro</dt>
+        <dd>
+            @Html.DisplayFor(model => model.TipoSuministro)
+        </dd>
+    </div>
+
+    <div>
+        <dt>Frecuencia de entrega</dt>
+        <dd>
+            @Html.DisplayFor(model => model.FrecuenciaEntrega)
+        </dd>
+    </div>
+</dl>
+
+<form asp-area=""
+      asp-controller="Proveedores"
+      asp-action="EliminarConfirmado"
+      asp-route-id="@Model.Id"
+      method="post"
+      asp-antiforgery="true">
+
+    <div class="acciones">
+        <button type="submit" class="boton boton-peligro">
+            Confirmar eliminación
+        </button>
+
+        <a class="boton boton-secundario"
+           asp-area=""
+           asp-controller="Proveedores"
+           asp-action="Index"
+           asp-route-id="">
+            Cancelar
+        </a>
+    </div>
+</form>
