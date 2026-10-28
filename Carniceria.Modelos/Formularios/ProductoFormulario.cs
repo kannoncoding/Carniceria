@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Carniceria.Modelos.Enumeraciones;
 using Carniceria.Modelos.Validacion;
@@ -9,6 +10,9 @@ public class ProductoFormulario : IValidatableObject
 {
     private string _codigo = string.Empty;
     private string _nombre = string.Empty;
+
+    [Display(Name = "Proveedor")]
+    public Guid? ProveedorId { get; set; }
 
     [Display(Name = "Código")]
     [Required(ErrorMessage = "El código es obligatorio.")]

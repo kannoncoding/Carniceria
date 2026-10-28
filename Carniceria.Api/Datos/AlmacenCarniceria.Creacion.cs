@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Carniceria.Modelos.Entidades;
 using Carniceria.Modelos.Formularios;
@@ -128,6 +129,20 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
+            if (!formulario.ProveedorId.HasValue ||
+                formulario.ProveedorId.Value == Guid.Empty ||
+                !_proveedores.Any(proveedor =>
+                    proveedor.Id == formulario.ProveedorId.Value))
+            {
+                return ResultadoOperacion.ValidacionFallida(
+                    new[]
+                    {
+                        new ValidationResult(
+                            "Seleccione un proveedor existente.",
+                            new[] { nameof(ProductoFormulario.ProveedorId) })
+                    });
+            }
+
             bool codigoDuplicado = _productos.Any(producto =>
                 string.Equals(
                     producto.Codigo,
@@ -147,6 +162,7 @@ public partial class AlmacenCarniceria
             {
                 nuevoProducto = new Producto
                 {
+                    ProveedorId = formulario.ProveedorId.Value,
                     Codigo = formulario.Codigo,
                     Nombre = formulario.Nombre,
                     Categoria = formulario.Categoria!.Value,

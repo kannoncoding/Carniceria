@@ -7,6 +7,12 @@ public sealed class RespuestaProducto
 {
     public Guid Id { get; init; }
 
+    public Guid ProveedorId { get; init; }
+
+    public string ProveedorRazonSocial { get; init; } = string.Empty;
+
+    public string ProveedorIdentificacion { get; init; } = string.Empty;
+
     public string Codigo { get; init; } = string.Empty;
 
     public string Nombre { get; init; } = string.Empty;

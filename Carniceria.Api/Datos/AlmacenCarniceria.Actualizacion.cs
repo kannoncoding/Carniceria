@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Carniceria.Modelos.Formularios;
 using Carniceria.Modelos.Resultados;
@@ -133,6 +134,20 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
+            if (!formulario.ProveedorId.HasValue ||
+                formulario.ProveedorId.Value == Guid.Empty ||
+                !_proveedores.Any(proveedor =>
+                    proveedor.Id == formulario.ProveedorId.Value))
+            {
+                return ResultadoOperacion.ValidacionFallida(
+                    new[]
+                    {
+                        new ValidationResult(
+                            "Seleccione un proveedor existente.",
+                            new[] { nameof(ProductoFormulario.ProveedorId) })
+                    });
+            }
+
             bool codigoDuplicado = _productos.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -147,6 +162,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro producto con este código.");
             }
 
+            producto.ProveedorId = formulario.ProveedorId.Value;
             producto.Codigo = formulario.Codigo;
             producto.Nombre = formulario.Nombre;
             producto.Categoria = formulario.Categoria!.Value;

@@ -38,11 +38,23 @@ public static class MapeadorRespuestas
         };
     }
 
-    public static RespuestaProducto Convertir(Producto producto)
+    public static RespuestaProducto Convertir(
+        Producto producto,
+        Proveedor proveedor)
     {
+        if (producto.ProveedorId != proveedor.Id)
+        {
+            throw new ArgumentException(
+                "El proveedor indicado no corresponde al producto.",
+                nameof(proveedor));
+        }
+
         return new RespuestaProducto
         {
             Id = producto.Id,
+            ProveedorId = producto.ProveedorId,
+            ProveedorRazonSocial = proveedor.RazonSocial,
+            ProveedorIdentificacion = proveedor.Identificacion,
             Codigo = producto.Codigo,
             Nombre = producto.Nombre,
             Categoria = producto.Categoria,
