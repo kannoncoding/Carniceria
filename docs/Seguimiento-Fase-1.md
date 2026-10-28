@@ -1,6 +1,6 @@
 # Seguimiento de la fase 1
 
-Registro de implementación de F1.1 a F1.7. Los estados reflejan evidencia disponible; preparar un archivo de perfil no equivale a verificar el inicio simultáneo desde Visual Studio.
+Registro de implementación de F1.1 a F1.8. Los estados reflejan evidencia disponible; preparar un archivo de perfil no equivale a verificar el inicio simultáneo desde Visual Studio.
 
 | Paso | Estado | Evidencia |
 | --- | --- | --- |
@@ -11,13 +11,43 @@ Registro de implementación de F1.1 a F1.7. Los estados reflejan evidencia dispo
 | F1.5 | Completado | Commit `90f9c95`: la página inicial de MVC consulta el estado de API con `IHttpClientFactory`; QA aprobó la respuesta real y los casos de API apagada, HTTP 500, JSON inválido, esquema inesperado, cuerpo truncado y timeout. La compilación de la solución terminó con 0 errores y 0 advertencias. |
 | F1.6 | Parcial | `Carniceria.slnLaunch` es un candidato generado por código. Falta abrirlo/guardarlo y verificarlo en Visual Studio Community 2026 mediante el flujo descrito abajo. |
 | F1.7 | Completado | `dotnet list Carniceria.slnx package --include-transitive --no-restore --verbosity normal` terminó correctamente: los tres proyectos `net10.0` informan que no hay paquetes para el framework. La inspección de los tres `.csproj` no encontró `PackageReference`; los tres `project.assets.json` no contienen bibliotecas de tipo `package`. No hay dependencias NuGet externas agregadas que retirar. |
-| F1.8 | Pendiente | Verificar compilación y ejecución simultánea con F5 en Visual Studio, incluyendo respuesta de MVC y prueba desde una copia limpia. |
+| F1.8 | Parcial | En la copia limpia se ejecutó el comando de inicio de Visual Studio mediante DTE 18.0 (`Debug.Start`, el mismo comando asociado a F5): API devolvió `Disponible`; MVC respondió HTTP 200 con `text/html; charset=utf-8` y el HTML decodificado contenía exactamente `El servicio de datos está disponible.`. `Debug.StopDebugging` y `Quit` cerraron la ejecución. Sigue pendiente iniciar usando el perfil compartido después de guardarlo desde el IDE; la evidencia detallada está abajo. |
 
-**T01 sigue pendiente.** No se ha confirmado el inicio simultáneo desde el perfil compartido de Visual Studio ni su verificación desde una copia limpia. La fase 1 no está cerrada.
+**T01 sigue pendiente.** Aunque se verificó inicio simultáneo desde una copia limpia mediante DTE, falta guardar el perfil compartido desde Visual Studio y confirmar el inicio desde ese perfil. La fase 1 no está cerrada.
+
+La copia de F1.8 se encuentra en `C:\Users\Pegasus Onr\.codex\visualizations\2026\10\28\01a183b3-efe7-7c93-8763-08091e212347\F1.8-Copia-Limpia`. Se iniciaron ambos proyectos desde Visual Studio mediante DTE; los proyectos de inicio se asignaron por automatización y no se guardó ni seleccionó el perfil compartido desde la interfaz. `Debug.Start` ejecutó el comando equivalente a F5; falta iniciar desde el perfil compartido guardado por el IDE. Por ello, F1.6 continúa parcial y T01 no se marca aprobada.
+
+### Evidencia de la copia limpia y el inicio
+
+La copia se preparó desde `C:\WebDev\Carniceria` con `robocopy` excluyendo `.git`, `.vs`, `bin`, `obj` y `output`. Antes de abrir el IDE no contenía `.git`, `.vs`, `bin` ni `obj`. Solo en la copia se modificó `Carniceria.Web/Properties/launchSettings.json` para que el perfil `http` tuviera `launchBrowser: false`; el perfil de la carpeta original no se cambió. El restore y la compilación se ejecutaron con estos comandos:
+
+```powershell
+dotnet restore "C:\Users\Pegasus Onr\.codex\visualizations\2026\10\28\01a183b3-efe7-7c93-8763-08091e212347\F1.8-Copia-Limpia\Carniceria.slnx"
+dotnet build "C:\Users\Pegasus Onr\.codex\visualizations\2026\10\28\01a183b3-efe7-7c93-8763-08091e212347\F1.8-Copia-Limpia\Carniceria.slnx" --no-restore --disable-build-servers -m:1 -v:minimal
+```
+
+`dotnet restore` terminó con código 0 y restauró Web, Modelos y API. La compilación terminó con 0 errores y 0 advertencias.
+
+El inicio se automatizó con `powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File iniciar-y-verificar.ps1` desde la carpeta de evidencia. La política `Bypass` se aplicó solo a ese proceso; no se cambió la política persistente del equipo. El verificador decodificó el HTML y comparó la frase positiva exacta `El servicio de datos está disponible.`. La salida registrada fue:
+
+```text
+Version=18.0
+Solucion=C:\Users\Pegasus Onr\.codex\visualizations\2026\10\28\01a183b3-efe7-7c93-8763-08091e212347\F1.8-Copia-Limpia\Carniceria.slnx
+ProyectosInicio configurados.
+Debug.Start solicitado.
+RespuestaApi=Disponible
+EstadoHttpMvc=200
+TipoContenidoMvc=text/html; charset=utf-8
+MensajeMvc=El servicio de datos está disponible.
+RespuestaCapturada=True
+MvcMuestraEstado=True
+```
+
+El bloque `finally` del script ejecutó `Debug.StopDebugging` y `Quit`. Después, una consulta de procesos y puertos no encontró procesos `devenv` ni listeners en 5220/5221. Visual Studio creó `.vs` y `bin`/`obj` se generaron durante la restauración y compilación; su ausencia se comprobó al crear la copia, no después de ejecutar la verificación.
 
 ## Guardar el perfil compartido desde Visual Studio 2026
 
-El archivo `Carniceria.slnLaunch` incluido en esta entrega fue preparado por código con el formato de perfil compartido y no ha sido generado ni guardado por el IDE. Completar estos pasos en Visual Studio Community 2026:
+El archivo `Carniceria.slnLaunch` incluido en esta entrega fue preparado por código con el formato de perfil compartido y no ha sido generado ni guardado por el IDE. La ruta de configuración corresponde a [Microsoft Learn: configurar varios proyectos de inicio](https://learn.microsoft.com/en-us/visualstudio/ide/how-to-set-multiple-startup-projects?view=visualstudio). Completar estos pasos en Visual Studio Community 2026:
 
 1. Abrir `Carniceria.slnx`.
 2. Hacer clic derecho en la solución y elegir **Configure Startup Projects...** (o **Configurar proyectos de inicio...**).
@@ -28,4 +58,4 @@ El archivo `Carniceria.slnLaunch` incluido en esta entrega fue preparado por có
 7. Guardar la solución. Comprobar que el IDE produjo o actualizó `Carniceria.slnLaunch` junto a `Carniceria.slnx`; revisar el archivo resultante y confirmar que conserva las rutas relativas y las acciones de inicio.
 8. En una copia limpia de la carpeta del proyecto, abrir la solución, seleccionar **Web y API** e iniciar con F5. Confirmar que Web responde en HTTP y muestra el estado obtenido de API, y detener ambos procesos al terminar.
 
-Si Visual Studio solicita habilitar **Enable Multi-Project Launch Profiles**, habilitar esa característica siguiendo el aviso del IDE y repetir la configuración. El perfil candidato contiene API y Web con la acción `Start`; el guardado en el IDE, la verificación de la copia limpia y T01 permanecen pendientes hasta contar con evidencia de esas acciones.
+Si Visual Studio solicita habilitar **Enable Multi-Project Launch Profiles**, habilitar esa característica siguiendo el aviso del IDE y repetir la configuración. El perfil candidato contiene API y Web con la acción `Start`; el guardado y la selección del perfil desde el IDE, y la verificación de ese perfil compartido desde una copia limpia, siguen pendientes junto con T01.
