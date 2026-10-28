@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Web y API",
+    "Projects": [
+      {
+        "Path": "Carniceria.Api\\Carniceria.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Carniceria.Web\\Carniceria.Web.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
