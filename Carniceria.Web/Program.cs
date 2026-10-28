@@ -97,10 +97,7 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Inicio/Error");
-    app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 
 // Establecer la cultura antes de procesar los controladores.
 app.UseRequestLocalization();
