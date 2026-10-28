@@ -7,6 +7,8 @@ constructor.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
 var aplicacion = constructor.Build();
 
+_ = aplicacion.Services.GetRequiredService<IAlmacenCarniceria>();
+
 aplicacion.UseAuthorization();
 
 aplicacion.MapControllers();

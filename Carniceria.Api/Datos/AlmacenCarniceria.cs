@@ -18,6 +18,11 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
 
     private readonly List<Proveedor> _proveedores = new();
 
+    public AlmacenCarniceria()
+    {
+        SembrarDatosIniciales();
+    }
+
     // Clientes
 
     public IReadOnlyList<Cliente> ListarClientes()
