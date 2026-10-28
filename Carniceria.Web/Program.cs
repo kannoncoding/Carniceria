@@ -4,10 +4,10 @@ using Carniceria.Web.ModelBinding;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
-var builder = WebApplication.CreateBuilder(args);
+var constructor = WebApplication.CreateBuilder(args);
 
 // Usar una cultura fija para todas las solicitudes de la aplicación.
-builder.Services.Configure<RequestLocalizationOptions>(options =>
+constructor.Services.Configure<RequestLocalizationOptions>(opciones =>
 {
     var cultura = new CultureInfo(
         "es-CR",
@@ -17,31 +17,31 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
     cultura.NumberFormat.NumberDecimalSeparator = ",";
     cultura.NumberFormat.CurrencyDecimalSeparator = ",";
 
-    options.DefaultRequestCulture = new RequestCulture(cultura);
+    opciones.DefaultRequestCulture = new RequestCulture(cultura);
 
-    options.SupportedCultures = new[] { cultura };
-    options.SupportedUICultures = new[] { cultura };
+    opciones.SupportedCultures = new[] { cultura };
+    opciones.SupportedUICultures = new[] { cultura };
 
     // La cultura de la aplicación no cambia según el navegador,
     // las cookies de idioma ni los parámetros de la dirección.
-    options.RequestCultureProviders.Clear();
+    opciones.RequestCultureProviders.Clear();
 
     // Incluir el idioma de la respuesta en sus encabezados HTTP.
-    options.ApplyCurrentCultureToResponseHeaders = true;
+    opciones.ApplyCurrentCultureToResponseHeaders = true;
 });
 
 // Registrar MVC y proteger las solicitudes que pueden modificar datos.
-builder.Services.AddControllersWithViews(options =>
+constructor.Services.AddControllersWithViews(opciones =>
 {
-    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+    opciones.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 
-    // Aplicar nuestra configuración antes del proveedor decimal predeterminado.
-    options.ModelBinderProviders.Insert(
+    // Aplicar la configuración decimal antes del proveedor predeterminado.
+    opciones.ModelBinderProviders.Insert(
         0,
         new DecimalModelBinderProvider());
 
     // Mensajes para errores de conversión y enlace de los datos enviados.
-    var mensajes = options.ModelBindingMessageProvider;
+    var mensajes = opciones.ModelBindingMessageProvider;
 
     mensajes.SetAttemptedValueIsInvalidAccessor(
         (valor, campo) =>
@@ -89,30 +89,37 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 // Compartir una instancia del almacén mediante su interfaz.
-builder.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
+constructor.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
-var app = builder.Build();
+constructor.Services.AddHttpClient("ApiCarniceria", cliente =>
+{
+    var direccionBase = constructor.Configuration["Api:DireccionBase"];
+    cliente.BaseAddress = new Uri(direccionBase!);
+    cliente.Timeout = TimeSpan.FromSeconds(3);
+});
+
+var aplicacion = constructor.Build();
 
 // Configurar el manejo de errores fuera del entorno de desarrollo.
-if (!app.Environment.IsDevelopment())
+if (!aplicacion.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Inicio/Error");
+    aplicacion.UseExceptionHandler("/Inicio/Error");
 }
 
 // Establecer la cultura antes de procesar los controladores.
-app.UseRequestLocalization();
+aplicacion.UseRequestLocalization();
 
 // Mostrar los errores HTTP mediante una página de la aplicación.
-app.UseStatusCodePagesWithReExecute("/Inicio/EstadoHttp/{0}");
+aplicacion.UseStatusCodePagesWithReExecute("/Inicio/EstadoHttp/{0}");
 
-app.UseRouting();
+aplicacion.UseRouting();
 
-app.UseAuthorization();
+aplicacion.UseAuthorization();
 
-app.MapStaticAssets();
+aplicacion.MapStaticAssets();
 
 // Página inicial mediante la dirección raíz.
-app.MapControllerRoute(
+aplicacion.MapControllerRoute(
     name: "raiz",
     pattern: "",
     defaults: new
@@ -123,7 +130,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 // Página inicial mediante una dirección en español.
-app.MapControllerRoute(
+aplicacion.MapControllerRoute(
     name: "inicio",
     pattern: "Inicio",
     defaults: new
@@ -134,7 +141,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 // Páginas de error de la aplicación.
-app.MapControllerRoute(
+aplicacion.MapControllerRoute(
     name: "errores",
     pattern: "Inicio/{action}/{id?}",
     defaults: new
@@ -152,7 +159,7 @@ const string controladoresModulos =
     "^(Clientes|Empleados|Productos|Proveedores)$";
 
 // Listados: /Clientes, /Empleados, /Productos y /Proveedores.
-app.MapControllerRoute(
+aplicacion.MapControllerRoute(
     name: "listados",
     pattern: "{controller}",
     defaults: new
@@ -166,7 +173,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 // Operaciones de los módulos mediante nombres en español.
-app.MapControllerRoute(
+aplicacion.MapControllerRoute(
     name: "operaciones",
     pattern: "{controller}/{action}/{id?}",
     constraints: new
@@ -176,4 +183,4 @@ app.MapControllerRoute(
     })
     .WithStaticAssets();
 
-app.Run();
+aplicacion.Run();

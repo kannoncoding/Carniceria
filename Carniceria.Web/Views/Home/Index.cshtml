@@ -1,4 +1,6 @@
-﻿@{
+@model Carniceria.Web.Models.ModeloEstadoServicio
+
+@{
     ViewData["Title"] = "Inicio";
 }
 
@@ -9,6 +11,10 @@
         Seleccione un módulo para consultar la información registrada.
     </p>
 </section>
+
+<aside class="aviso" aria-live="polite" aria-label="Estado del servicio de datos">
+    <p>Estado del servicio de datos: <strong>@Model.Mensaje</strong></p>
+</aside>
 
 <section class="modulos" aria-label="Módulos de la aplicación">
     <article class="tarjeta-modulo">
