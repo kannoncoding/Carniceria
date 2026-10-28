@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Carniceria.Modelos\Carniceria.Modelos.csproj" />
+  </ItemGroup>
+
 </Project>
