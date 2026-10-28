@@ -6,7 +6,7 @@ Registro incremental de los ocho pasos de F2. Los estados requieren evidencia de
 | --- | --- | --- |
 | F2.1 | Completado | Se copiaron los cinco archivos del almacén desde `Carniceria.Web/Data` a `Carniceria.Api/Datos` y se adaptó el espacio de nombres a `Carniceria.Api.Datos`. Se conservaron las operaciones, el bloqueo compartido y las copias defensivas. La versión de Web permanece intacta para la migración y retirada en F4. La solución compila con 0 errores y 0 advertencias. |
 | F2.2 | Completado | `Carniceria.Api/Program.cs` registra `IAlmacenCarniceria` como singleton con `AlmacenCarniceria`. El contenedor de API entrega la misma instancia durante la vida del proceso. El registro del almacén heredado en Web se conserva temporalmente hasta la conexión de controladores en F4. La solución compila con 0 errores y 0 advertencias. |
-| F2.3 | Pendiente | Definir DTOs de escritura y lectura, errores y mapeos reutilizables por los servicios y controladores posteriores. |
+| F2.3 | Completado | En `Carniceria.Modelos/Contratos` se agregaron `SolicitudCliente`, `SolicitudEmpleado`, `SolicitudProducto` y `SolicitudProveedor`, heredando sus formularios validados y sin exponer Id. Las cuatro respuestas comparten `RespuestaPersona` para cliente/empleado y cubren los campos actuales de las cuatro entidades. `ErrorApi` contiene código, mensaje y errores por campo. Los mapeadores estáticos y sin estado en `Carniceria.Api/Mapeos` convierten entidades a respuestas y resultados de operación a errores. La solución compila con 0 errores y 0 advertencias. ProveedorId y facturas quedan para fases posteriores. |
 | F2.4 | Pendiente | Agregar la relación obligatoria entre producto y proveedor a contratos y formularios; resolver el periodo de compatibilidad con el almacén temporal de Web sin adelantar cambios de interfaz de F4. |
 | F2.5 | Pendiente | Preparar semillas válidas de clientes, empleado, proveedor y productos relacionados. |
 | F2.6 | Pendiente | Ejecutar las semillas una vez por inicio de API y en orden de dependencia; agregar la factura cuando exista F5. |
@@ -17,5 +17,6 @@ Registro incremental de los ocho pasos de F2. Los estados requieren evidencia de
 
 - El almacén duplicado de Web es temporal y se mantiene sin cambios hasta F4, cuando sus controladores migren a HTTP.
 - F2 no implementa el CRUD completo de API; ese trabajo corresponde a F3.
+- F2.3 define contratos de las cuatro entidades existentes; no agrega todavía ProveedorId ni contratos de facturas.
 - La salida final de F2 requiere datos base accesibles por API y contratos/mapeos definidos. T03 permanece abierta hasta la auditoría de F4.
-- F2.1 no agregó DTOs, semillas ni endpoints de negocio. F2.2 solo registra el almacén en DI; la creación de contratos y datos base permanece en los pasos siguientes.
+- F2.1 no agregó DTOs, semillas ni endpoints de negocio. F2.2 solo registra el almacén en DI; las semillas y los endpoints de negocio quedan para los pasos siguientes.
