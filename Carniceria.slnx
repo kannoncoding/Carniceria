@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Carniceria.Api/Carniceria.Api.csproj" />
   <Project Path="Carniceria.Modelos/Carniceria.Modelos.csproj" />
   <Project Path="Carniceria.Web/Carniceria.Web.csproj" />
 </Solution>
