@@ -1,6 +1,6 @@
 # Seguimiento de la fase 1
 
-Registro de implementación de F1.1 a F1.6. Los estados reflejan evidencia disponible; preparar un archivo de perfil no equivale a verificar el inicio simultáneo desde Visual Studio.
+Registro de implementación de F1.1 a F1.7. Los estados reflejan evidencia disponible; preparar un archivo de perfil no equivale a verificar el inicio simultáneo desde Visual Studio.
 
 | Paso | Estado | Evidencia |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ Registro de implementación de F1.1 a F1.6. Los estados reflejan evidencia dispo
 | F1.4 | Completado | Commit `86f57e8`: retirados HSTS, redirección HTTPS y perfil HTTPS de Web; se conserva el manejo de excepciones. Ambos proyectos tienen perfil HTTP. |
 | F1.5 | Completado | Commit `90f9c95`: la página inicial de MVC consulta el estado de API con `IHttpClientFactory`; QA aprobó la respuesta real y los casos de API apagada, HTTP 500, JSON inválido, esquema inesperado, cuerpo truncado y timeout. La compilación de la solución terminó con 0 errores y 0 advertencias. |
 | F1.6 | Parcial | `Carniceria.slnLaunch` es un candidato generado por código. Falta abrirlo/guardarlo y verificarlo en Visual Studio Community 2026 mediante el flujo descrito abajo. |
-| F1.7 | Pendiente | Revisar dependencias directas y transitivas de la solución y documentar el resultado. |
+| F1.7 | Completado | `dotnet list Carniceria.slnx package --include-transitive --no-restore --verbosity normal` terminó correctamente: los tres proyectos `net10.0` informan que no hay paquetes para el framework. La inspección de los tres `.csproj` no encontró `PackageReference`; los tres `project.assets.json` no contienen bibliotecas de tipo `package`. No hay dependencias NuGet externas agregadas que retirar. |
 | F1.8 | Pendiente | Verificar compilación y ejecución simultánea con F5 en Visual Studio, incluyendo respuesta de MVC y prueba desde una copia limpia. |
 
 **T01 sigue pendiente.** No se ha confirmado el inicio simultáneo desde el perfil compartido de Visual Studio ni su verificación desde una copia limpia. La fase 1 no está cerrada.
