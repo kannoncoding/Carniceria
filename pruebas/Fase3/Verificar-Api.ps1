@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Validaciones')]
+    [ValidateSet('Validaciones', 'Busquedas')]
     [string]$Grupo,
 
     [int]$Puerto = 5233
@@ -213,6 +213,98 @@ try {
     }
     Confirmar $apiDisponible 'La API aislada inicia con sus datos semilla'
 
+    if ($Grupo -eq 'Busquedas') {
+        $proveedorSemilla = ((InvocarApi -Metodo 'Get' -Ruta '/api/proveedores').Datos | Select-Object -First 1)
+        $clienteConsulta = @{
+            tipoIdentificacion = 3; identificacion = 'PasF3Abc'; nombre = 'Ángela'
+            primerApellido = 'Mora'; segundoApellido = 'Naranjo'; fechaNacimiento = '1995-04-02'
+        }
+        $respuestaCliente = InvocarApi -Metodo 'Post' -Ruta '/api/clientes' -Cuerpo $clienteConsulta
+        Confirmar ($respuestaCliente.Codigo -eq 201) 'Datos de búsqueda crean el cliente de prueba'
+
+        $proveedoresConsulta = @(
+            @{ tipoIdentificacion = 4; identificacion = '3-301-234567'; razonSocial = 'ÁmbarCarnes'; nombreContacto = 'Mario Rojas'; telefono = '88887777'; correoElectronico = 'ambar1@example.com'; tipoSuministro = 8; frecuenciaEntrega = 3 },
+            @{ tipoIdentificacion = 4; identificacion = '3-301-234568'; razonSocial = 'ÁmbarPollo'; nombreContacto = 'Ana Mora'; telefono = '88887776'; correoElectronico = 'ambar2@example.com'; tipoSuministro = 3; frecuenciaEntrega = 3 }
+        )
+        $proveedoresPrueba = @()
+        foreach ($proveedorConsulta in $proveedoresConsulta) {
+            $altaProveedor = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo $proveedorConsulta
+            Confirmar ($altaProveedor.Codigo -eq 201) "Alta de proveedor para búsqueda $($proveedorConsulta.razonSocial)"
+            $proveedoresPrueba += $altaProveedor.Datos
+        }
+
+        $productosConsulta = @(
+            @{ proveedorId = [string]$proveedoresPrueba[0].id; codigo = 'F3Arbol1'; nombre = 'ResÁmbar'; categoria = 1; unidadMedida = 1; precioUnidadMedida = 1400; existenciaActual = 5; existenciaMinima = 1 },
+            @{ proveedorId = [string]$proveedoresPrueba[1].id; codigo = 'F3Arbol2'; nombre = 'PolloÁmbar'; categoria = 3; unidadMedida = 1; precioUnidadMedida = 1600; existenciaActual = 6; existenciaMinima = 1 }
+        )
+        $productosPrueba = @()
+        foreach ($productoConsulta in $productosConsulta) {
+            $altaProducto = InvocarApi -Metodo 'Post' -Ruta '/api/productos' -Cuerpo $productoConsulta
+            Confirmar ($altaProducto.Codigo -eq 201) "Alta de producto para búsqueda $($productoConsulta.codigo)"
+            $productosPrueba += $altaProducto.Datos
+        }
+
+        $consultaCodificada = [uri]::EscapeDataString(' PasF3aBc ')
+        $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/clientes/buscar?identificacion=$consultaCodificada"
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 1 -and
+            [string]$resultado.Datos[0].id -eq [string]$respuestaCliente.Datos.id) 'Cliente busca identificación exacta con espacios y sin distinguir mayúsculas'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/clientes/buscar?identificacion=%20%20'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Cliente retorna lista vacía ante identificación en blanco'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/clientes/buscar?identificacion=PasF3'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Cliente exige identificación exacta'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/clientes/$($respuestaCliente.Datos.id)"
+        Confirmar ($resultado.Codigo -eq 200 -and
+            [string]$resultado.Datos.id -eq [string]$respuestaCliente.Datos.id) 'Ruta de cliente por Guid no colisiona con buscar'
+
+        $empleadoSemilla = ((InvocarApi -Metodo 'Get' -Ruta '/api/empleados').Datos | Select-Object -First 1)
+        $identificacionEmpleado = [uri]::EscapeDataString(" $($empleadoSemilla.identificacion) ")
+        $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/empleados/buscar?identificacion=$identificacionEmpleado"
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 1 -and
+            [string]$resultado.Datos[0].id -eq [string]$empleadoSemilla.id) 'Empleado busca identificación exacta tras normalizar espacios'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/empleados/buscar?identificacion=%20'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Empleado retorna lista vacía ante identificación en blanco'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/empleados/buscar?identificacion=999999'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Empleado retorna lista vacía sin coincidencias'
+
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=%20cOdIgO%20&consulta=f3arbol1'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 1 -and
+            [string]$resultado.Datos[0].id -eq [string]$productosPrueba[0].id) 'Producto busca código exacto sin distinguir mayúsculas y normaliza criterio'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta ("/api/productos/buscar?criterio=Nombre&consulta=" + [uri]::EscapeDataString('áMBAR'))
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 2) 'Producto busca nombre parcial con tilde y devuelve múltiples coincidencias'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Codigo&consulta=F3Arbol'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Producto exige código exacto'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Nombre&consulta=%20%20'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Producto retorna lista vacía ante consulta en blanco'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Nombre&consulta=NoExiste'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Producto retorna lista vacía sin coincidencias'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Otro&consulta=x') 400 'Criterio de producto desconocido' 'Criterio'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?consulta=x') 400 'Criterio de producto ausente' 'Criterio'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/productos/$($productosPrueba[0].id)"
+        Confirmar ($resultado.Codigo -eq 200 -and
+            [string]$resultado.Datos.id -eq [string]$productosPrueba[0].id) 'Ruta de producto por Guid no colisiona con buscar'
+
+        $identificacionProveedor = [uri]::EscapeDataString($proveedoresPrueba[0].identificacion.ToLowerInvariant())
+        $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/buscar?criterio=identificacion&consulta=$identificacionProveedor"
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 1 -and
+            [string]$resultado.Datos[0].id -eq [string]$proveedoresPrueba[0].id) 'Proveedor busca identificación exacta sin distinguir mayúsculas'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta ("/api/proveedores/buscar?criterio=%20razonsocial%20&consulta=" + [uri]::EscapeDataString(' áMBAR '))
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 2) 'Proveedor busca razón social parcial con tilde y normaliza criterio y consulta'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/proveedores/buscar?criterio=Identificacion&consulta=3-301'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Proveedor exige identificación exacta'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/proveedores/buscar?criterio=RazonSocial&consulta=%20'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Proveedor retorna lista vacía ante consulta en blanco'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta '/api/proveedores/buscar?criterio=RazonSocial&consulta=NoExiste'
+        Confirmar ($resultado.Codigo -eq 200 -and @($resultado.Datos).Count -eq 0) 'Proveedor retorna lista vacía sin coincidencias'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta '/api/proveedores/buscar?criterio=Nombre&consulta=x') 400 'Criterio de proveedor desconocido' 'Criterio'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta '/api/proveedores/buscar?consulta=x') 400 'Criterio de proveedor ausente' 'Criterio'
+        $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedoresPrueba[0].id)"
+        Confirmar ($resultado.Codigo -eq 200 -and
+            [string]$resultado.Datos.id -eq [string]$proveedoresPrueba[0].id) 'Ruta de proveedor por Guid no colisiona con buscar'
+
+        Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
+    }
+    else {
+
     $cliente = @{
         tipoIdentificacion = 1; identificacion = '9-9999-9998'; nombre = 'Elena'
         primerApellido = 'Prueba'; segundoApellido = 'Validacion'; fechaNacimiento = '1991-04-12'
@@ -399,6 +491,7 @@ try {
         $conteosFinales.productos -eq $productos.Count) 'Altas duplicadas y formularios inválidos no agregan registros'
 
     Write-Output "Grupo $Grupo completado: $cantidadVerificaciones verificaciones aprobadas."
+    }
 }
 finally {
     if ($null -ne $procesoApi -and -not $procesoApi.HasExited) {
