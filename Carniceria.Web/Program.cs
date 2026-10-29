@@ -1,5 +1,4 @@
 using System.Globalization;
-using Carniceria.Web.Data;
 using Carniceria.Web.ModelBinding;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
@@ -88,10 +87,6 @@ constructor.Services.AddControllersWithViews(opciones =>
         () =>
             "La solicitud debe incluir los datos requeridos.");
 });
-
-// Compartir una instancia del almacén mediante su interfaz.
-// Comparte una instancia del almacén durante la vida del proceso.
-constructor.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
 // Configura el cliente nombrado para consultar la API.
 constructor.Services.AddHttpClient("ApiCarniceria", cliente =>
