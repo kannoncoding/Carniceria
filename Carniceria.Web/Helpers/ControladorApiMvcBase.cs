@@ -75,13 +75,14 @@ public abstract class ControladorApiMvcBase : Controller
     // Asocia los errores API a campos conocidos o al resumen general.
     protected void AgregarErroresApi(ErrorApi error, Type tipoFormulario)
     {
+        const string mensajeGeneral = "La API rechazó la operación.";
         int erroresIniciales = ModelState.ErrorCount;
         if (error.ErroresPorCampo is not { Count: > 0 })
         {
             ModelState.AddModelError(
                 string.Empty,
                 string.IsNullOrWhiteSpace(error.Mensaje)
-                    ? "La API rechazó la operación."
+                    ? mensajeGeneral
                     : error.Mensaje);
             return;
         }
@@ -108,9 +109,21 @@ public abstract class ControladorApiMvcBase : Controller
 
             if (!campoReconocido)
             {
-                ModelState.AddModelError(
-                    string.Empty,
-                    textos.FirstOrDefault() ?? error.Mensaje);
+                // Mostrar todos los mensajes de campos ajenos al formulario.
+                if (textos.Length == 0)
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        string.IsNullOrWhiteSpace(error.Mensaje)
+                            ? mensajeGeneral
+                            : error.Mensaje);
+                    continue;
+                }
+
+                foreach (string texto in textos)
+                {
+                    ModelState.AddModelError(string.Empty, texto);
+                }
                 continue;
             }
 
@@ -126,7 +139,7 @@ public abstract class ControladorApiMvcBase : Controller
             ModelState.AddModelError(
                 string.Empty,
                 string.IsNullOrWhiteSpace(error.Mensaje)
-                    ? "La API rechazó la operación."
+                    ? mensajeGeneral
                     : error.Mensaje);
         }
     }

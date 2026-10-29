@@ -96,12 +96,49 @@ async function ejecutarProveedores() {
  await comprobarSalidas(proveedorB,'Reasignacion');
  const formularioEditado={...formulariosProveedor[1],RazonSocial:'ProveedorEditadoQA',Identificacion:'3-434-000009'};const edicion=await enviarFormulario(`/Proveedores/Editar/${proveedorB.id}`,formularioEditado);confirmar('Edicion proveedor redirige',edicion.codigo===302);await comprobarSalidas({...proveedorB,razonSocial:formularioEditado.RazonSocial,identificacion:formularioEditado.Identificacion},'Edicion proveedor');
 }
+// Comprueba los valores de entrada, selectores y radios que deben conservarse tras un error API.
+function confirmarValoresFormulario(html,formulario,caso) {const entradas=[...html.matchAll(/<input\b([^>]*)>/gi)].map(par=>({atributos:atributosHtml(par[1]),marcado:/\bchecked(?:\s|=|$)/i.test(par[1])}));const selectores=[...html.matchAll(/<select\b([^>]*)>([\s\S]*?)<\/select>/gi)].map(par=>({atributos:atributosHtml(par[1]),opciones:[...par[2].matchAll(/<option\b([^>]*)>/gi)].map(opcion=>({atributos:atributosHtml(opcion[1]),seleccionada:/\bselected(?:\s|=|$)/i.test(opcion[1])}))}));for(const [campo,valor] of Object.entries(formulario)){const selector=selectores.find(control=>control.atributos.name===campo);if(selector)confirmar(`${caso} conserva seleccion ${campo}`,selector.opciones.some(opcion=>opcion.atributos.value===valor&&opcion.seleccionada));else if(campo==='Turno')confirmar(`${caso} conserva radio Turno`,entradas.some(control=>control.atributos.name===campo&&control.atributos.value===valor&&control.marcado));else confirmar(`${caso} conserva valor ${campo}`,entradas.some(control=>control.atributos.name===campo&&control.atributos.value===valor));}}
+
+// Ejecuta errores de contrato con mensajes vacíos, claves JSON y resúmenes sin escribir datos reales.
+async function ejecutarErroresFormulario(procesoApi) {
+ const inicial=await imagenDatos();const cierre=new Promise(resolver=>procesoApi.once('close',resolver));procesoApi.kill();await Promise.race([cierre,esperar(5000)]);let errorActual;let codigoActual;const solicitudes=[];
+ servidorStub=http.createServer((peticion,respuesta)=>{const url=new URL(peticion.url,baseApi);solicitudes.push({metodo:peticion.method,ruta:url.pathname});if(['POST','PUT','DELETE'].includes(peticion.method)){respuesta.writeHead(codigoActual,{'Content-Type':'application/json'});respuesta.end(JSON.stringify(errorActual));return;}if(url.pathname==='/api/estado'){respuesta.writeHead(200,{'Content-Type':'application/json'});respuesta.end('{"estado":"Disponible"}');return;}const partes=url.pathname.split('/');const datos=inicial[partes[2]];const salida=partes[3]?datos?.find(registro=>registro.id===partes[3]):datos;respuesta.writeHead(salida?200:404,{'Content-Type':'application/json'});respuesta.end(JSON.stringify(salida??{codigo:'NoEncontrado',mensaje:'Registro no encontrado.',erroresPorCampo:{}}));});await new Promise((resolver,rechazar)=>{servidorStub.once('error',rechazar);servidorStub.listen(Number(opciones['puerto-api']),'127.0.0.1',resolver);});
+ const formularios={Clientes:{TipoIdentificacion:'1',Identificacion:'9-4444-0001',Nombre:' Elena ',PrimerApellido:'Mora',SegundoApellido:'Prueba',FechaNacimiento:'1991-01-02'},Empleados:{TipoIdentificacion:'1',Identificacion:'9-4444-0002',Nombre:' Luis ',PrimerApellido:'Mora',SegundoApellido:'Prueba',FechaNacimiento:'1990-03-04',SalarioMensual:'650000,500',FechaIngreso:'2020-05-06',AreaTrabajo:'2',Puesto:'Vendedor',Turno:'2'},Proveedores:{TipoIdentificacion:'4',Identificacion:'3-444-000003',RazonSocial:'ProveedorCapturado',NombreContacto:' Ana Mora ',Telefono:'88885555',CorreoElectronico:'capturado@example.com',TipoSuministro:'8',FrecuenciaEntrega:'3'},Productos:{ProveedorId:inicial.proveedores[0].id,Codigo:'F4ERROR',Nombre:' ProductoCapturado ',Categoria:'1',UnidadMedida:'1',PrecioUnidadMedida:'1250,500',ExistenciaActual:'5,250',ExistenciaMinima:'1,50'}};
+ const casos=[
+ {nombre:'baseline desconocido vacio y mensaje nulo',clave:'CampoDesconocido',mensajes:[],mensaje:null,esperados:['La API rechazó la operación.']},
+ {nombre:'canonico',clave:'Nombre',mensajes:['Error canonico'],campo:'Nombre',esperados:['Error canonico']},
+ {nombre:'capitalizacion mixta',clave:'nOmBrE',mensajes:['Error mayusculas'],campo:'Nombre',codigo:409,esperados:['Error mayusculas']},
+ {nombre:'ruta JSON',clave:'$.fechaNacimiento',mensajes:['Error fecha'],campo:'FechaNacimiento',esperados:['Error fecha']},
+ {nombre:'prefijo solicitud',clave:'SoLiCiTuD.Nombre',mensajes:['Error prefijo'],campo:'Nombre',operacion:'Editar',esperados:['Error prefijo']},
+ {nombre:'prefijo desconocido conserva mensajes',clave:'respuesta.Nombre',mensajes:['Error desconocido uno','Error desconocido dos'],esperados:['Error desconocido uno','Error desconocido dos']},
+ {nombre:'clave global conserva mensajes',clave:'',mensajes:['Error global uno','Error global dos'],codigo:409,esperados:['Error global uno','Error global dos']},
+ {nombre:'campo conocido array nulo',clave:'Nombre',mensajes:null,mensaje:null,esperados:['La API rechazó la operación.']},
+ {nombre:'campo conocido array vacio',clave:'Nombre',mensajes:[],mensaje:'',esperados:['La API rechazó la operación.']},
+ {nombre:'campo conocido textos vacios',clave:'Nombre',mensajes:[null,'',' '],mensaje:null,esperados:['La API rechazó la operación.']},
+ {nombre:'campo desconocido array nulo',clave:'NoExiste',mensajes:null,mensaje:null,esperados:['La API rechazó la operación.']},
+ {nombre:'campo desconocido array vacio mensaje vacio',clave:'NoExiste',mensajes:[],mensaje:'',esperados:['La API rechazó la operación.']},
+ {nombre:'diccionario nulo con mensaje',diccionario:null,mensaje:'Rechazo general',esperados:['Rechazo general']},
+ {nombre:'diccionario nulo sin mensaje',diccionario:null,mensaje:null,esperados:['La API rechazó la operación.']},
+ {nombre:'diccionario vacio sin mensaje',diccionario:{},mensaje:'',esperados:['La API rechazó la operación.']},
+ {nombre:'producto proveedor canonico',modulo:'Productos',clave:'ProveedorId',mensajes:['Proveedor rechazado'],campo:'ProveedorId',esperados:['Proveedor rechazado']},
+ {nombre:'producto precio JSON en edicion',modulo:'Productos',operacion:'Editar',clave:'$.precioUnidadMedida',mensajes:['Precio rechazado'],campo:'PrecioUnidadMedida',codigo:409,esperados:['Precio rechazado']},
+ {nombre:'empleado salario en alta',modulo:'Empleados',clave:'$.salarioMensual',mensajes:['Salario rechazado'],campo:'SalarioMensual',codigo:409,esperados:['Salario rechazado']},
+ {nombre:'empleado resumen en edicion',modulo:'Empleados',operacion:'Editar',clave:'NoExiste',mensajes:['Empleado resumen uno','Empleado resumen dos'],esperados:['Empleado resumen uno','Empleado resumen dos']},
+ {nombre:'proveedor correo en alta',modulo:'Proveedores',clave:'CorreoElectronico',mensajes:['Correo rechazado'],campo:'CorreoElectronico',esperados:['Correo rechazado']},
+ {nombre:'proveedor resumen nulo en edicion',modulo:'Proveedores',operacion:'Editar',clave:'NoExiste',mensajes:null,mensaje:null,esperados:['La API rechazó la operación.']}
+ ];
+ const registros=[];
+ for(const caso of casos){const modulo=caso.modulo??'Clientes',recurso=modulo.toLowerCase(),operacion=caso.operacion??'Crear';codigoActual=caso.codigo??400;errorActual={codigo:'ValidacionFallida',mensaje:Object.hasOwn(caso,'mensaje')?caso.mensaje:'Revise los datos enviados.',erroresPorCampo:Object.hasOwn(caso,'diccionario')?caso.diccionario:{[caso.clave]:caso.mensajes}};const ruta=operacion==='Crear'?`/${modulo}/Crear`:`/${modulo}/Editar/${inicial[recurso][0].id}`;const antes=solicitudes.length;const respuesta=await enviarFormulario(ruta,formularios[modulo]);const mutaciones=solicitudes.slice(antes).filter(s=>['POST','PUT','DELETE'].includes(s.metodo));confirmar(`${caso.nombre} recibe un rechazo API sin reintentos`,mutaciones.length===1&&mutaciones[0].metodo===(operacion==='Crear'?'POST':'PUT'));confirmar(`${caso.nombre} conserva formulario sin500`,respuesta.codigo===200);const html=decodificar(respuesta.html);for(const mensaje of caso.esperados)confirmar(`${caso.nombre} muestra mensaje ${mensaje}`,html.includes(mensaje));if(caso.campo){const campo=[...respuesta.html.matchAll(/<span\b([^>]*)>([\s\S]*?)<\/span>/gi)].find(par=>atributosHtml(par[1])['data-valmsg-for']===caso.campo);confirmar(`${caso.nombre} asocia error al campo`,!!campo&&/field-validation-error/.test(campo[1])&&caso.esperados.every(mensaje=>decodificar(campo[2]).includes(mensaje)));}else{const resumen=[...respuesta.html.matchAll(/<div\b([^>]*data-valmsg-summary="true"[^>]*)>([\s\S]*?)<\/div>/gi)][0];confirmar(`${caso.nombre} muestra resumen general`,!!resumen&&caso.esperados.every(mensaje=>decodificar(resumen[2]).includes(mensaje)));}confirmarValoresFormulario(respuesta.html,formularios[modulo],caso.nombre);if(modulo==='Productos')confirmarSelector(respuesta.html,inicial.proveedores,formularios.Productos.ProveedorId,caso.nombre);registros.push({caso:caso.nombre,codigoApi:codigoActual,codigoMvc:respuesta.codigo,mutaciones:mutaciones.length});if(caso.nombre.startsWith('baseline'))await fs.writeFile(path.join(carpetaSalida,'baseline-corregido.html'),respuesta.html);}
+ await fs.writeFile(path.join(carpetaSalida,'contratos-observados.json'),JSON.stringify(registros,null,2));
+}
 let fallo=null;
 try {
  await comprobarPuerto(opciones['puerto-api']);await comprobarPuerto(opciones['puerto-web']);
  const procesoApi=await iniciarProyecto('Carniceria.Api',opciones['puerto-api']);await esperarServicio(baseApi+'/api/estado');
  await iniciarProyecto('Carniceria.Web',opciones['puerto-web'],{Api__DireccionBase:baseApi+'/'});await esperarServicio(baseWeb+'/');
- if(opciones.grupo==='Proveedores') {
+ if(opciones.grupo==='ErroresFormulario') {
+ await ejecutarErroresFormulario(procesoApi);
+ } else if(opciones.grupo==='Proveedores') {
  await ejecutarProveedores();
  } else if(opciones.grupo==='Rutas') {
  await ejecutarRutas(procesoApi);
