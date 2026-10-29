@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,6 +39,7 @@ public abstract class ControladorApiMvcBase : Controller
         HttpResponseMessage respuesta,
         CancellationToken cancelacion)
     {
+        ValidarCharsetJson(respuesta);
         return await respuesta.Content.ReadFromJsonAsync<T>(
             cancellationToken: cancelacion);
     }
@@ -49,6 +51,7 @@ public abstract class ControladorApiMvcBase : Controller
     {
         try
         {
+            ValidarCharsetJson(respuesta);
             var error = await respuesta.Content.ReadFromJsonAsync<ErrorApi>(
                 cancellationToken: cancelacion);
 
@@ -70,6 +73,25 @@ public abstract class ControladorApiMvcBase : Controller
             Mensaje = "La API rechazó la operación.",
             ErroresPorCampo = new Dictionary<string, string[]>()
         };
+    }
+
+    // Rechaza un charset desconocido como respuesta JSON no válida.
+    private static void ValidarCharsetJson(HttpResponseMessage respuesta)
+    {
+        string? charset = respuesta.Content.Headers.ContentType?.CharSet;
+        if (string.IsNullOrWhiteSpace(charset))
+        {
+            return;
+        }
+
+        try
+        {
+            Encoding.GetEncoding(charset.Trim('"'));
+        }
+        catch (ArgumentException excepcion)
+        {
+            throw new JsonException("La respuesta declara un charset no válido.", excepcion);
+        }
     }
 
     // Asocia los errores API a campos conocidos o al resumen general.
