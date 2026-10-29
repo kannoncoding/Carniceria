@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores', 'Integridad', 'Concurrencia')]
+    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores', 'Integridad', 'Concurrencia', 'Errores')]
     [string]$Grupo,
 
     [int]$Puerto = 5233
@@ -35,7 +35,8 @@ function InvocarApi {
         [string]$Metodo,
         [string]$Ruta,
         [object]$Cuerpo,
-        [switch]$CuerpoCrudo
+        [switch]$CuerpoCrudo,
+        [string]$TipoContenido = 'application/json; charset=utf-8'
     )
 
     $parametrosSolicitud = @{
@@ -46,7 +47,7 @@ function InvocarApi {
     }
 
     if ($PSBoundParameters.ContainsKey('Cuerpo')) {
-        $parametrosSolicitud.ContentType = 'application/json; charset=utf-8'
+        $parametrosSolicitud.ContentType = $TipoContenido
         $parametrosSolicitud.Body = if ($CuerpoCrudo) {
             [string]$Cuerpo
         }
@@ -70,6 +71,7 @@ function InvocarApi {
             Contenido = $contenido
             Datos = $datos
             Ubicacion = [string]$respuesta.Headers['Location']
+            Permitidos = [string]$respuesta.Headers['Allow']
         }
     }
     catch [System.Net.WebException] {
@@ -100,6 +102,7 @@ function InvocarApi {
             Contenido = $contenido
             Datos = $datos
             Ubicacion = [string]$respuestaError.Headers['Location']
+            Permitidos = [string]$respuestaError.Headers['Allow']
         }
     }
 }
@@ -757,6 +760,84 @@ try {
 
         $clienteHttpConcurrente.Dispose()
         $clienteHttpConcurrente = $null
+        Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
+    }
+    elseif ($Grupo -eq 'Errores') {
+        $clientesSemilla = (InvocarApi -Metodo 'Get' -Ruta '/api/clientes').Datos
+        $clienteSemilla = $clientesSemilla | Select-Object -First 1
+        $empleadoSemilla = ((InvocarApi -Metodo 'Get' -Ruta '/api/empleados').Datos | Select-Object -First 1)
+        $proveedorSemilla = ((InvocarApi -Metodo 'Get' -Ruta '/api/proveedores').Datos | Select-Object -First 1)
+
+        $respuestaRuta = InvocarApi -Metodo 'Get' -Ruta '/api/ruta-inexistente'
+        ConfirmarErrorApi $respuestaRuta 404 'Ruta inexistente'
+        Confirmar ($respuestaRuta.Datos.codigo -eq 'NoEncontrado') 'Ruta inexistente devuelve código NoEncontrado'
+
+        $respuestaIdMalformado = InvocarApi -Metodo 'Get' -Ruta '/api/clientes/no-es-guid'
+        ConfirmarErrorApi $respuestaIdMalformado 404 'Guid de ruta inválido'
+        Confirmar ($respuestaIdMalformado.Datos.codigo -eq 'NoEncontrado') 'Guid inválido usa ErrorApi y conserva 404'
+
+        $respuestaRecurso = InvocarApi -Metodo 'Get' -Ruta "/api/clientes/$([guid]::NewGuid())"
+        ConfirmarErrorApi $respuestaRecurso 404 'Recurso inexistente'
+        Confirmar ($respuestaRecurso.Datos.codigo -eq 'NoEncontrado') 'Recurso inexistente conserva ErrorApi del controlador'
+
+        $clienteInvalido = @{
+            tipoIdentificacion = 1; identificacion = '1-7000-0001'; nombre = 'AB'
+            primerApellido = 'Mora'; segundoApellido = 'Prueba'; fechaNacimiento = '1990-01-01'
+        }
+        ConfirmarErrorApi (InvocarApi -Metodo 'Post' -Ruta '/api/clientes' -Cuerpo $clienteInvalido) 400 'Validación automática de formulario' 'nombre'
+
+        $jsonInvalido = '{"tipoIdentificacion":'
+        $respuestaJson = InvocarApi -Metodo 'Post' -Ruta '/api/clientes' -Cuerpo $jsonInvalido -CuerpoCrudo
+        ConfirmarErrorApi $respuestaJson 400 'JSON malformado'
+        Confirmar ($respuestaJson.Datos.codigo -eq 'SolicitudInvalida') 'JSON malformado usa ErrorApi controlado'
+
+        ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Otro&consulta=x') 400 'Criterio de búsqueda inválido' 'Criterio'
+
+        $clienteDuplicado = @{
+            tipoIdentificacion = [int]$clienteSemilla.tipoIdentificacion
+            identificacion = [string]$clienteSemilla.identificacion
+            nombre = [string]$clienteSemilla.nombre
+            primerApellido = [string]$clienteSemilla.primerApellido
+            segundoApellido = [string]$clienteSemilla.segundoApellido
+            fechaNacimiento = ([datetime]$clienteSemilla.fechaNacimiento).ToString('yyyy-MM-dd')
+        }
+        $respuestaDuplicado = InvocarApi -Metodo 'Post' -Ruta '/api/clientes' -Cuerpo $clienteDuplicado
+        ConfirmarErrorApi $respuestaDuplicado 409 'Identificación duplicada'
+        Confirmar ($respuestaDuplicado.Datos.codigo -eq 'Duplicado' -and
+            @($respuestaDuplicado.Datos.erroresPorCampo.PSObject.Properties.Name) -contains 'Identificacion') 'Duplicado conserva su código y error de campo'
+
+        $respuestaConflicto = InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$($proveedorSemilla.id)"
+        ConfirmarErrorApi $respuestaConflicto 409 'Conflicto de integridad de proveedor' 'proveedorId'
+        Confirmar ($respuestaConflicto.Datos.codigo -eq 'ConflictoIntegridad') 'Conflicto conserva su código ErrorApi'
+
+        $respuestaMetodo = InvocarApi -Metodo 'Post' -Ruta '/api/estado'
+        ConfirmarErrorApi $respuestaMetodo 405 'Método HTTP no permitido'
+        Confirmar ($respuestaMetodo.Datos.codigo -eq 'MetodoNoPermitido' -and
+            $respuestaMetodo.Permitidos -match 'GET') '405 conserva Allow con método GET'
+
+        $respuestaTipo = InvocarApi -Metodo 'Post' -Ruta '/api/clientes' -Cuerpo '{}' -TipoContenido 'text/plain'
+        ConfirmarErrorApi $respuestaTipo 415 'Tipo de contenido no admitido'
+        Confirmar ($respuestaTipo.Datos.codigo -eq 'TipoContenidoNoAdmitido') '415 usa ErrorApi controlado'
+
+        $respuestaLista = InvocarApi -Metodo 'Get' -Ruta '/api/clientes'
+        Confirmar ($respuestaLista.Codigo -eq 200 -and @($respuestaLista.Datos).Count -gt 0 -and
+            $respuestaLista.Contenido -notmatch 'ProblemDetails') 'Respuesta 200 conserva el cuerpo de datos'
+
+        $clienteNuevo = @{
+            tipoIdentificacion = 1; identificacion = '1-7000-0002'; nombre = 'Erika'
+            primerApellido = 'Mora'; segundoApellido = 'Prueba'; fechaNacimiento = '1991-02-02'
+        }
+        $respuestaAlta = InvocarApi -Metodo 'Post' -Ruta '/api/clientes' -Cuerpo $clienteNuevo
+        Confirmar ($respuestaAlta.Codigo -eq 201 -and -not [string]::IsNullOrWhiteSpace($respuestaAlta.Ubicacion) -and
+            [string]$respuestaAlta.Datos.id -ne [string]::Empty) '201 conserva Location y cuerpo de respuesta'
+
+        $respuestaBorrado = InvocarApi -Metodo 'Delete' -Ruta "/api/clientes/$($respuestaAlta.Datos.id)"
+        Confirmar ($respuestaBorrado.Codigo -eq 204 -and [string]::IsNullOrEmpty($respuestaBorrado.Contenido)) '204 mantiene el cuerpo vacío'
+
+        $respuestaHead = InvocarApi -Metodo 'Head' -Ruta '/api/estado'
+        Confirmar ($respuestaHead.Codigo -eq 405 -and [string]::IsNullOrEmpty($respuestaHead.Contenido) -and
+            $respuestaHead.Permitidos -match 'GET') 'HEAD sin ruta dedicada devuelve 405, Allow y cuerpo vacío'
+
         Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
     }
     else {
