@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores')]
+    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores', 'Integridad')]
     [string]$Grupo,
 
     [int]$Puerto = 5233
@@ -423,6 +423,90 @@ try {
         $proveedorObtenido = (InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$proveedorIdNuevo").Datos
         Confirmar ([string]$proveedorObtenido.razonSocial -eq $proveedorEditado.razonSocial -and
             [string]$proveedorObtenido.identificacion -eq $proveedorEditado.identificacion) 'GET de proveedor refleja la edición de razón social e identificación'
+
+        Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
+    }
+    elseif ($Grupo -eq 'Integridad') {
+        $proveedoresIntegridad = @(
+            @{ tipoIdentificacion = 4; identificacion = '3-404-000001'; razonSocial = 'ProveedorF3A'; nombreContacto = 'Ana Mora'; telefono = '88887771'; correoElectronico = 'f3a@example.com'; tipoSuministro = 8; frecuenciaEntrega = 3 },
+            @{ tipoIdentificacion = 4; identificacion = '3-404-000002'; razonSocial = 'ProveedorF3B'; nombreContacto = 'Luis Mora'; telefono = '88887772'; correoElectronico = 'f3b@example.com'; tipoSuministro = 8; frecuenciaEntrega = 3 },
+            @{ tipoIdentificacion = 4; identificacion = '3-404-000003'; razonSocial = 'ProveedorF3C'; nombreContacto = 'Eva Mora'; telefono = '88887773'; correoElectronico = 'f3c@example.com'; tipoSuministro = 8; frecuenciaEntrega = 3 }
+        )
+        $proveedoresCreados = @()
+        foreach ($formularioProveedor in $proveedoresIntegridad) {
+            $altaProveedor = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo $formularioProveedor
+            Confirmar ($altaProveedor.Codigo -eq 201) "Alta de $($formularioProveedor.razonSocial)"
+            $proveedoresCreados += $altaProveedor.Datos
+        }
+        $proveedorA = $proveedoresCreados[0]
+        $proveedorB = $proveedoresCreados[1]
+        $proveedorLibre = $proveedoresCreados[2]
+
+        $formulariosProducto = @(
+            @{ proveedorId = [string]$proveedorA.id; codigo = 'F3INTEGRIDAD1'; nombre = 'ProductoIntegridadUno'; categoria = 1; unidadMedida = 1; precioUnidadMedida = 1800; existenciaActual = 5; existenciaMinima = 1 },
+            @{ proveedorId = [string]$proveedorA.id; codigo = 'F3INTEGRIDAD2'; nombre = 'ProductoIntegridadDos'; categoria = 1; unidadMedida = 1; precioUnidadMedida = 1900; existenciaActual = 6; existenciaMinima = 1 }
+        )
+        $productosIntegridad = @()
+        foreach ($formularioProducto in $formulariosProducto) {
+            $altaProducto = InvocarApi -Metodo 'Post' -Ruta '/api/productos' -Cuerpo $formularioProducto
+            Confirmar ($altaProducto.Codigo -eq 201 -and
+                [string]$altaProducto.Datos.proveedorId -eq [string]$proveedorA.id) 'Producto de prueba se asocia con el proveedor compartido'
+            $productosIntegridad += $altaProducto.Datos
+        }
+        $productoUno = $productosIntegridad[0]
+        $productoDos = $productosIntegridad[1]
+        $cantidadProveedores = @((InvocarApi -Metodo 'Get' -Ruta '/api/proveedores').Datos).Count
+        $cantidadProductos = @((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos).Count
+
+        $eliminacionBloqueada = InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$($proveedorA.id)"
+        ConfirmarErrorApi $eliminacionBloqueada 409 'Borrado de proveedor con productos relacionados' 'proveedorId'
+        Confirmar ($eliminacionBloqueada.Datos.codigo -eq 'ConflictoIntegridad') 'El conflicto de integridad usa su código ErrorApi'
+        $proveedorConsultado = (InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedorA.id)").Datos
+        Confirmar ([string]$proveedorConsultado.id -eq [string]$proveedorA.id -and
+            [string]$proveedorConsultado.identificacion -eq [string]$proveedorA.identificacion) 'Borrado bloqueado conserva el proveedor'
+        foreach ($productoEsperado in @($productoUno, $productoDos)) {
+            $productoConsultado = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$($productoEsperado.id)").Datos
+            Confirmar ([string]$productoConsultado.id -eq [string]$productoEsperado.id -and
+                [string]$productoConsultado.proveedorId -eq [string]$proveedorA.id) 'Borrado bloqueado conserva cada producto relacionado'
+        }
+        Confirmar (@((InvocarApi -Metodo 'Get' -Ruta '/api/proveedores').Datos).Count -eq $cantidadProveedores -and
+            @((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos).Count -eq $cantidadProductos) 'Borrado bloqueado no cambia las cantidades'
+
+        $formularioUnoReasignado = CopiarObjeto $formulariosProducto[0]
+        $formularioUnoReasignado.proveedorId = [string]$proveedorB.id
+        $cambioUno = InvocarApi -Metodo 'Put' -Ruta "/api/productos/$($productoUno.id)" -Cuerpo $formularioUnoReasignado
+        Confirmar ($cambioUno.Codigo -eq 200 -and
+            [string]$cambioUno.Datos.proveedorId -eq [string]$proveedorB.id) 'Se reasigna el primer producto al segundo proveedor'
+
+        $eliminacionAunBloqueada = InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$($proveedorA.id)"
+        ConfirmarErrorApi $eliminacionAunBloqueada 409 'Borrado tras reasignar solo un producto' 'proveedorId'
+        Confirmar ($eliminacionAunBloqueada.Datos.codigo -eq 'ConflictoIntegridad') 'Un producto restante mantiene el conflicto de integridad'
+        $productoUnoActual = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$($productoUno.id)").Datos
+        $productoDosActual = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$($productoDos.id)").Datos
+        Confirmar ([string]$productoUnoActual.proveedorId -eq [string]$proveedorB.id -and
+            [string]$productoDosActual.proveedorId -eq [string]$proveedorA.id) 'El rechazo conserva ambas relaciones después de la reasignación parcial'
+
+        $formularioDosReasignado = CopiarObjeto $formulariosProducto[1]
+        $formularioDosReasignado.proveedorId = [string]$proveedorB.id
+        $cambioDos = InvocarApi -Metodo 'Put' -Ruta "/api/productos/$($productoDos.id)" -Cuerpo $formularioDosReasignado
+        Confirmar ($cambioDos.Codigo -eq 200 -and
+            [string]$cambioDos.Datos.proveedorId -eq [string]$proveedorB.id) 'Se reasigna el segundo producto al segundo proveedor'
+
+        $eliminacionPermitida = InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$($proveedorA.id)"
+        Confirmar ($eliminacionPermitida.Codigo -eq 204) 'Borrado procede cuando ya no hay productos relacionados'
+        $proveedorEliminado = InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedorA.id)"
+        ConfirmarErrorApi $proveedorEliminado 404 'Consulta del proveedor eliminado'
+        foreach ($productoEsperado in @($productoUno, $productoDos)) {
+            $productoConsultado = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$($productoEsperado.id)").Datos
+            Confirmar ([string]$productoConsultado.id -eq [string]$productoEsperado.id -and
+                [string]$productoConsultado.proveedorId -eq [string]$proveedorB.id) 'Los productos se conservan tras borrar el proveedor anterior'
+        }
+
+        $borradoLibre = InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$($proveedorLibre.id)"
+        Confirmar ($borradoLibre.Codigo -eq 204) 'Se puede borrar el proveedor libre'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedorLibre.id)") 404 'Consulta del proveedor libre eliminado'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$($proveedorA.id)") 404 'Segundo borrado del proveedor ya eliminado'
+        ConfirmarErrorApi (InvocarApi -Metodo 'Delete' -Ruta "/api/proveedores/$([guid]::NewGuid())") 404 'Borrado de proveedor inexistente'
 
         Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
     }
