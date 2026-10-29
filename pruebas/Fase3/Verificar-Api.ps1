@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores', 'Integridad')]
+    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores', 'Integridad', 'Concurrencia')]
     [string]$Grupo,
 
     [int]$Puerto = 5233
@@ -9,6 +9,7 @@
 $ErrorActionPreference = 'Stop'
 $cantidadVerificaciones = 0
 $procesoApi = $null
+$clienteHttpConcurrente = $null
 $rutaSalidaApi = Join-Path $env:TEMP 'carniceria-api-fase3-salida.log'
 $rutaErrorApi = Join-Path $env:TEMP 'carniceria-api-fase3-error.log'
 $uriBase = "http://127.0.0.1:$Puerto"
@@ -132,6 +133,92 @@ function ConfirmarErrorApi {
         }).Count -gt 0
         Confirmar $campoCoincide "$Descripcion informa el campo $Campo"
     }
+}
+
+function EnviarLoteConcurrente {
+    param(
+        [object]$ClienteHttp,
+        [object[]]$Solicitudes
+    )
+
+    $peticiones = @()
+    $tareas = @()
+    $respuestas = @()
+    try {
+        foreach ($solicitud in $Solicitudes) {
+            $metodoHttp = [System.Net.Http.HttpMethod]::new([string]$solicitud.Metodo)
+            $peticion = [System.Net.Http.HttpRequestMessage]::new(
+                $metodoHttp,
+                "$script:uriBase$($solicitud.Ruta)")
+            if ($null -ne $solicitud.Cuerpo) {
+                $json = ConvertTo-Json -InputObject $solicitud.Cuerpo -Depth 12 -Compress
+                $peticion.Content = [System.Net.Http.StringContent]::new(
+                    $json,
+                    [System.Text.Encoding]::UTF8,
+                    'application/json')
+            }
+
+            $peticiones += $peticion
+            $tareas += $ClienteHttp.SendAsync($peticion)
+        }
+
+        $termino = [System.Threading.Tasks.Task]::WaitAll(
+            [System.Threading.Tasks.Task[]]$tareas,
+            [TimeSpan]::FromSeconds(30))
+        if (-not $termino) {
+            throw 'Las solicitudes HTTP concurrentes excedieron el límite de 30 segundos.'
+        }
+
+        for ($indice = 0; $indice -lt $tareas.Count; $indice++) {
+            $respuestaHttp = $tareas[$indice].GetAwaiter().GetResult()
+            $contenido = if ($null -ne $respuestaHttp.Content) {
+                $respuestaHttp.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+            }
+            else {
+                ''
+            }
+            $datos = if (-not [string]::IsNullOrWhiteSpace($contenido)) {
+                ConvertFrom-Json -InputObject $contenido
+            }
+            else {
+                $null
+            }
+            $respuestas += [pscustomobject]@{
+                Codigo = [int]$respuestaHttp.StatusCode
+                Contenido = $contenido
+                Datos = $datos
+                Ruta = [string]$Solicitudes[$indice].Ruta
+            }
+            $respuestaHttp.Dispose()
+        }
+
+        return ,$respuestas
+    }
+    finally {
+        foreach ($peticionHttp in $peticiones) {
+            $peticionHttp.Dispose()
+        }
+    }
+}
+
+function ConfirmarProductoRelacionado {
+    param(
+        [object]$Producto,
+        [string]$IdProducto,
+        [object]$ProveedorA,
+        [object]$ProveedorB,
+        [string]$Descripcion
+    )
+
+    $idA = [string]$ProveedorA.id
+    $idB = [string]$ProveedorB.id
+    $coincideA = [string]$Producto.proveedorId -eq $idA -and
+        [string]$Producto.proveedorRazonSocial -eq [string]$ProveedorA.razonSocial -and
+        [string]$Producto.proveedorIdentificacion -eq [string]$ProveedorA.identificacion
+    $coincideB = [string]$Producto.proveedorId -eq $idB -and
+        [string]$Producto.proveedorRazonSocial -eq [string]$ProveedorB.razonSocial -and
+        [string]$Producto.proveedorIdentificacion -eq [string]$ProveedorB.identificacion
+    Confirmar ([string]$Producto.id -eq $IdProducto -and ($coincideA -or $coincideB)) $Descripcion
 }
 
 function CrearRegistro {
@@ -510,6 +597,168 @@ try {
 
         Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
     }
+    elseif ($Grupo -eq 'Concurrencia') {
+        Add-Type -AssemblyName System.Net.Http
+        $clienteHttpConcurrente = [System.Net.Http.HttpClient]::new()
+        $clienteHttpConcurrente.Timeout = [TimeSpan]::FromSeconds(15)
+
+        for ($indice = 1; $indice -le 20; $indice++) {
+            $identificador = '{0:D6}' -f $indice
+            $formularioProveedor = @{
+                tipoIdentificacion = 4; identificacion = "3-505-$identificador"; razonSocial = "ProveedorAlta$identificador"
+                nombreContacto = 'Ana Mora'; telefono = '88887761'; correoElectronico = "alta$identificador@example.com"
+                tipoSuministro = 8; frecuenciaEntrega = 3
+            }
+            $altaProveedor = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo $formularioProveedor
+            Confirmar ($altaProveedor.Codigo -eq 201) "Carrera alta/borrado prepara proveedor $identificador"
+            $formularioProducto = @{
+                proveedorId = [string]$altaProveedor.Datos.id; codigo = "F3ALTA$identificador"; nombre = "ProductoAlta$identificador"
+                categoria = 1; unidadMedida = 1; precioUnidadMedida = 1500
+                existenciaActual = 5; existenciaMinima = 1
+            }
+            $cantidadAntes = @((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos).Count
+            $solicitudes = @(
+                @{ Metodo = 'Post'; Ruta = '/api/productos'; Cuerpo = $formularioProducto },
+                @{ Metodo = 'Delete'; Ruta = "/api/proveedores/$($altaProveedor.Datos.id)"; Cuerpo = $null }
+            )
+            $respuestas = EnviarLoteConcurrente $clienteHttpConcurrente $solicitudes
+            $respuestaAlta = $respuestas[0]
+            $respuestaBorrado = $respuestas[1]
+            if ($respuestaAlta.Codigo -eq 201) {
+                Confirmar ($respuestaBorrado.Codigo -eq 409 -and
+                    $respuestaBorrado.Datos.codigo -eq 'ConflictoIntegridad') "Carrera $identificador conserva proveedor si alta gana"
+                Confirmar ([string]$respuestaAlta.Datos.proveedorId -eq [string]$altaProveedor.Datos.id -and
+                    [string]$respuestaAlta.Datos.proveedorRazonSocial -eq [string]$altaProveedor.Datos.razonSocial -and
+                    [string]$respuestaAlta.Datos.proveedorIdentificacion -eq [string]$altaProveedor.Datos.identificacion) "Carrera $identificador devuelve DTO completo para alta aceptada"
+                Confirmar (@((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos).Count -eq $cantidadAntes + 1) "Carrera $identificador persiste solo el producto aceptado"
+            }
+            elseif ($respuestaAlta.Codigo -eq 400) {
+                ConfirmarErrorApi $respuestaAlta 400 "Carrera $identificador rechaza alta si proveedor desaparece" 'proveedorId'
+                Confirmar ($respuestaBorrado.Codigo -eq 204) "Carrera $identificador permite borrar proveedor si alta pierde"
+                Confirmar (@((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos).Count -eq $cantidadAntes) "Carrera $identificador no agrega producto tras rechazo"
+                ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($altaProveedor.Datos.id)") 404 "Carrera $identificador deja proveedor borrado"
+            }
+            else {
+                throw "Carrera de alta/borrado $identificador devolvió HTTP $($respuestaAlta.Codigo) inesperado."
+            }
+        }
+
+        for ($indice = 1; $indice -le 20; $indice++) {
+            $identificador = '{0:D6}' -f (100 + $indice)
+            $formularioProveedorA = @{
+                tipoIdentificacion = 4; identificacion = "3-506-$identificador"; razonSocial = "Origen$identificador"
+                nombreContacto = 'Marta Mora'; telefono = '88887762'; correoElectronico = "origen$identificador@example.com"
+                tipoSuministro = 8; frecuenciaEntrega = 3
+            }
+            $formularioProveedorB = @{
+                tipoIdentificacion = 4; identificacion = "3-507-$identificador"; razonSocial = "Destino$identificador"
+                nombreContacto = 'Luis Mora'; telefono = '88887763'; correoElectronico = "destino$identificador@example.com"
+                tipoSuministro = 3; frecuenciaEntrega = 3
+            }
+            $altaProveedorA = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo $formularioProveedorA
+            $altaProveedorB = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo $formularioProveedorB
+            Confirmar ($altaProveedorA.Codigo -eq 201 -and $altaProveedorB.Codigo -eq 201) "Carrera reasignación $identificador prepara proveedores"
+            $proveedorA = $altaProveedorA.Datos
+            $proveedorB = $altaProveedorB.Datos
+            $formularioProducto = @{
+                proveedorId = [string]$proveedorA.id; codigo = "F3MOV$identificador"; nombre = "ProductoMov$identificador"
+                categoria = 1; unidadMedida = 1; precioUnidadMedida = 1600
+                existenciaActual = 5; existenciaMinima = 1
+            }
+            $altaProducto = InvocarApi -Metodo 'Post' -Ruta '/api/productos' -Cuerpo $formularioProducto
+            Confirmar ($altaProducto.Codigo -eq 201) "Carrera reasignación $identificador prepara producto"
+            $idProducto = [string]$altaProducto.Datos.id
+            $productoActualizado = CopiarObjeto $formularioProducto
+            $productoActualizado.proveedorId = [string]$proveedorB.id
+            $consultaCodigo = [uri]::EscapeDataString($formularioProducto.codigo)
+            $consultaProveedor = [uri]::EscapeDataString($proveedorB.identificacion)
+            $solicitudes = @(
+                @{ Metodo = 'Put'; Ruta = "/api/productos/$idProducto"; Cuerpo = $productoActualizado },
+                @{ Metodo = 'Delete'; Ruta = "/api/proveedores/$($proveedorA.id)"; Cuerpo = $null },
+                @{ Metodo = 'Get'; Ruta = "/api/productos/$idProducto"; Cuerpo = $null },
+                @{ Metodo = 'Get'; Ruta = '/api/productos'; Cuerpo = $null },
+                @{ Metodo = 'Get'; Ruta = "/api/productos/buscar?criterio=Codigo&consulta=$consultaCodigo"; Cuerpo = $null },
+                @{ Metodo = 'Get'; Ruta = "/api/proveedores/$($proveedorA.id)"; Cuerpo = $null },
+                @{ Metodo = 'Get'; Ruta = "/api/proveedores/buscar?criterio=Identificacion&consulta=$consultaProveedor"; Cuerpo = $null }
+            )
+            $respuestas = EnviarLoteConcurrente $clienteHttpConcurrente $solicitudes
+            Confirmar ($respuestas[0].Codigo -eq 200 -and
+                [string]$respuestas[0].Datos.id -eq $idProducto -and
+                [string]$respuestas[0].Datos.proveedorId -eq [string]$proveedorB.id) "Carrera reasignación $identificador guarda el proveedor de destino"
+            Confirmar ($respuestas[1].Codigo -in @(204, 409)) "Carrera reasignación $identificador devuelve estado permitido al borrar origen"
+            ConfirmarProductoRelacionado $respuestas[0].Datos $idProducto $proveedorA $proveedorB "Carrera reasignación $identificador devuelve DTO completo"
+            Confirmar ($respuestas[2].Codigo -eq 200) "Carrera consulta $identificador devuelve detalle del producto"
+            ConfirmarProductoRelacionado $respuestas[2].Datos $idProducto $proveedorA $proveedorB "Carrera consulta $identificador conserva snapshot de detalle coherente"
+            Confirmar ($respuestas[3].Codigo -eq 200 -and @($respuestas[3].Datos).Count -gt 0) "Carrera consulta $identificador devuelve listado de productos"
+            $productoListado = $respuestas[3].Datos | Where-Object { [string]$_.id -eq $idProducto } | Select-Object -First 1
+            ConfirmarProductoRelacionado $productoListado $idProducto $proveedorA $proveedorB "Carrera consulta $identificador conserva snapshot de listado coherente"
+            Confirmar ($respuestas[4].Codigo -eq 200 -and @($respuestas[4].Datos).Count -eq 1) "Carrera consulta $identificador devuelve búsqueda del producto"
+            ConfirmarProductoRelacionado $respuestas[4].Datos[0] $idProducto $proveedorA $proveedorB "Carrera consulta $identificador conserva snapshot de búsqueda coherente"
+            Confirmar ($respuestas[5].Codigo -in @(200, 404)) "Carrera consulta $identificador devuelve estado válido del proveedor origen"
+            if ($respuestas[5].Codigo -eq 200) {
+                Confirmar ([string]$respuestas[5].Datos.id -eq [string]$proveedorA.id -and
+                    [string]$respuestas[5].Datos.razonSocial -eq [string]$proveedorA.razonSocial -and
+                    [string]$respuestas[5].Datos.identificacion -eq [string]$proveedorA.identificacion) "Carrera consulta $identificador conserva snapshot del proveedor origen"
+            }
+            Confirmar ($respuestas[6].Codigo -eq 200 -and @($respuestas[6].Datos).Count -eq 1 -and
+                [string]$respuestas[6].Datos[0].id -eq [string]$proveedorB.id) "Carrera consulta $identificador mantiene visible el proveedor destino"
+
+            $productoFinal = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$idProducto").Datos
+            Confirmar ([string]$productoFinal.id -eq $idProducto -and
+                [string]$productoFinal.proveedorId -eq [string]$proveedorB.id -and
+                [string]$productoFinal.proveedorRazonSocial -eq [string]$proveedorB.razonSocial -and
+                [string]$productoFinal.proveedorIdentificacion -eq [string]$proveedorB.identificacion) "Carrera reasignación $identificador deja relación final consistente"
+            if ($respuestas[1].Codigo -eq 204) {
+                ConfirmarErrorApi (InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedorA.id)") 404 "Carrera reasignación $identificador eliminó origen sin referencias"
+            }
+            else {
+                Confirmar ((InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedorA.id)").Codigo -eq 200) "Carrera reasignación $identificador conserva origen si fue bloqueado"
+            }
+        }
+
+        $proveedorBase = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo @{
+            tipoIdentificacion = 4; identificacion = '3-508-765432'; razonSocial = 'ProveedorCRUDBase'
+            nombreContacto = 'Base Prueba'; telefono = '88887764'; correoElectronico = 'crudbase@example.com'
+            tipoSuministro = 8; frecuenciaEntrega = 3
+        }
+        Confirmar ($proveedorBase.Codigo -eq 201) 'Se crea proveedor base para carreras CRUD'
+        for ($indice = 1; $indice -le 5; $indice++) {
+            $identificador = '{0:D4}' -f $indice
+            $casosCrud = @(
+                @{ Recurso = 'clientes'; Formulario = @{ tipoIdentificacion = 1; identificacion = "1-6000-$identificador"; nombre = 'Ana'; primerApellido = 'Mora'; segundoApellido = 'Prueba'; fechaNacimiento = '1992-02-02' } },
+                @{ Recurso = 'empleados'; Formulario = @{ tipoIdentificacion = 1; identificacion = "2-6000-$identificador"; nombre = 'Luis'; primerApellido = 'Mora'; segundoApellido = 'Prueba'; fechaNacimiento = '1988-03-03'; salarioMensual = 600000; fechaIngreso = '2020-01-01'; areaTrabajo = 2; puesto = 'Cajero'; turno = 1 } },
+                @{ Recurso = 'proveedores'; Formulario = @{ tipoIdentificacion = 4; identificacion = "3-509-00$identificador"; razonSocial = "ProveedorCRUD$identificador"; nombreContacto = 'Marta Mora'; telefono = '88887765'; correoElectronico = "crud$identificador@example.com"; tipoSuministro = 8; frecuenciaEntrega = 3 } },
+                @{ Recurso = 'productos'; Formulario = @{ proveedorId = [string]$proveedorBase.Datos.id; codigo = "F3CRUD$identificador"; nombre = "ProductoCRUD$identificador"; categoria = 1; unidadMedida = 1; precioUnidadMedida = 1300; existenciaActual = 5; existenciaMinima = 1 } }
+            )
+            foreach ($casoCrud in $casosCrud) {
+                $alta = InvocarApi -Metodo 'Post' -Ruta "/api/$($casoCrud.Recurso)" -Cuerpo $casoCrud.Formulario
+                Confirmar ($alta.Codigo -eq 201) "Carrera PUT/DELETE prepara $($casoCrud.Recurso) $identificador"
+                $idRegistro = [string]$alta.Datos.id
+                $formularioActualizado = CopiarObjeto $casoCrud.Formulario
+                switch ($casoCrud.Recurso) {
+                    'clientes' { $formularioActualizado.nombre = 'Elena' }
+                    'empleados' { $formularioActualizado.salarioMensual = 650000 }
+                    'proveedores' { $formularioActualizado.razonSocial = "ProveedorEditado$identificador" }
+                    'productos' { $formularioActualizado.nombre = "ProductoEditado$identificador" }
+                }
+                $solicitudes = @(
+                    @{ Metodo = 'Put'; Ruta = "/api/$($casoCrud.Recurso)/$idRegistro"; Cuerpo = $formularioActualizado },
+                    @{ Metodo = 'Delete'; Ruta = "/api/$($casoCrud.Recurso)/$idRegistro"; Cuerpo = $null }
+                )
+                $respuestas = EnviarLoteConcurrente $clienteHttpConcurrente $solicitudes
+                Confirmar ($respuestas[0].Codigo -in @(200, 404) -and
+                    $respuestas[1].Codigo -eq 204) "Carrera PUT/DELETE $($casoCrud.Recurso) produce respuestas serializadas"
+                if ($respuestas[0].Codigo -eq 200) {
+                    Confirmar ([string]$respuestas[0].Datos.id -eq $idRegistro) "PUT concurrente conserva Id de $($casoCrud.Recurso)"
+                }
+                Confirmar ((InvocarApi -Metodo 'Get' -Ruta "/api/$($casoCrud.Recurso)/$idRegistro").Codigo -eq 404) "DELETE concurrente deja $($casoCrud.Recurso) inexistente"
+            }
+        }
+
+        $clienteHttpConcurrente.Dispose()
+        $clienteHttpConcurrente = $null
+        Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
+    }
     else {
 
     $cliente = @{
@@ -701,6 +950,9 @@ try {
     }
 }
 finally {
+    if ($null -ne $clienteHttpConcurrente) {
+        $clienteHttpConcurrente.Dispose()
+    }
     if ($null -ne $procesoApi -and -not $procesoApi.HasExited) {
         Stop-Process -Id $procesoApi.Id -Force -ErrorAction SilentlyContinue
         $procesoApi.WaitForExit(5000)
