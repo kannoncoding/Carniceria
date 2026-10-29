@@ -421,8 +421,6 @@ public class EmpleadosController : ControladorApiMvcBase
             !string.IsNullOrWhiteSpace(registro.Nombre) &&
             !string.IsNullOrWhiteSpace(registro.PrimerApellido) &&
             !string.IsNullOrWhiteSpace(registro.SegundoApellido) &&
-            registro.FechaNacimiento != default &&
-            registro.FechaIngreso != default &&
             registro.SalarioMensual >= 0m &&
             Enum.IsDefined(typeof(AreaTrabajo), registro.AreaTrabajo) &&
             Enum.IsDefined(typeof(Turno), registro.Turno) &&

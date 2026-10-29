@@ -210,11 +210,13 @@
     <div class="opciones">
         @foreach (var opcion in Html.GetEnumSelectList<Turno>())
         {
+            @* Conserva el valor numérico y selecciona el turno actual. *@
             <label for="turno-@opcion.Value">
-                <input asp-for="Turno"
+                <input name="@Html.NameFor(modelo => modelo.Turno)"
                        type="radio"
                        id="turno-@opcion.Value"
                        value="@opcion.Value"
+                       checked="@(Model.Turno.HasValue && ((int)Model.Turno.Value).ToString(System.Globalization.CultureInfo.InvariantCulture) == opcion.Value)"
                        required />
 
                 @opcion.Text

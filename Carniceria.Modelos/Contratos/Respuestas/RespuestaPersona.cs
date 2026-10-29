@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Contratos.Respuestas;
@@ -21,5 +22,6 @@ public abstract class RespuestaPersona
     public string SegundoApellido { get; init; } = string.Empty;
 
     // Fecha civil de nacimiento.
+    [JsonRequired]
     public DateTime FechaNacimiento { get; init; }
 }

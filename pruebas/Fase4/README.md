@@ -14,15 +14,21 @@ $salidaProveedores = Join-Path $salida 'Proveedores'
 $salidaErrores = Join-Path $salida 'ErroresFormulario'
 $salidaMensajes = Join-Path $salida 'Mensajes'
 $salidaTransportes = Join-Path $salida 'Transportes'
+$salidaInterfaz = Join-Path $salida 'Interfaz'
+$salidaFechas = Join-Path $salida 'Fechas'
 node .\pruebas\Fase4\Verificar-Mvc.mjs --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaMigracion
 node .\pruebas\Fase4\Verificar-Mvc.mjs --grupo Rutas --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaRutas
 node .\pruebas\Fase4\Verificar-Mvc.mjs --grupo Proveedores --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaProveedores
 node .\pruebas\Fase4\Verificar-Mvc.mjs --grupo ErroresFormulario --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaErrores
 node .\pruebas\Fase4\Verificar-Mvc.mjs --grupo Mensajes --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaMensajes
 node .\pruebas\Fase4\Verificar-Mvc.mjs --grupo Transportes --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaTransportes
+node .\pruebas\Fase4\Verificar-Interfaz.mjs --raiz . --salida $salidaInterfaz
+node .\pruebas\Fase4\Verificar-Fechas.mjs --raiz . --puerto-api 5234 --puerto-web 5235 --salida $salidaFechas
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\pruebas\Fase3\Verificar-Api.ps1 -Grupo Proveedores -Puerto 5233
 ```
 
 El grupo predeterminado `Migracion` cubre operaciones MVC de los cuatro módulos, búsquedas, formularios con errores, datos duplicados, proveedor principal y restricciones de baja. `Rutas` verifica lecturas y cancelación de confirmaciones, protección antifalsificación y codificación de consultas con un receptor de prueba. El script verifica primero que ambos puertos estén libres. Puede cambiar `--puerto-api` y `--puerto-web` si están ocupados. Los registros y el resumen se escriben en el directorio temporal indicado.
 
-Las verificaciones de F4.1 aprobaron 77/77 aserciones `Migracion`; F4.2 aprobó 77/77 `Rutas`; F4.3 aprobó 150/150 `Proveedores`; F4.4 aprobó 256/256 `ErroresFormulario`; F4.5 aprobó 288/288 `Mensajes`; y F4.6 aprobó 151/151 `Transportes`, con API en 5234 y Web en 5235. F4.3 también requirió una regresión separada del grupo `Proveedores` de F3: 64/64 verificaciones en el puerto 5233. Cada grupo MVC escribe en su propio subdirectorio para conservar resúmenes y registros. Las ejecuciones aprobadas no repitieron grupos anteriores. Se probaron con Node.js 24. Los registros detallados son evidencia local y no se incluyen en el repositorio.
+`Verificar-Interfaz.mjs` reserva los puertos 5234 (API), 5235 (Web), 5236 (proxy) y 5237 (CDP); usa un perfil temporal propio que conserva para diagnóstico y cierra el navegador y procesos que inició. Si esos puertos están ocupados, se pueden cambiar con `--puerto-api`, `--puerto-web`, `--puerto-proxy` y `--puerto-depuracion`. El script busca Edge o Chrome en sus ubicaciones estándar; se puede indicar otro ejecutable con `--navegador`. Las capturas y registros resultantes se guardan en la carpeta de salida y no se versionan.
+
+Las verificaciones aprobaron 77/77 `Migracion`, 77/77 `Rutas`, 150/150 `Proveedores`, 256/256 `ErroresFormulario`, 288/288 `Mensajes`, 151/151 `Transportes`, 83/83 `Interfaz` y 52/52 `Fechas`. Los grupos MVC se ejecutaron en puertos aislados y escriben en subdirectorios distintos. `Interfaz` requiere Edge o Chrome local, Node.js 24 y CDP; `Fechas` usa HTTP MVC. La regresión del grupo `Proveedores` de F3 fue separada: 64/64 en el puerto 5233. Las ejecuciones aprobadas no repitieron grupos anteriores. Los registros detallados son evidencia local y no se incluyen en el repositorio.

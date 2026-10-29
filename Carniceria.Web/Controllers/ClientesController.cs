@@ -415,7 +415,6 @@ public class ClientesController : ControladorApiMvcBase
             !string.IsNullOrWhiteSpace(registro.Identificacion) &&
             !string.IsNullOrWhiteSpace(registro.Nombre) &&
             !string.IsNullOrWhiteSpace(registro.PrimerApellido) &&
-            !string.IsNullOrWhiteSpace(registro.SegundoApellido) &&
-            registro.FechaNacimiento != default;
+            !string.IsNullOrWhiteSpace(registro.SegundoApellido);
     }
 }

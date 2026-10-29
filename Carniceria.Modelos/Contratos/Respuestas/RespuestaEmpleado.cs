@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Contratos.Respuestas;
@@ -9,6 +10,8 @@ public sealed class RespuestaEmpleado : RespuestaPersona
     // Información laboral adicional a los datos personales heredados.
     public decimal SalarioMensual { get; init; }
 
+    // Fecha de ingreso requerida en las respuestas de empleados.
+    [JsonRequired]
     public DateTime FechaIngreso { get; init; }
 
     public AreaTrabajo AreaTrabajo { get; init; }
