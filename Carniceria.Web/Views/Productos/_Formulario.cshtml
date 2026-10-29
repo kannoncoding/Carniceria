@@ -1,6 +1,21 @@
 ﻿@model ProductoFormulario
 @* Campos reutilizados en alta y edición de productos. *@
 
+@* Proveedor principal que abastece el producto. *@
+<div class="campo">
+    <label asp-for="ProveedorId"></label>
+
+    <select asp-for="ProveedorId"
+            asp-items="ViewBag.Proveedores"
+            class="control"
+            required
+            aria-describedby="error-proveedor">
+        <option value="">Seleccione un proveedor</option>
+    </select>
+
+    <span asp-validation-for="ProveedorId" id="error-proveedor"></span>
+</div>
+
 @* Código único y nombre descriptivo del producto. *@
 <div class="campo">
     <label asp-for="Codigo"></label>

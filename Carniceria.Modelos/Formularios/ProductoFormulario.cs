@@ -13,8 +13,9 @@ public class ProductoFormulario : IValidatableObject
     private string _codigo = string.Empty;
     private string _nombre = string.Empty;
 
-    // Referencia opcional del formulario compartido; la API la exige al guardar.
+    // Identifica el proveedor principal seleccionado para el producto.
     [Display(Name = "Proveedor")]
+    [Required(ErrorMessage = "Seleccione un proveedor.")]
     public Guid? ProveedorId { get; set; }
 
     // Código y nombre identifican el producto en los listados.

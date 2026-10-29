@@ -1,10 +1,15 @@
-﻿using System;
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using Carniceria.Modelos.Consultas;
-using Carniceria.Modelos.Entidades;
+using Carniceria.Modelos.Contratos.Respuestas;
 using Carniceria.Modelos.Enumeraciones;
 using Carniceria.Modelos.Formularios;
 using Carniceria.Modelos.Validacion;
-using Carniceria.Web.Data;
 using Carniceria.Web.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -12,274 +17,418 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace Carniceria.Controllers;
 
 // Atiende las páginas MVC de consulta y mantenimiento de proveedores.
-public class ProveedoresController : Controller
+public class ProveedoresController : ControladorApiMvcBase
 {
-    // Acceso al almacén en memoria usado temporalmente por Web.
-    private readonly IAlmacenCarniceria _almacen;
-
-    // Recibe el almacén registrado para las acciones del controlador.
-    public ProveedoresController(IAlmacenCarniceria almacen)
+    // Recibe la fábrica del proveedor HTTP usado por las acciones.
+    public ProveedoresController(IHttpClientFactory fabricaProveedoresHttp)
+        : base(fabricaProveedoresHttp)
     {
-        _almacen = almacen;
     }
 
     [HttpGet]
-    // Muestra el listado de proveedores.
-    public IActionResult Index()
+    // Consulta la colección de proveedores en la API.
+    public async Task<IActionResult> Index()
     {
-        var proveedores = _almacen.ListarProveedores();
-
-        return View(proveedores);
-    }
-
-    [HttpGet]
-    // Muestra la ficha del proveedor indicado.
-    public IActionResult Detalles([FromRoute] Guid id)
-    {
-        if (id == Guid.Empty ||
-            ModelState.GetFieldValidationState(nameof(id)) ==
-                ModelValidationState.Invalid)
+        var cancelacion = HttpContext.RequestAborted;
+        try
         {
-            return this.RegistroNoEncontrado(
-                "El enlace del proveedor no contiene un identificador válido.");
+            using var clienteHttp = CrearClienteHttpApi();
+            using var respuesta = await clienteHttp.GetAsync(
+                "api/proveedores", HttpCompletionOption.ResponseContentRead, cancelacion);
+            if (!respuesta.IsSuccessStatusCode)
+                return ServicioNoDisponible("No se pudo cargar el listado de proveedores.");
+
+            // Convertir solo un cuerpo JSON con la colección esperada.
+            var proveedores = await LeerRespuestaAsync<RespuestaProveedor[]>(respuesta, cancelacion);
+            if (proveedores is null || proveedores.Any(registro => registro is null || !RespuestaValida(registro)))
+                return ServicioNoDisponible("La API respondió con datos de proveedores inesperados.");
+
+            return View(proveedores);
         }
-
-        var proveedor = _almacen.ObtenerProveedor(id);
-
-        if (proveedor is null)
+        catch (HttpRequestException)
         {
-            return this.RegistroNoEncontrado(
-                "El proveedor solicitado no existe o ya fue eliminado.");
+            return ErrorDeComunicacion(cancelacion, false);
         }
-
-        return View(proveedor);
+        catch (OperationCanceledException)
+        {
+            return ErrorDeComunicacion(cancelacion, false);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ServicioNoDisponible("La API respondió con datos de proveedores inesperados.");
+        }
     }
 
     [HttpGet]
-    // Presenta el formulario vacío de alta.
-    public IActionResult Crear()
+    // Consulta un proveedor por el identificador de la ruta.
+    public async Task<IActionResult> Detalles([FromRoute] Guid id)
     {
-        var formulario = new ProveedorFormulario();
-
-        return View(formulario);
+        if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+            return this.RegistroNoEncontrado("El enlace del proveedor no contiene un identificador válido.");
+        var cancelacion = HttpContext.RequestAborted;
+        try
+        {
+            using var clienteHttp = CrearClienteHttpApi();
+            using var respuesta = await clienteHttp.GetAsync($"api/proveedores/{id:D}", HttpCompletionOption.ResponseContentRead, cancelacion);
+            if (respuesta.StatusCode == HttpStatusCode.NotFound)
+                return this.RegistroNoEncontrado("El proveedor solicitado no existe o ya fue eliminado.");
+            if (!respuesta.IsSuccessStatusCode)
+                return ServicioNoDisponible("No se pudieron consultar los datos del proveedor.");
+            // Confirmar que la respuesta corresponde al Id solicitado.
+            var registro = await LeerRespuestaAsync<RespuestaProveedor>(respuesta, cancelacion);
+            return registro is null || !RespuestaValida(registro) || registro.Id != id
+                ? ServicioNoDisponible("La API respondió con datos de proveedor inesperados.")
+                : View(registro);
+        }
+        catch (HttpRequestException)
+        {
+            return ErrorDeComunicacion(cancelacion, false);
+        }
+        catch (OperationCanceledException)
+        {
+            return ErrorDeComunicacion(cancelacion, false);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ServicioNoDisponible("La API respondió con datos de proveedor inesperados.");
+        }
     }
+
+    [HttpGet]
+    // Presenta el formulario vacío para registrar un proveedor.
+    public IActionResult Crear() => View(new ProveedorFormulario());
 
     [HttpPost]
-    // Valida y guarda el proveedor enviado desde el formulario.
-    public IActionResult Crear([FromForm] ProveedorFormulario formulario)
+    // Valida el formulario y envía el alta a la API.
+    public async Task<IActionResult> Crear([FromForm] ProveedorFormulario formulario)
     {
-        // Conservar los valores enviados y mostrar los errores del formulario.
         if (!ModelState.IsValid)
         {
             return View(formulario);
         }
-
-        var resultado = _almacen.CrearProveedor(formulario);
-
-        // Incorporar errores del almacén, como una identificación duplicada.
-        if (!resultado.EsExitoso)
+        var cancelacion = HttpContext.RequestAborted;
+        try
         {
-            ModelState.AgregarErrores(resultado);
-
+            using var clienteHttp = CrearClienteHttpApi();
+            using var respuesta = await clienteHttp.PostAsJsonAsync("api/proveedores", formulario, cancelacion);
+            if (respuesta.StatusCode == HttpStatusCode.Created)
+            {
+                // Verificar el DTO antes de anunciar que el alta se completó.
+                var registro = await LeerRespuestaAsync<RespuestaProveedor>(respuesta, cancelacion);
+                if (registro is null || !RespuestaValida(registro))
+                {
+                    AgregarErrorMutacionNoConfirmada();
+                    return View(formulario);
+                }
+                TempData["MensajeExito"] = "El proveedor se registró correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            if (respuesta.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict)
+            {
+                AgregarErroresApi(await LeerErrorApiAsync(respuesta, cancelacion), typeof(ProveedorFormulario));
+                return View(formulario);
+            }
+            AgregarErrorMutacionNoConfirmada();
             return View(formulario);
         }
-
-        TempData["MensajeExito"] = resultado.Mensaje;
-
-        // Redirigir después de guardar para evitar repetir el envío.
-        return RedirectToAction(nameof(Index));
+        catch (HttpRequestException)
+        {
+            AgregarErrorMutacionNoConfirmada();
+            return View(formulario);
+        }
+        catch (OperationCanceledException) when (!cancelacion.IsCancellationRequested)
+        {
+            AgregarErrorMutacionNoConfirmada();
+            return View(formulario);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            AgregarErrorMutacionNoConfirmada();
+            return View(formulario);
+        }
     }
 
     [HttpGet]
-    // Busca por identificación exacta o razón social parcial.
-    public IActionResult Buscar(
+    // Busca proveedores por identificación y conserva el criterio ingresado.
+    public async Task<IActionResult> Buscar(
         [FromQuery] string? criterio,
         [FromQuery] string? consulta)
     {
-        var modelo = new BusquedaViewModel<Proveedor>
+        // Conservar el criterio elegido y el texto de consulta.
+        var modelo = new BusquedaViewModel<RespuestaProveedor>
         {
             Criterio = ReglasTexto.Normalizar(criterio),
             Consulta = ReglasTexto.Normalizar(consulta)
         };
-
-        // Al abrir la página sin parámetros, mostrar las instrucciones.
-        bool busquedaSolicitada =
-            Request.Query.ContainsKey(nameof(criterio)) ||
+        bool solicitada = Request.Query.ContainsKey(nameof(criterio)) ||
             Request.Query.ContainsKey(nameof(consulta));
-
-        if (!busquedaSolicitada)
+        if (!solicitada)
         {
             return View(modelo);
         }
-
-        // Validar el criterio también en el servidor.
-        if (modelo.Criterio.Length == 0)
+        if (modelo.Criterio is not ("Identificacion" or "RazonSocial"))
         {
-            ModelState.AddModelError(
-                nameof(modelo.Criterio),
-                "Seleccione un criterio de búsqueda.");
+            ModelState.AddModelError(nameof(modelo.Criterio), "Seleccione un criterio de búsqueda válido.");
+            return View(modelo);
         }
-        else if (modelo.Criterio != "Identificacion" &&
-                 modelo.Criterio != "RazonSocial")
-        {
-            ModelState.AddModelError(
-                nameof(modelo.Criterio),
-                "Seleccione un criterio de búsqueda válido.");
-        }
-
         if (modelo.Consulta.Length == 0)
         {
-            ModelState.AddModelError(
-                nameof(modelo.Consulta),
-                "Ingrese una identificación o una razón social para buscar.");
-        }
-
-        // Conservar el criterio y el texto cuando haya errores.
-        if (!ModelState.IsValid)
-        {
+            ModelState.AddModelError(nameof(modelo.Consulta), "Ingrese una identificación para buscar.");
             return View(modelo);
         }
-
-        // Identificación exacta o todas las coincidencias parciales de razón social.
-        modelo.Resultados = modelo.Criterio == "Identificacion"
-            ? _almacen.BuscarProveedoresPorIdentificacion(modelo.Consulta)
-            : _almacen.BuscarProveedoresPorRazonSocial(modelo.Consulta);
-
-        modelo.BusquedaRealizada = true;
-
-        return View(modelo);
+        var cancelacion = HttpContext.RequestAborted;
+        try
+        {
+            using var clienteHttp = CrearClienteHttpApi();
+            string ruta = $"api/proveedores/buscar?criterio={Uri.EscapeDataString(modelo.Criterio)}&consulta={Uri.EscapeDataString(modelo.Consulta)}";
+            using var respuesta = await clienteHttp.GetAsync(ruta, HttpCompletionOption.ResponseContentRead, cancelacion);
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo consultar la API de proveedores.");
+                return View(modelo);
+            }
+            var resultados = await LeerRespuestaAsync<RespuestaProveedor[]>(respuesta, cancelacion);
+            if (resultados is null || resultados.Any(registro => registro is null || !RespuestaValida(registro)))
+            {
+                ModelState.AddModelError(string.Empty, "La API respondió con resultados de proveedores inesperados.");
+                return View(modelo);
+            }
+            modelo.Resultados = resultados;
+            modelo.BusquedaRealizada = true;
+            return View(modelo);
+        }
+        catch (HttpRequestException)
+        {
+            ModelState.AddModelError(string.Empty, "No se pudo consultar la API de proveedores.");
+            return View(modelo);
+        }
+        catch (OperationCanceledException) when (!cancelacion.IsCancellationRequested)
+        {
+            ModelState.AddModelError(string.Empty, "La búsqueda de proveedores tardó demasiado en responder.");
+            return View(modelo);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            ModelState.AddModelError(string.Empty, "La API respondió con resultados de proveedores inesperados.");
+            return View(modelo);
+        }
     }
 
     [HttpGet]
-    // Carga los datos del proveedor para editarlo.
-    public IActionResult Editar([FromRoute] Guid id)
+    // Carga el registro y prepara sus campos editables.
+    public async Task<IActionResult> Editar([FromRoute] Guid id)
     {
-        if (id == Guid.Empty ||
-            ModelState.GetFieldValidationState(nameof(id)) ==
-                ModelValidationState.Invalid)
+        if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+            return this.RegistroNoEncontrado("El enlace del proveedor no contiene un identificador válido.");
+        var cancelacion = HttpContext.RequestAborted;
+        try
         {
-            return this.RegistroNoEncontrado(
-                "El enlace del proveedor no contiene un identificador válido.");
+            using var clienteHttp = CrearClienteHttpApi();
+            using var respuesta = await clienteHttp.GetAsync($"api/proveedores/{id:D}", HttpCompletionOption.ResponseContentRead, cancelacion);
+            if (respuesta.StatusCode == HttpStatusCode.NotFound)
+                return this.RegistroNoEncontrado("El proveedor solicitado no existe o ya fue eliminado.");
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return ServicioNoDisponible("No se pudieron cargar los datos para editar el proveedor.");
+            }
+            // Mapear la respuesta de lectura al formulario editable.
+            var registro = await LeerRespuestaAsync<RespuestaProveedor>(respuesta, cancelacion);
+            if (registro is null || !RespuestaValida(registro) || registro.Id != id)
+                return ServicioNoDisponible("La API respondió con datos de proveedor inesperados.");
+            return View(new ProveedorFormulario
+            {
+                TipoIdentificacion = registro.TipoIdentificacion,
+                Identificacion = registro.Identificacion,
+                RazonSocial = registro.RazonSocial,
+                NombreContacto = registro.NombreContacto,
+                Telefono = registro.Telefono,
+                CorreoElectronico = registro.CorreoElectronico,
+                TipoSuministro = registro.TipoSuministro,
+                FrecuenciaEntrega = registro.FrecuenciaEntrega
+            });
         }
-
-        var proveedor = _almacen.ObtenerProveedor(id);
-
-        if (proveedor is null)
+        catch (HttpRequestException)
         {
-            return this.RegistroNoEncontrado(
-                "El proveedor solicitado no existe o ya fue eliminado.");
+            return ErrorDeComunicacion(cancelacion, false);
         }
-
-        // Copiar todos los campos editables al modelo del formulario.
-        var formulario = new ProveedorFormulario
+        catch (OperationCanceledException)
         {
-            TipoIdentificacion = proveedor.TipoIdentificacion,
-            Identificacion = proveedor.Identificacion,
-            RazonSocial = proveedor.RazonSocial,
-            NombreContacto = proveedor.NombreContacto,
-            Telefono = proveedor.Telefono,
-            CorreoElectronico = proveedor.CorreoElectronico,
-            TipoSuministro = proveedor.TipoSuministro,
-            FrecuenciaEntrega = proveedor.FrecuenciaEntrega
-        };
-
-        return View(formulario);
+            return ErrorDeComunicacion(cancelacion, false);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ServicioNoDisponible("La API respondió con datos de proveedor inesperados.");
+        }
     }
 
     [HttpPost]
-    // Valida y guarda los cambios del proveedor indicado.
-    public IActionResult Editar(
-        [FromRoute] Guid id,
-        [FromForm] ProveedorFormulario formulario)
+    // Valida los cambios y actualiza el proveedor indicado.
+    public async Task<IActionResult> Editar([FromRoute] Guid id, [FromForm] ProveedorFormulario formulario)
     {
-        // Revisar el identificador de la ruta por separado de los campos.
-        if (id == Guid.Empty ||
-            ModelState.GetFieldValidationState(nameof(id)) ==
-                ModelValidationState.Invalid)
-        {
-            return this.RegistroNoEncontrado(
-                "El enlace del proveedor no contiene un identificador válido.");
-        }
-
-        // Comprobar que el proveedor todavía exista.
-        if (_almacen.ObtenerProveedor(id) is null)
-        {
-            return this.RegistroNoEncontrado(
-                "El proveedor solicitado no existe o ya fue eliminado.");
-        }
-
-        // Conservar los valores enviados cuando haya errores.
+        if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+            return this.RegistroNoEncontrado("El enlace del proveedor no contiene un identificador válido.");
         if (!ModelState.IsValid)
         {
             return View(formulario);
         }
-
-        var resultado = _almacen.ActualizarProveedor(id, formulario);
-
-        // El proveedor podría desaparecer entre la consulta y la actualización.
-        if (resultado.Estado == EstadoOperacion.NoEncontrado)
+        var cancelacion = HttpContext.RequestAborted;
+        try
         {
-            return this.RegistroNoEncontrado(resultado.Mensaje);
-        }
-
-        if (!resultado.EsExitoso)
-        {
-            ModelState.AgregarErrores(resultado);
-
+            using var clienteHttp = CrearClienteHttpApi();
+            // Enviar los campos editables sin sustituir el Id de la ruta.
+            using var respuesta = await clienteHttp.PutAsJsonAsync($"api/proveedores/{id:D}", formulario, cancelacion);
+            if (respuesta.StatusCode == HttpStatusCode.OK)
+            {
+                var registro = await LeerRespuestaAsync<RespuestaProveedor>(respuesta, cancelacion);
+                if (registro is null || !RespuestaValida(registro) || registro.Id != id)
+                {
+                    AgregarErrorMutacionNoConfirmada();
+                    return View(formulario);
+                }
+                TempData["MensajeExito"] = "El proveedor se actualizó correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            if (respuesta.StatusCode == HttpStatusCode.NotFound)
+                return this.RegistroNoEncontrado("El proveedor solicitado no existe o ya fue eliminado.");
+            if (respuesta.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.Conflict)
+            {
+                AgregarErroresApi(await LeerErrorApiAsync(respuesta, cancelacion), typeof(ProveedorFormulario));
+                return View(formulario);
+            }
+            AgregarErrorMutacionNoConfirmada();
             return View(formulario);
         }
-
-        TempData["MensajeExito"] = resultado.Mensaje;
-
-        return RedirectToAction(nameof(Index));
+        catch (HttpRequestException)
+        {
+            AgregarErrorMutacionNoConfirmada();
+            return View(formulario);
+        }
+        catch (OperationCanceledException) when (!cancelacion.IsCancellationRequested)
+        {
+            AgregarErrorMutacionNoConfirmada();
+            return View(formulario);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            AgregarErrorMutacionNoConfirmada();
+            return View(formulario);
+        }
     }
 
     [HttpGet]
-    // Muestra la confirmación antes de eliminar al proveedor.
-    public IActionResult Eliminar([FromRoute] Guid id)
+    // Presenta los datos antes de confirmar la eliminación.
+    public async Task<IActionResult> Eliminar([FromRoute] Guid id)
     {
-        if (id == Guid.Empty ||
-            ModelState.GetFieldValidationState(nameof(id)) ==
-                ModelValidationState.Invalid)
+        if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+            return this.RegistroNoEncontrado("El enlace del proveedor no contiene un identificador válido.");
+        var cancelacion = HttpContext.RequestAborted;
+        try
         {
-            return this.RegistroNoEncontrado(
-                "El enlace del proveedor no contiene un identificador válido.");
+            using var clienteHttp = CrearClienteHttpApi();
+            using var respuesta = await clienteHttp.GetAsync($"api/proveedores/{id:D}", HttpCompletionOption.ResponseContentRead, cancelacion);
+            if (respuesta.StatusCode == HttpStatusCode.NotFound)
+            {
+                return this.RegistroNoEncontrado("El proveedor solicitado no existe o ya fue eliminado.");
+            }
+            if (!respuesta.IsSuccessStatusCode)
+            {
+                return ServicioNoDisponible("No se pudieron cargar los datos para confirmar la eliminación.");
+            }
+            var registro = await LeerRespuestaAsync<RespuestaProveedor>(respuesta, cancelacion);
+            return registro is null || !RespuestaValida(registro) || registro.Id != id
+                ? ServicioNoDisponible("La API respondió con datos de proveedor inesperados.")
+                : View(registro);
         }
-
-        var proveedor = _almacen.ObtenerProveedor(id);
-
-        if (proveedor is null)
+        catch (HttpRequestException)
         {
-            return this.RegistroNoEncontrado(
-                "El proveedor solicitado no existe o ya fue eliminado.");
+            return ErrorDeComunicacion(cancelacion, false);
         }
-
-        // Mostrar la confirmación sin modificar los registros.
-        return View(proveedor);
+        catch (OperationCanceledException)
+        {
+            return ErrorDeComunicacion(cancelacion, false);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ServicioNoDisponible("La API respondió con datos de proveedor inesperados.");
+        }
     }
 
     [HttpPost]
-    // Ejecuta la eliminación confirmada del proveedor.
-    public IActionResult EliminarConfirmado([FromRoute] Guid id)
+    // Solicita la eliminación confirmada y conserva la confirmación si falla.
+    public async Task<IActionResult> EliminarConfirmado([FromRoute] Guid id)
     {
-        if (id == Guid.Empty ||
-            ModelState.GetFieldValidationState(nameof(id)) ==
-                ModelValidationState.Invalid)
+        if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
+            return this.RegistroNoEncontrado("El enlace del proveedor no contiene un identificador válido.");
+        var cancelacion = HttpContext.RequestAborted;
+        try
         {
-            return this.RegistroNoEncontrado(
-                "El enlace del proveedor no contiene un identificador válido.");
+            using var clienteHttp = CrearClienteHttpApi();
+            // Solicitar una única baja y esperar el resultado del servicio.
+            using var respuesta = await clienteHttp.DeleteAsync($"api/proveedores/{id:D}", cancelacion);
+            if (respuesta.StatusCode == HttpStatusCode.NoContent)
+            {
+                TempData["MensajeExito"] = "El proveedor se eliminó correctamente.";
+                return RedirectToAction(nameof(Index));
+            }
+            if (respuesta.StatusCode == HttpStatusCode.NotFound)
+                return this.RegistroNoEncontrado("El proveedor solicitado no existe o ya fue eliminado.");
+            if (respuesta.StatusCode == HttpStatusCode.Conflict)
+            {
+                var error = await LeerErrorApiAsync(respuesta, cancelacion);
+                AgregarErroresApi(error, typeof(RespuestaProveedor));
+                using var consulta = await clienteHttp.GetAsync($"api/proveedores/{id:D}", HttpCompletionOption.ResponseContentRead, cancelacion);
+                if (consulta.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return this.RegistroNoEncontrado("El proveedor solicitado no existe o ya fue eliminado.");
+                }
+                if (!consulta.IsSuccessStatusCode)
+                {
+                    return ServicioNoDisponible("No se pudo volver a cargar la confirmación de eliminación.");
+                }
+                var registro = await LeerRespuestaAsync<RespuestaProveedor>(consulta, cancelacion);
+                return registro is null || !RespuestaValida(registro) || registro.Id != id
+                    ? ServicioNoDisponible("La API respondió con datos de proveedor inesperados.")
+                    : View("Eliminar", registro);
+            }
+            return ServicioNoDisponible("No se pudo confirmar la eliminación del proveedor.");
         }
-
-        // Buscar y eliminar dentro de la misma operación del almacén.
-        var resultado = _almacen.EliminarProveedor(id);
-
-        if (!resultado.EsExitoso)
+        catch (HttpRequestException)
         {
-            return this.RegistroNoEncontrado(resultado.Mensaje);
+            return ErrorDeComunicacion(cancelacion, true);
         }
+        catch (OperationCanceledException)
+        {
+            return ErrorDeComunicacion(cancelacion, true);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return ServicioNoDisponible("No se pudo confirmar la eliminación del proveedor.");
+        }
+    }
 
-        TempData["MensajeExito"] = resultado.Mensaje;
-
-        return RedirectToAction(nameof(Index));
+    // Comprueba que el DTO incluya identificación y datos de contacto.
+    private static bool RespuestaValida(RespuestaProveedor registro)
+    {
+        return registro.Id != Guid.Empty &&
+            Enum.IsDefined(typeof(TipoIdentificacion), registro.TipoIdentificacion) &&
+            !string.IsNullOrWhiteSpace(registro.Identificacion) &&
+            !string.IsNullOrWhiteSpace(registro.RazonSocial) &&
+            !string.IsNullOrWhiteSpace(registro.NombreContacto) &&
+            !string.IsNullOrWhiteSpace(registro.Telefono) &&
+            !string.IsNullOrWhiteSpace(registro.CorreoElectronico) &&
+            Enum.IsDefined(typeof(TipoSuministro), registro.TipoSuministro) &&
+            Enum.IsDefined(typeof(FrecuenciaEntrega), registro.FrecuenciaEntrega);
     }
 }

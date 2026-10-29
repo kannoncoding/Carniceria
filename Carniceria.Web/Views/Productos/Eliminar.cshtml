@@ -1,4 +1,4 @@
-﻿@model Producto
+﻿@model RespuestaProducto
 @* Muestra los datos del producto antes de confirmar su eliminación. *@
 
 @{
@@ -6,6 +6,8 @@
 }
 
 <h1>Eliminar producto</h1>
+
+<partial name="_ResumenValidacion" />
 
 @* Resume la consecuencia antes de confirmar la operación. *@
 <div class="mensaje mensaje-advertencia">

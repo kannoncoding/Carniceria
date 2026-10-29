@@ -1,4 +1,4 @@
-﻿@model Empleado
+﻿@model RespuestaEmpleado
 @* Muestra los datos del empleado antes de confirmar su eliminación. *@
 
 @{
@@ -6,6 +6,8 @@
 }
 
 <h1>Eliminar empleado</h1>
+
+<partial name="_ResumenValidacion" />
 
 @* Resume la consecuencia antes de confirmar la operación. *@
 <div class="mensaje mensaje-advertencia">

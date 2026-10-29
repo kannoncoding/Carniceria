@@ -1,4 +1,4 @@
-﻿@model IReadOnlyList<Producto>
+﻿@model IReadOnlyList<RespuestaProducto>
 @* Lista productos y enlaza con sus operaciones disponibles. *@
 
 @{
@@ -55,6 +55,7 @@ else
                 <tr>
                     <th scope="col">Código</th>
                     <th scope="col">Nombre</th>
+                    <th scope="col">Proveedor principal</th>
                     <th scope="col">Categoría</th>
                     <th scope="col">Unidad de medida</th>
                     <th scope="col">Precio por unidad de medida</th>
@@ -71,6 +72,7 @@ else
                     <tr>
                         <td>@producto.Codigo</td>
                         <td>@producto.Nombre</td>
+                        <td>@producto.ProveedorRazonSocial (@producto.ProveedorIdentificacion)</td>
                         <td>
                             @Html.DisplayFor(modelItem => producto.Categoria)
                         </td>

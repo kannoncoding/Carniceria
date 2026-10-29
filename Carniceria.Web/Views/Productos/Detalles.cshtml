@@ -1,4 +1,4 @@
-﻿@model Producto
+﻿@model RespuestaProducto
 @* Presenta la información y existencias del producto seleccionado. *@
 
 @{
@@ -37,6 +37,11 @@ else
     <div>
         <dt>Nombre</dt>
         <dd>@Model.Nombre</dd>
+    </div>
+
+    <div>
+        <dt>Proveedor principal</dt>
+        <dd>@Model.ProveedorRazonSocial (@Model.ProveedorIdentificacion)</dd>
     </div>
 
     <div>

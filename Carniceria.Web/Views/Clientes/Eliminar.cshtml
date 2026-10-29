@@ -1,4 +1,4 @@
-﻿@model Cliente
+﻿@model RespuestaCliente
 @* Muestra los datos del cliente antes de confirmar su eliminación. *@
 
 @{
@@ -6,6 +6,8 @@
 }
 
 <h1>Eliminar cliente</h1>
+
+<partial name="_ResumenValidacion" />
 
 @* Resume la consecuencia antes de confirmar la operación. *@
 <div class="mensaje mensaje-advertencia">
