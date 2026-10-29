@@ -76,4 +76,20 @@ public sealed class ResultadoOperacion
             mensaje,
             Array.Empty<ValidationResult>());
     }
+
+    public static ResultadoOperacion ConflictoIntegridad(
+        string campo,
+        string mensaje)
+    {
+        return new ResultadoOperacion(
+            EstadoOperacion.ConflictoIntegridad,
+            null,
+            mensaje,
+            new[]
+            {
+                new ValidationResult(
+                    mensaje,
+                    new[] { campo })
+            });
+    }
 }

@@ -8,6 +8,8 @@ namespace Carniceria.Api.Datos;
 
 public interface IAlmacenCarniceria
 {
+    TResultado EjecutarConBloqueo<TResultado>(Func<TResultado> operacion);
+
     // Clientes
 
     IReadOnlyList<Cliente> ListarClientes();

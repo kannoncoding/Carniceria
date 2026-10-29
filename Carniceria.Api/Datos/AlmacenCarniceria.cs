@@ -23,6 +23,16 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         SembrarDatosIniciales();
     }
 
+    public TResultado EjecutarConBloqueo<TResultado>(Func<TResultado> operacion)
+    {
+        ArgumentNullException.ThrowIfNull(operacion);
+
+        lock (_sincronizacion)
+        {
+            return operacion();
+        }
+    }
+
     // Clientes
 
     public IReadOnlyList<Cliente> ListarClientes()

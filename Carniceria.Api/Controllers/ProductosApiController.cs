@@ -12,7 +12,7 @@ namespace Carniceria.Api.Controllers;
 
 [ApiController]
 [Route("api/productos")]
-public class ProductosApiController : ControllerBase
+public class ProductosApiController : ControladorApiBase
 {
     private readonly IAlmacenCarniceria _almacen;
 
@@ -24,9 +24,46 @@ public class ProductosApiController : ControllerBase
     [HttpGet]
     public IActionResult Listar()
     {
-        var productos = _almacen.ListarProductos()
-            .Select(MapearProducto)
-            .ToArray();
+        var productos = _almacen.EjecutarConBloqueo(() =>
+            _almacen.ListarProductos()
+                .Select(MapearProducto)
+                .ToArray());
+
+        return Ok(productos);
+    }
+
+    [HttpGet("buscar")]
+    public IActionResult Buscar(
+        [FromQuery] string? criterio,
+        [FromQuery] string? consulta)
+    {
+        var criterioNormalizado = criterio?.Trim();
+
+        if (!string.Equals(
+                criterioNormalizado,
+                "Codigo",
+                StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(
+                criterioNormalizado,
+                "Nombre",
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return CrearCriterioInvalido("Criterio");
+        }
+
+        var productos = _almacen.EjecutarConBloqueo(() =>
+        {
+            var encontrados = string.Equals(
+                criterioNormalizado,
+                "Codigo",
+                StringComparison.OrdinalIgnoreCase)
+                ? _almacen.BuscarProductosPorCodigo(consulta ?? string.Empty)
+                : _almacen.BuscarProductosPorNombre(consulta ?? string.Empty);
+
+            return encontrados
+                .Select(MapearProducto)
+                .ToArray();
+        });
 
         return Ok(productos);
     }
@@ -34,75 +71,88 @@ public class ProductosApiController : ControllerBase
     [HttpGet("{id:guid}")]
     public IActionResult ObtenerPorId(Guid id)
     {
-        var producto = _almacen.ObtenerProducto(id);
-
-        if (producto is null)
+        var respuesta = _almacen.EjecutarConBloqueo(() =>
         {
-            return NotFound(CrearErrorNoEncontrado(
-                "El producto solicitado no existe."));
-        }
+            var producto = _almacen.ObtenerProducto(id);
+            return producto is null ? null : MapearProducto(producto);
+        });
 
-        var proveedor = _almacen.ObtenerProveedor(producto.ProveedorId);
-        if (proveedor is null)
-        {
-            return NotFound(CrearErrorNoEncontrado(
-                "El proveedor relacionado con el producto no existe."));
-        }
-
-        return Ok(MapeadorRespuestas.Convertir(producto, proveedor));
+        return respuesta is null
+            ? CrearNoEncontrado("El producto solicitado no existe.")
+            : Ok(respuesta);
     }
 
     [HttpPost]
     public IActionResult Crear([FromBody] SolicitudProducto solicitud)
     {
-        var resultado = _almacen.CrearProducto(solicitud);
-
-        if (!resultado.EsExitoso)
+        var alta = _almacen.EjecutarConBloqueo(() =>
         {
-            return ConvertirResultado(resultado);
-        }
+            var resultado = _almacen.CrearProducto(solicitud);
+            var producto = resultado.EsExitoso
+                ? _almacen.ObtenerProducto(resultado.Id!.Value)
+                : null;
+            var respuesta = producto is null
+                ? null
+                : MapearProducto(producto);
 
-        var producto = _almacen.ObtenerProducto(resultado.Id!.Value);
-        var respuesta = MapearProducto(producto!);
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!alta.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(alta.Resultado);
+        }
 
         return CreatedAtAction(
             nameof(ObtenerPorId),
-            new { id = respuesta.Id },
-            respuesta);
+            new { id = alta.Respuesta!.Id },
+            alta.Respuesta);
+    }
+
+    [HttpPut("{id:guid}")]
+    public IActionResult Actualizar(
+        Guid id,
+        [FromBody] SolicitudProducto solicitud)
+    {
+        var actualizacion = _almacen.EjecutarConBloqueo(() =>
+        {
+            var resultado = _almacen.ActualizarProducto(id, solicitud);
+            var producto = resultado.EsExitoso
+                ? _almacen.ObtenerProducto(id)
+                : null;
+            var respuesta = producto is null
+                ? null
+                : MapearProducto(producto);
+
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!actualizacion.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(actualizacion.Resultado);
+        }
+
+        return actualizacion.Respuesta is null
+            ? CrearNoEncontrado("El producto solicitado no existe.")
+            : Ok(actualizacion.Respuesta);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public IActionResult Eliminar(Guid id)
+    {
+        var resultado = _almacen.EliminarProducto(id);
+
+        return resultado.EsExitoso
+            ? NoContent()
+            : ConvertirResultadoFallido(resultado);
     }
 
     private RespuestaProducto MapearProducto(Producto producto)
     {
-        var proveedor = _almacen.ObtenerProveedor(producto.ProveedorId);
-
-        if (proveedor is null)
-        {
-            throw new InvalidOperationException(
+        var proveedor = _almacen.ObtenerProveedor(producto.ProveedorId)
+            ?? throw new InvalidOperationException(
                 "El producto no tiene un proveedor relacionado válido.");
-        }
 
         return MapeadorRespuestas.Convertir(producto, proveedor);
-    }
-
-    private IActionResult ConvertirResultado(
-        Carniceria.Modelos.Resultados.ResultadoOperacion resultado)
-    {
-        var error = MapeadorErroresApi.Convertir(resultado);
-
-        return resultado.Estado switch
-        {
-            EstadoOperacion.Duplicado => Conflict(error),
-            EstadoOperacion.NoEncontrado => NotFound(error),
-            _ => BadRequest(error)
-        };
-    }
-
-    private static ErrorApi CrearErrorNoEncontrado(string mensaje)
-    {
-        return new ErrorApi
-        {
-            Codigo = "NoEncontrado",
-            Mensaje = mensaje
-        };
     }
 }

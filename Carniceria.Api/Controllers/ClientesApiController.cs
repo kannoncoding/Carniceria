@@ -11,7 +11,7 @@ namespace Carniceria.Api.Controllers;
 
 [ApiController]
 [Route("api/clientes")]
-public class ClientesApiController : ControllerBase
+public class ClientesApiController : ControladorApiBase
 {
     private readonly IAlmacenCarniceria _almacen;
 
@@ -30,58 +30,90 @@ public class ClientesApiController : ControllerBase
         return Ok(clientes);
     }
 
+    [HttpGet("buscar")]
+    public IActionResult Buscar(
+        [FromQuery(Name = "identificacion")] string? identificacion)
+    {
+        var clientes = _almacen.BuscarClientesPorIdentificacion(
+                identificacion ?? string.Empty)
+            .Select(cliente => MapeadorRespuestas.Convertir(cliente))
+            .ToArray();
+
+        return Ok(clientes);
+    }
+
     [HttpGet("{id:guid}")]
     public IActionResult ObtenerPorId(Guid id)
     {
         var cliente = _almacen.ObtenerCliente(id);
 
-        if (cliente is null)
-        {
-            return NotFound(CrearErrorNoEncontrado(
-                "El cliente solicitado no existe."));
-        }
-
-        return Ok(MapeadorRespuestas.Convertir(cliente));
+        return cliente is null
+            ? CrearNoEncontrado("El cliente solicitado no existe.")
+            : Ok(MapeadorRespuestas.Convertir(cliente));
     }
 
     [HttpPost]
     public IActionResult Crear([FromBody] SolicitudCliente solicitud)
     {
-        var resultado = _almacen.CrearCliente(solicitud);
-
-        if (!resultado.EsExitoso)
+        var alta = _almacen.EjecutarConBloqueo(() =>
         {
-            return ConvertirResultado(resultado);
-        }
+            var resultado = _almacen.CrearCliente(solicitud);
+            var cliente = resultado.EsExitoso
+                ? _almacen.ObtenerCliente(resultado.Id!.Value)
+                : null;
+            var respuesta = cliente is null
+                ? null
+                : MapeadorRespuestas.Convertir(cliente);
 
-        var cliente = _almacen.ObtenerCliente(resultado.Id!.Value);
-        var respuesta = MapeadorRespuestas.Convertir(cliente!);
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!alta.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(alta.Resultado);
+        }
 
         return CreatedAtAction(
             nameof(ObtenerPorId),
-            new { id = respuesta.Id },
-            respuesta);
+            new { id = alta.Respuesta!.Id },
+            alta.Respuesta);
     }
 
-    private IActionResult ConvertirResultado(
-        Carniceria.Modelos.Resultados.ResultadoOperacion resultado)
+    [HttpPut("{id:guid}")]
+    public IActionResult Actualizar(
+        Guid id,
+        [FromBody] SolicitudCliente solicitud)
     {
-        var error = MapeadorErroresApi.Convertir(resultado);
-
-        return resultado.Estado switch
+        var actualizacion = _almacen.EjecutarConBloqueo(() =>
         {
-            EstadoOperacion.Duplicado => Conflict(error),
-            EstadoOperacion.NoEncontrado => NotFound(error),
-            _ => BadRequest(error)
-        };
+            var resultado = _almacen.ActualizarCliente(id, solicitud);
+            var cliente = resultado.EsExitoso
+                ? _almacen.ObtenerCliente(id)
+                : null;
+            var respuesta = cliente is null
+                ? null
+                : MapeadorRespuestas.Convertir(cliente);
+
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!actualizacion.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(actualizacion.Resultado);
+        }
+
+        return actualizacion.Respuesta is null
+            ? CrearNoEncontrado("El cliente solicitado no existe.")
+            : Ok(actualizacion.Respuesta);
     }
 
-    private static ErrorApi CrearErrorNoEncontrado(string mensaje)
+    [HttpDelete("{id:guid}")]
+    public IActionResult Eliminar(Guid id)
     {
-        return new ErrorApi
-        {
-            Codigo = "NoEncontrado",
-            Mensaje = mensaje
-        };
+        var resultado = _almacen.EliminarCliente(id);
+
+        return resultado.EsExitoso
+            ? NoContent()
+            : ConvertirResultadoFallido(resultado);
     }
 }

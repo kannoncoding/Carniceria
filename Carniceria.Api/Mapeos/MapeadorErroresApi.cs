@@ -37,6 +37,7 @@ public static class MapeadorErroresApi
                 EstadoOperacion.ValidacionFallida => "ValidacionFallida",
                 EstadoOperacion.Duplicado => "Duplicado",
                 EstadoOperacion.NoEncontrado => "NoEncontrado",
+                EstadoOperacion.ConflictoIntegridad => "ConflictoIntegridad",
                 _ => "Exito"
             },
             Mensaje = resultado.Mensaje,

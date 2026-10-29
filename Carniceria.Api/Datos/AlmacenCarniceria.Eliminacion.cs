@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Carniceria.Modelos.Entidades;
 using Carniceria.Modelos.Resultados;
 
 namespace Carniceria.Api.Datos;
@@ -80,6 +81,13 @@ public partial class AlmacenCarniceria
             {
                 return ResultadoOperacion.NoEncontrado(
                     "El proveedor solicitado no existe.");
+            }
+
+            if (_productos.Any(producto => producto.ProveedorId == id))
+            {
+                return ResultadoOperacion.ConflictoIntegridad(
+                    nameof(Producto.ProveedorId),
+                    "No se puede eliminar el proveedor porque tiene productos relacionados.");
             }
 
             _proveedores.Remove(proveedor);
