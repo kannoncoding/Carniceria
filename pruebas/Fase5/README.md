@@ -17,7 +17,10 @@ dotnet run --project .\pruebas\Fase5\ValidacionFactura\Verificar-ValidacionFactu
 dotnet restore .\pruebas\Fase5\PreparacionFactura\Verificar-PreparacionFactura.csproj
 dotnet build .\pruebas\Fase5\PreparacionFactura\Verificar-PreparacionFactura.csproj --no-restore --disable-build-servers -p:UseSharedCompilation=false -m:1
 dotnet run --project .\pruebas\Fase5\PreparacionFactura\Verificar-PreparacionFactura.csproj --no-build
+dotnet restore .\pruebas\Fase5\CalculoFactura\Verificar-CalculoFactura.csproj
+dotnet build .\pruebas\Fase5\CalculoFactura\Verificar-CalculoFactura.csproj --no-restore --disable-build-servers -p:UseSharedCompilation=false -m:1
+dotnet run --project .\pruebas\Fase5\CalculoFactura\Verificar-CalculoFactura.csproj --no-build
 dotnet build Carniceria.slnx --no-restore --disable-build-servers -m:1 -v:minimal
 ```
 
-Los proyectos de consola usan carpetas `obj` y `bin` independientes y no agregan paquetes externos. F5.1 aprobó 10 comprobaciones semánticas; F5.2 aprobó 8 sobre 32 candidatos concurrentes, cultura `es-CR` y una fecha de emisión dentro de la ventana de ejecución con tolerancia de un segundo; F5.3 aprobó 17 comprobaciones de validación; F5.4 aprobó 11 comprobaciones de snapshots y disponibilidad agregada. Los builds documentados terminaron con 0 errores y 0 advertencias. Los verificadores de identidad, validación y preparación invocan métodos internos de API por reflexión; todavía no hay endpoint de factura ni registro persistente.
+Los proyectos de consola usan carpetas `obj` y `bin` independientes y no agregan paquetes externos. F5.1 aprobó 10 comprobaciones semánticas; F5.2 aprobó 8 sobre 32 candidatos concurrentes, cultura `es-CR` y una fecha de emisión dentro de la ventana de ejecución con tolerancia de un segundo; F5.3 aprobó 17 comprobaciones de validación; F5.4 aprobó 11 comprobaciones de snapshots y disponibilidad agregada. F5.5 verificó 12 casos de fórmula, redondeo, descuentos representables, importes redondeados a cero y errores por desbordamiento. Los builds documentados terminaron con 0 errores y 0 advertencias. Los verificadores internos invocan métodos de API por reflexión; todavía no hay endpoint de factura ni registro persistente.

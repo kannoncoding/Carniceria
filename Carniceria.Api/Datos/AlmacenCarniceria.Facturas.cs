@@ -12,6 +12,116 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
+    // Calcula los importes en una copia y controla desbordamientos decimales.
+    private (ResultadoOperacion? Error, Factura? Factura) CalcularImportesFactura(
+        Factura candidata)
+    {
+        ArgumentNullException.ThrowIfNull(candidata);
+
+        if (candidata.Detalles is null || candidata.Detalles.Count == 0)
+        {
+            var errorDetalles = new ValidationResult(
+                "Incluya al menos una línea para calcular la factura.",
+                new[] { nameof(candidata.Detalles) });
+            return (ResultadoOperacion.ValidacionFallida(new[] { errorDetalles }), null);
+        }
+
+        if (candidata.Detalles.Any(detalle => detalle is null))
+        {
+            var errorDetalle = new ValidationResult(
+                "La línea de detalle es obligatoria.",
+                new[] { nameof(candidata.Detalles) });
+            return (ResultadoOperacion.ValidacionFallida(new[] { errorDetalle }), null);
+        }
+
+        var factura = candidata.Copiar();
+        var subtotal = 0m;
+
+        // Redondea cada línea antes de acumular el subtotal.
+        for (var indice = 0; indice < factura.Detalles.Count; indice++)
+        {
+            var detalle = factura.Detalles[indice];
+            try
+            {
+                detalle.SubtotalLinea = RedondearImporte(
+                    detalle.Cantidad * detalle.PrecioUnitario);
+                subtotal += detalle.SubtotalLinea;
+            }
+            catch (OverflowException)
+            {
+                var errorLinea = new ValidationResult(
+                    "El importe de la línea excede el rango decimal permitido.",
+                    new[] { $"Detalles[{indice}].{nameof(detalle.Cantidad)}" });
+                return (ResultadoOperacion.ValidacionFallida(new[] { errorLinea }), null);
+            }
+        }
+
+        factura.Subtotal = subtotal;
+
+        try
+        {
+            factura.MontoDescuento = RedondearImporte(
+                factura.Subtotal / 100m * factura.PorcentajeDescuento);
+        }
+        catch (OverflowException)
+        {
+            return (CrearErrorCalculo(
+                nameof(Factura.PorcentajeDescuento),
+                "El descuento excede el rango decimal permitido."), null);
+        }
+
+        try
+        {
+            factura.BaseGravable = RedondearImporte(
+                factura.Subtotal - factura.MontoDescuento);
+        }
+        catch (OverflowException)
+        {
+            return (CrearErrorCalculo(
+                nameof(Factura.Subtotal),
+                "La base gravable excede el rango decimal permitido."), null);
+        }
+
+        try
+        {
+            factura.MontoIva = RedondearImporte(factura.BaseGravable * 0.13m);
+        }
+        catch (OverflowException)
+        {
+            return (CrearErrorCalculo(
+                nameof(Factura.BaseGravable),
+                "El IVA excede el rango decimal permitido."), null);
+        }
+
+        try
+        {
+            factura.Total = RedondearImporte(factura.BaseGravable + factura.MontoIva);
+        }
+        catch (OverflowException)
+        {
+            return (CrearErrorCalculo(
+                nameof(Factura.Total),
+                "El total excede el rango decimal permitido."), null);
+        }
+
+        return (null, factura);
+    }
+
+    // Redondea importes monetarios con la política adoptada para la fase.
+    private static decimal RedondearImporte(decimal importe)
+    {
+        return Math.Round(importe, 2, MidpointRounding.AwayFromZero);
+    }
+
+    // Crea un rechazo controlado asociado al campo que desbordó.
+    private static ResultadoOperacion CrearErrorCalculo(
+        string campo,
+        string mensaje)
+    {
+        return ResultadoOperacion.ValidacionFallida(
+            new[] { new ValidationResult(mensaje, new[] { campo }) });
+    }
+
     // Copia precios y unidades y comprueba la demanda total sin cambiar existencias.
     private (ResultadoOperacion? Error, IReadOnlyList<DetalleFactura> Detalles)
         PrepararDetallesFactura(SolicitudFactura solicitud)
