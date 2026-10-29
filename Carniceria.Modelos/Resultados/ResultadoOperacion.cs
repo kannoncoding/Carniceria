@@ -91,7 +91,7 @@ public sealed class ResultadoOperacion
         string campo,
         string mensaje)
     {
-        // Informa que una relación impide completar la eliminación.
+        // Representa un conflicto con las relaciones o el estado actual de los datos.
         return new ResultadoOperacion(
             EstadoOperacion.ConflictoIntegridad,
             null,
