@@ -6,6 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Carniceria.Modelos\Carniceria.Modelos.csproj" />
+    <ProjectReference Include="..\..\..\Carniceria.Modelos\Carniceria.Modelos.csproj" />
   </ItemGroup>
 </Project>

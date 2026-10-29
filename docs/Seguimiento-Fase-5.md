@@ -5,12 +5,12 @@ Registro incremental del modelo y los flujos de facturas. La fase sigue abierta;
 | Paso | Estado | Evidencia o límite |
 | --- | --- | --- |
 | F5.1 | Completado | Se añadieron `Factura`, `DetalleFactura`, `MetodoPago`, `EstadoFactura` y los contratos de solicitud/respuesta. `Factura.Copiar()` clona la colección y cada detalle, conservando sus identificadores; las solicitudes de creación contienen solo ClienteId, EmpleadoId, método, descuento, producto y cantidad. QA aprobó la revisión estática sin defectos. El verificador semántico aprobó 10/10 comprobaciones de copias profundas, separación de campos de entrada y catálogos. El build de `Carniceria.slnx` terminó con 0 errores y 0 advertencias. Instrucciones: [`README.md`](../pruebas/Fase5/README.md). |
-| F5.2 | Pendiente | Generar número, emisión e Id de detalles en API; forzar estado inicial Pendiente y excluir esos campos de las solicitudes. |
+| F5.2 | Implementado; revisión QA pendiente | Se añadió al almacén API una preparación interna de candidato validado bajo `_sincronizacion`: número `FAC` con seis dígitos y `InvariantCulture`, emisión actual convertida a `America/Costa_Rica` como `DateTimeOffset`, estado `Pendiente` e Id nuevos para las líneas. El preparador devuelve una copia completa, no la guarda ni expone endpoint; la secuencia no se consume durante cálculos o previsualización. El harness concurrente aprobó 8/8 comprobaciones, incluidas 32 candidaturas simultáneas bajo cultura `es-CR` y fecha dentro de la ventana de ejecución. El build de `Carniceria.slnx` terminó con 0 errores y 0 advertencias. Ver [`Verificar-IdentidadFactura.csproj`](../pruebas/Fase5/IdentidadFactura/Verificar-IdentidadFactura.csproj). |
 | F5.3 | Pendiente | Validar relaciones, descuento 0–25, método permitido, líneas y cantidades; validar valores de enum recibidos por JSON. |
 | F5.4 | Pendiente | Obtener precios y unidades desde productos, agrupar demanda por producto y comprobar disponibilidad total. |
 | F5.5 | Pendiente | Implementar cálculo único con decimal, IVA del 13 % y redondeo documentado. |
 | F5.6 | Pendiente | Centralizar el descuento máximo en configuración de API y exponerlo para presentación. |
-| F5.7 | Pendiente | Implementar crear, listar, consultar y buscar facturas por número o identificación del cliente. |
+| F5.7 | Pendiente | Validar el candidato antes de asignar número; generar identidad y persistir bajo el mismo bloqueo. Implementar crear, listar, consultar y buscar facturas por número o identificación del cliente. |
 | F5.8 | Pendiente | Añadir una factura Pendiente a las semillas con dos líneas válidas, sin descontar inventario. |
 | F5.9 | Pendiente | Implementar el cálculo sin persistencia si MVC incorpora previsualización; no reservar número ni stock. |
 | F5.10 | Pendiente | Verificar el ejemplo CRC 11 187, descuentos 0/25, valores negativos y manipulación de campos calculados. |
