@@ -20,3 +20,7 @@ Registro incremental de las ocho actividades de F3. La migración MVC queda para
 - No se implementan relaciones con facturas en los borrados de F3; su protección completa corresponde a F6. Los puntos de integración están en los bloques `lock (_sincronizacion)` de `EliminarCliente`, `EliminarEmpleado` y `EliminarProducto`: consultar las referencias antes de `Remove` y devolver conflicto si existen.
 - La concurrencia se verificó como una muestra reproducible de intercalaciones, no como una demostración formal de todas las ejecuciones posibles.
 - El conflicto de eliminación de proveedores se adelantó para evitar crear una ruta pública que dejara productos sin proveedor.
+
+## Actualización posterior
+
+El estado registrado en F3 es histórico. El 29 de octubre de 2026, F4.9 cerró T03 al comprobar la persistencia de datos tras reiniciar Web y la restauración de semillas al reiniciar API; consulta el [seguimiento de F4](Seguimiento-Fase-4.md). Los resultados originales de F3 no se modifican.

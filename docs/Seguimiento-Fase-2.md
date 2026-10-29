@@ -25,3 +25,7 @@ Registro de los ocho pasos de F2 y su evidencia. F2 se completa dentro del alcan
 - El almacén singleton de API conserva datos en memoria y reinicia con semillas. Web todavía tiene su almacén heredado; no se afirma propiedad única de los datos en toda la solución hasta la migración de F4.
 - T02 es parcial: faltan las verificaciones de facturas de F5. T03, sobre la eliminación del almacén paralelo de Web, se cierra en F4.
 - Los registros detallados locales de `qa-f28` no están incluidos en el repositorio; se conservan los nombres `resumen.json`, `consola.txt`, `http.json`, `http-reinicio.json` y el harness utilizado. La API de prueba se cerró desde `finally`; los registros indican que los puertos manuales 5220/5221 permanecieron intactos.
+
+## Actualización posterior
+
+El estado registrado en F2 es histórico. El 29 de octubre de 2026, F4.9 completó T03 mediante pruebas de persistencia tras reiniciar Web y API; consulta el [seguimiento de F4](Seguimiento-Fase-4.md). Los resultados originales de F2 no se modifican.
