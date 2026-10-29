@@ -1,6 +1,6 @@
 ﻿param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('Validaciones', 'Busquedas')]
+    [ValidateSet('Validaciones', 'Busquedas', 'Proveedores')]
     [string]$Grupo,
 
     [int]$Puerto = 5233
@@ -300,6 +300,129 @@ try {
         $resultado = InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$($proveedoresPrueba[0].id)"
         Confirmar ($resultado.Codigo -eq 200 -and
             [string]$resultado.Datos.id -eq [string]$proveedoresPrueba[0].id) 'Ruta de proveedor por Guid no colisiona con buscar'
+
+        Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
+    }
+    elseif ($Grupo -eq 'Proveedores') {
+        $proveedoresIniciales = (InvocarApi -Metodo 'Get' -Ruta '/api/proveedores').Datos
+        $proveedorOrigen = $proveedoresIniciales | Select-Object -First 1
+        $productoInicial = @{
+            proveedorId = [string]$proveedorOrigen.id; codigo = 'F3RELACION'; nombre = 'ProductoRelacion'
+            categoria = 1; unidadMedida = 1; precioUnidadMedida = 1700
+            existenciaActual = 4; existenciaMinima = 1
+        }
+        $altaProducto = InvocarApi -Metodo 'Post' -Ruta '/api/productos' -Cuerpo $productoInicial
+        Confirmar ($altaProducto.Codigo -eq 201) 'Producto de prueba queda relacionado con el proveedor inicial'
+        $productoId = [string]$altaProducto.Datos.id
+        Confirmar ([string]$altaProducto.Datos.proveedorId -eq [string]$proveedorOrigen.id) 'Alta expone el Id del proveedor inicial'
+        $conteoProductos = @((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos).Count
+        $productoAntes = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$productoId").Datos
+
+        $casosProveedorInvalido = @(
+            @{ Nombre = 'nulo'; Tipo = 'nulo'; Valor = $null },
+            @{ Nombre = 'ausente'; Tipo = 'ausente'; Valor = $null },
+            @{ Nombre = 'Guid vacío'; Tipo = 'valor'; Valor = [guid]::Empty.ToString() },
+            @{ Nombre = 'inexistente'; Tipo = 'valor'; Valor = [guid]::NewGuid().ToString() },
+            @{ Nombre = 'formato Guid inválido'; Tipo = 'valor'; Valor = 'no-es-un-guid' }
+        )
+
+        foreach ($casoProveedor in $casosProveedorInvalido) {
+            foreach ($operacion in @('Post', 'Put')) {
+                $formularioInvalido = CopiarObjeto $productoInicial
+                if ($casoProveedor.Tipo -eq 'ausente') {
+                    $formularioInvalido.PSObject.Properties.Remove('proveedorId')
+                }
+                else {
+                    $formularioInvalido.proveedorId = $casoProveedor.Valor
+                }
+
+                $rutaProducto = if ($operacion -eq 'Post') {
+                    '/api/productos'
+                }
+                else {
+                    "/api/productos/$productoId"
+                }
+                $cuerpoCrudo = $null
+                $esCuerpoCrudo = $false
+                if ($casoProveedor.Nombre -eq 'formato Guid inválido') {
+                    $cuerpoCrudo = ConvertTo-Json -InputObject $formularioInvalido -Depth 12 -Compress
+                    $esCuerpoCrudo = $true
+                }
+
+                if ($esCuerpoCrudo) {
+                    $respuestaInvalida = InvocarApi -Metodo $operacion -Ruta $rutaProducto -Cuerpo $cuerpoCrudo -CuerpoCrudo
+                }
+                else {
+                    $respuestaInvalida = InvocarApi -Metodo $operacion -Ruta $rutaProducto -Cuerpo $formularioInvalido
+                }
+                ConfirmarErrorApi $respuestaInvalida 400 "$operacion de producto con proveedor $($casoProveedor.Nombre)" 'proveedorId'
+
+                $productoDespues = (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$productoId").Datos
+                $productosDespues = (InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos
+                Confirmar ([string]$productoDespues.id -eq $productoId -and
+                    [string]$productoDespues.proveedorId -eq [string]$productoAntes.proveedorId -and
+                    [string]$productoDespues.codigo -eq [string]$productoAntes.codigo) "$operacion rechazada conserva los datos y la relación del producto"
+                Confirmar (@($productosDespues).Count -eq $conteoProductos) "$operacion rechazada no cambia la cantidad de productos"
+            }
+        }
+
+        $proveedorNuevo = @{
+            tipoIdentificacion = 4; identificacion = '3-303-456789'; razonSocial = 'ProveedorF3Nuevo'
+            nombreContacto = 'Elena Mora'; telefono = '88887775'; correoElectronico = 'nuevo@example.com'
+            tipoSuministro = 8; frecuenciaEntrega = 3
+        }
+        $altaProveedor = InvocarApi -Metodo 'Post' -Ruta '/api/proveedores' -Cuerpo $proveedorNuevo
+        Confirmar ($altaProveedor.Codigo -eq 201) 'Se registra el segundo proveedor para reasignar el producto'
+        $proveedorIdNuevo = [string]$altaProveedor.Datos.id
+
+        $formularioProductoActualizado = CopiarObjeto $productoInicial
+        $formularioProductoActualizado.proveedorId = $proveedorIdNuevo
+        $actualizacionProducto = InvocarApi -Metodo 'Put' -Ruta "/api/productos/$productoId" -Cuerpo $formularioProductoActualizado
+        Confirmar ($actualizacionProducto.Codigo -eq 200 -and
+            [string]$actualizacionProducto.Datos.id -eq $productoId -and
+            [string]$actualizacionProducto.Datos.proveedorId -eq $proveedorIdNuevo) 'Cambio válido reasigna proveedor y conserva el Id del producto'
+        Confirmar ([string]$actualizacionProducto.Datos.proveedorRazonSocial -eq $proveedorNuevo.razonSocial -and
+            [string]$actualizacionProducto.Datos.proveedorIdentificacion -eq $proveedorNuevo.identificacion) 'Respuesta de actualización incluye datos descriptivos del nuevo proveedor'
+
+        $proveedoresConsulta = @(
+            (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$productoId").Datos,
+            (((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos | Where-Object { [string]$_.id -eq $productoId } | Select-Object -First 1)),
+            (((InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Codigo&consulta=F3RELACION').Datos | Select-Object -First 1))
+        )
+        $indiceRespuesta = 0
+        foreach ($respuestaProducto in $proveedoresConsulta) {
+            Confirmar ($null -ne $respuestaProducto -and
+                [string]$respuestaProducto.id -eq $productoId -and
+                [string]$respuestaProducto.proveedorId -eq $proveedorIdNuevo -and
+                [string]$respuestaProducto.proveedorRazonSocial -eq $proveedorNuevo.razonSocial -and
+                [string]$respuestaProducto.proveedorIdentificacion -eq $proveedorNuevo.identificacion) "Detalle, listado y búsqueda reflejan el nuevo proveedor (consulta $indiceRespuesta)"
+            $indiceRespuesta++
+        }
+
+        $proveedorEditado = CopiarObjeto $proveedorNuevo
+        $proveedorEditado.razonSocial = 'ProveedorF3Editado'
+        $proveedorEditado.identificacion = '3-303-456788'
+        $actualizacionProveedor = InvocarApi -Metodo 'Put' -Ruta "/api/proveedores/$proveedorIdNuevo" -Cuerpo $proveedorEditado
+        Confirmar ($actualizacionProveedor.Codigo -eq 200 -and
+            [string]$actualizacionProveedor.Datos.id -eq $proveedorIdNuevo) 'Edición del proveedor conserva su Id'
+
+        $proveedoresConsulta = @(
+            (InvocarApi -Metodo 'Get' -Ruta "/api/productos/$productoId").Datos,
+            (((InvocarApi -Metodo 'Get' -Ruta '/api/productos').Datos | Where-Object { [string]$_.id -eq $productoId } | Select-Object -First 1)),
+            (((InvocarApi -Metodo 'Get' -Ruta '/api/productos/buscar?criterio=Codigo&consulta=F3RELACION').Datos | Select-Object -First 1))
+        )
+        $indiceRespuesta = 0
+        foreach ($respuestaProducto in $proveedoresConsulta) {
+            Confirmar ($null -ne $respuestaProducto -and
+                [string]$respuestaProducto.id -eq $productoId -and
+                [string]$respuestaProducto.proveedorId -eq $proveedorIdNuevo -and
+                [string]$respuestaProducto.proveedorRazonSocial -eq $proveedorEditado.razonSocial -and
+                [string]$respuestaProducto.proveedorIdentificacion -eq $proveedorEditado.identificacion) "Cambio de razón social e identificación se refleja en todas las consultas (consulta $indiceRespuesta)"
+            $indiceRespuesta++
+        }
+        $proveedorObtenido = (InvocarApi -Metodo 'Get' -Ruta "/api/proveedores/$proveedorIdNuevo").Datos
+        Confirmar ([string]$proveedorObtenido.razonSocial -eq $proveedorEditado.razonSocial -and
+            [string]$proveedorObtenido.identificacion -eq $proveedorEditado.identificacion) 'GET de proveedor refleja la edición de razón social e identificación'
 
         Write-Host "Grupo $Grupo completado: $cantidadVerificaciones verificaciones."
     }
