@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
+using Carniceria.Api.Reglas;
 using Carniceria.Modelos.Contratos.Solicitudes;
 using Carniceria.Modelos.Entidades;
 using Carniceria.Modelos.Enumeraciones;
@@ -84,7 +85,8 @@ public partial class AlmacenCarniceria
 
         try
         {
-            factura.MontoIva = RedondearImporte(factura.BaseGravable * 0.13m);
+            factura.MontoIva = RedondearImporte(
+                factura.BaseGravable / 100m * ReglasFacturacion.PorcentajeIva);
         }
         catch (OverflowException)
         {
