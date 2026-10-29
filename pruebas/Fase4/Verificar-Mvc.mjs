@@ -2,18 +2,19 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import net from 'node:net';
+import http from 'node:http';
 import {spawn} from 'node:child_process';
 import {setTimeout as esperar} from 'node:timers/promises';
 import {parseArgs} from 'node:util';
 
 // Opciones de ejecución para aislar puertos y conservar evidencia fuera de la aplicación.
-const {values: opciones} = parseArgs({options:{raiz:{type:'string',default:process.cwd()},salida:{type:'string'},'puerto-api':{type:'string',default:'5234'},'puerto-web':{type:'string',default:'5235'},'solo-cierre':{type:'boolean',default:false}}});
+const {values: opciones} = parseArgs({options:{grupo:{type:'string',default:'Migracion'},raiz:{type:'string',default:process.cwd()},salida:{type:'string'},'puerto-api':{type:'string',default:'5234'},'puerto-web':{type:'string',default:'5235'},'solo-cierre':{type:'boolean',default:false}}});
 const raiz = path.resolve(opciones.raiz);
 const carpetaSalida = opciones.salida ? path.resolve(opciones.salida) : await fs.mkdtemp(path.join(os.tmpdir(),'carniceria-qa-f4-'));
 await fs.mkdir(carpetaSalida,{recursive:true});
 const baseApi=`http://127.0.0.1:${opciones['puerto-api']}`;
 const baseWeb=`http://127.0.0.1:${opciones['puerto-web']}`;
-const procesos=[];
+const procesos=[];let servidorStub=null;
 const resultados=[];
 const cookies=new Map();
 
@@ -47,12 +48,33 @@ async function esperarServicio(url) {for(let intento=0;intento<60;intento++){try
 // Cierra solamente los procesos creados por esta ejecución.
 async function cerrarProcesos() {const pendientes=[];for(const proceso of procesos.reverse()){try{if(proceso.exitCode===null&&proceso.signalCode===null){const cierre=new Promise(resolver=>proceso.once('close',resolver));proceso.kill();await Promise.race([cierre,esperar(5000)]);}if(proceso.exitCode===null&&proceso.signalCode===null)pendientes.push(proceso.pid);}catch(error){pendientes.push(proceso.pid);}}if(pendientes.length)throw new Error('No se confirmo el cierre de un proceso propio.');}
 
+// Obtiene una imagen completa de los cuatro módulos para detectar escrituras inesperadas.
+async function imagenDatos() {const datos={};for(const recurso of ['clientes','empleados','proveedores','productos'])datos[recurso]=await consultarApi(`/api/${recurso}`);return datos;}
+
+// Contrasta las rutas MVC con datos reales y observa los parámetros enviados a una API controlada.
+async function ejecutarRutas(procesoApi) {
+ const inicial=await imagenDatos();const casos=[{modulo:'Clientes',recurso:'clientes',criterio:null,campo:'identificacion'},{modulo:'Empleados',recurso:'empleados',criterio:null,campo:'identificacion'},{modulo:'Proveedores',recurso:'proveedores',criterio:'Identificacion',campo:'identificacion'},{modulo:'Productos',recurso:'productos',criterio:'Codigo',campo:'codigo'}];
+ for(const caso of casos){const registro=inicial[caso.recurso][0];const consulta=new URLSearchParams({consulta:registro[caso.campo],...(caso.criterio?{criterio:caso.criterio}:{})});const rutas=[`/${caso.modulo}`,`/${caso.modulo}/Detalles/${registro.id}`,`/${caso.modulo}/Crear`,`/${caso.modulo}/Editar/${registro.id}`,`/${caso.modulo}/Buscar`,`/${caso.modulo}/Buscar?${consulta}`,`/${caso.modulo}/Eliminar/${registro.id}`];let confirmacion;for(const ruta of rutas){const respuesta=await solicitarWeb(ruta);confirmar(`GET sin mutacion ${ruta}`,respuesta.codigo===200);if(ruta.includes('/Crear')||ruta.includes('/Editar/'))confirmar(`Token de formulario ${ruta}`,!!tokenAntifalsificacion(respuesta.html));if(ruta.includes('/Eliminar/'))confirmacion=respuesta;}
+  const enlaceCancelacion=[...confirmacion.html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/gi)].find(enlace=>decodificar(enlace[2]).trim()==='Cancelar');const destino=enlaceCancelacion&&/href="([^"]+)"/i.exec(enlaceCancelacion[1])?.[1];confirmar(`Cancelar apunta al listado ${caso.modulo}`,!!destino&&new URL(decodificar(destino),baseWeb).pathname===`/${caso.modulo}`);const cancelacion=await solicitarWeb(decodificar(destino));confirmar(`Cancelar conserva el registro ${caso.modulo}`,cancelacion.codigo===200&&(await consultarApi(`/api/${caso.recurso}/${registro.id}`)).id===registro.id);
+  const formulario=Object.fromEntries(Object.entries(registro).map(([campo,valor])=>[campo[0].toUpperCase()+campo.slice(1),typeof valor==='number'?String(valor).replace('.',','):campo.toLowerCase().startsWith('fecha')?String(valor).slice(0,10):String(valor)]));if(caso.recurso==='proveedores')formulario.RazonSocial='ProveedorSinToken';else formulario.Nombre='CambioSinToken';if(caso.recurso==='productos')formulario.Codigo='F4SINTOKEN';else formulario.Identificacion=caso.recurso==='proveedores'?'3-424-000099':'9-4242-0099';
+  for(const ruta of [`/${caso.modulo}/Crear`,`/${caso.modulo}/Editar/${registro.id}`,`/${caso.modulo}/EliminarConfirmado/${registro.id}`]){const rechazo=await solicitarWeb(ruta,{metodo:'POST',formulario,seguir:false});confirmar(`POST sin token rechazado ${ruta}`,rechazo.codigo===400);}
+  confirmar(`GET cancelar y rechazos conservan datos ${caso.modulo}`,JSON.stringify(await imagenDatos())===JSON.stringify(inicial));
+ }
+ // Detiene solo la API propia antes de reutilizar su puerto para observar las solicitudes MVC.
+ const cierre=new Promise(resolver=>procesoApi.once('close',resolver));procesoApi.kill();await Promise.race([cierre,esperar(5000)]);confirmar('API propia cerrada antes del stub',procesoApi.exitCode!==null||procesoApi.signalCode!==null);
+ const solicitudes=[];servidorStub=http.createServer((peticion,respuesta)=>{const url=new URL(peticion.url,baseApi);solicitudes.push({metodo:peticion.method,ruta:url.pathname,parametros:[...url.searchParams],url:peticion.url});const recurso=url.pathname.split('/')[2];const datos=inicial[recurso];respuesta.writeHead(datos?200:404,{'Content-Type':'application/json'});respuesta.end(JSON.stringify(datos??{codigo:'NoEncontrado',mensaje:'Ruta inesperada',erroresPorCampo:{}}));});await new Promise((resolver,rechazar)=>{servidorStub.once('error',rechazar);servidorStub.listen(Number(opciones['puerto-api']),'127.0.0.1',resolver);});
+ const texto='Q&A+B#% ñ &criterio=Otro';
+ for(const caso of casos){const criterio=caso.recurso==='productos'?'Nombre':caso.recurso==='proveedores'?'RazonSocial':null;const consulta=new URLSearchParams({consulta:texto,...(criterio?{criterio}:{})});const antes=solicitudes.length;const respuesta=await solicitarWeb(`/${caso.modulo}/Buscar?${consulta}`);const solicitudesNuevas=solicitudes.slice(antes);confirmar(`Busqueda llama endpoint API ${caso.modulo}`,solicitudesNuevas.length===1&&solicitudesNuevas[0].metodo==='GET'&&solicitudesNuevas[0].ruta===`/api/${caso.recurso}/buscar`);const parametros=new URLSearchParams(solicitudesNuevas[0].parametros);confirmar(`Consulta codificada conserva caracteres ${caso.modulo}`,parametros.get(criterio?'consulta':'identificacion')===texto);confirmar(`Consulta no inyecta criterios ${caso.modulo}`,criterio?parametros.getAll('criterio').length===1&&parametros.get('criterio')===criterio:!parametros.has('criterio'));const registro=inicial[caso.recurso][0];confirmar(`MVC muestra resultados API sin filtro local ${caso.modulo}`,respuesta.codigo===200&&respuesta.html.includes(`/Detalles/${registro.id}`));}
+ await fs.writeFile(path.join(carpetaSalida,'solicitudes-stub.json'),JSON.stringify(solicitudes,null,2));
+}
 let fallo=null;
 try {
  await comprobarPuerto(opciones['puerto-api']);await comprobarPuerto(opciones['puerto-web']);
- await iniciarProyecto('Carniceria.Api',opciones['puerto-api']);await esperarServicio(baseApi+'/api/estado');
+ const procesoApi=await iniciarProyecto('Carniceria.Api',opciones['puerto-api']);await esperarServicio(baseApi+'/api/estado');
  await iniciarProyecto('Carniceria.Web',opciones['puerto-web'],{Api__DireccionBase:baseApi+'/'});await esperarServicio(baseWeb+'/');
- if(!opciones['solo-cierre']) {
+ if(opciones.grupo==='Rutas') {
+ await ejecutarRutas(procesoApi);
+ } else if(!opciones['solo-cierre']) {
  const proveedores=await consultarApi('/api/proveedores');
  const casos=[
  {modulo:'Clientes',recurso:'clientes',clave:'Identificacion',valor:'9-4242-0001',formulario:{TipoIdentificacion:'1',Identificacion:'9-4242-0001',Nombre:'Elena',PrimerApellido:'Prueba',SegundoApellido:'Mora',FechaNacimiento:'1992-01-02'}},
@@ -71,8 +93,5 @@ try {
  for(const caso of [...casos].reverse()){const pagina=await solicitarWeb(`/${caso.modulo}/Eliminar/${caso.id}`);const formulario={__RequestVerificationToken:tokenAntifalsificacion(pagina.html)};const baja=await solicitarWeb(`/${caso.modulo}/EliminarConfirmado/${caso.id}`,{metodo:'POST',formulario,seguir:false});confirmar(`Baja MVC ${caso.modulo}`,baja.codigo===302);const repetida=await solicitarWeb(`/${caso.modulo}/EliminarConfirmado/${caso.id}`,{metodo:'POST',formulario,seguir:false});confirmar(`Baja repetida 404 ${caso.modulo}`,repetida.codigo===404);}
  }
 } catch(error) {fallo={mensaje:error.message,pila:error.stack};process.exitCode=1;}
-finally {try{await cerrarProcesos();}catch(error){fallo??={mensaje:error.message};process.exitCode=1;}await fs.writeFile(path.join(carpetaSalida,'resumen.json'),JSON.stringify({aprobadas:resultados.filter(r=>r.aprobado).length,resultados,fallo},null,2));}
+finally {try{await cerrarProcesos();}catch(error){fallo??={mensaje:error.message};process.exitCode=1;}try{if(servidorStub){servidorStub.closeAllConnections();await new Promise(resolver=>servidorStub.close(resolver));}}catch(error){fallo??={mensaje:error.message};process.exitCode=1;}await fs.writeFile(path.join(carpetaSalida,'resumen.json'),JSON.stringify({aprobadas:resultados.filter(r=>r.aprobado).length,resultados,fallo},null,2));}
 console.log(JSON.stringify({aprobadas:resultados.filter(r=>r.aprobado).length,fallo}));
-
-
-
