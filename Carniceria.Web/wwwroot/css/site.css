@@ -1,4 +1,4 @@
-/* Colores compartidos */
+/* Variables de color para fondos, texto, estados y foco. */
 
 :root {
     --color-principal: #7b2532;
@@ -14,7 +14,7 @@
     --color-advertencia: #704600;
 }
 
-/* Base */
+/* Normalización de caja, tipografía y elementos generales. */
 
 *,
 *::before,
@@ -78,7 +78,7 @@ textarea {
     outline-offset: 3px;
 }
 
-/* Estructura de la página */
+/* Distribución del encabezado, contenido central y pie. */
 
 .contenedor {
     width: min(72rem, calc(100% - 2rem));
@@ -129,7 +129,7 @@ textarea {
         margin: 0;
     }
 
-/* Navegación */
+/* Menú principal y enlaces de navegación. */
 
 .navegacion-principal {
     min-width: 0;
@@ -169,7 +169,7 @@ textarea {
     outline-color: #ffffff;
 }
 
-/* Acceso directo para navegación con teclado */
+/* Enlace para saltar directamente al contenido principal. */
 
 .saltar-contenido {
     position: absolute;
@@ -187,7 +187,7 @@ textarea {
         transform: translateY(0);
     }
 
-/* Página de inicio */
+/* Presentación inicial y tarjetas de módulos. */
 
 .presentacion {
     margin-bottom: 1.5rem;
@@ -228,7 +228,7 @@ textarea {
         margin-top: auto;
     }
 
-/* Botones y acciones */
+/* Estilos de botones y grupos de acciones. */
 
 .boton,
 .enlace-modulo,
@@ -291,7 +291,7 @@ button:disabled,
     margin-block: 1rem;
 }
 
-/* Tablas */
+/* Tablas adaptables para listados y resultados. */
 
 .tabla-contenedor {
     max-width: 100%;
@@ -351,7 +351,7 @@ tbody tr:hover {
     color: var(--color-exito);
 }
 
-/* Formularios */
+/* Campos, ayudas, validación y controles de formulario. */
 
 .formulario {
     max-width: 48rem;
@@ -432,7 +432,7 @@ input[type="checkbox"] {
     accent-color: var(--color-principal);
 }
 
-/* Mensajes y estados vacíos */
+/* Avisos, errores y vistas sin registros. */
 
 .aviso,
 .mensaje,
@@ -477,7 +477,7 @@ input[type="checkbox"] {
     color: var(--color-advertencia);
 }
 
-/* Clases utilizadas por la validación de MVC */
+/* Clases que MVC aplica a controles con errores. */
 
 .field-validation-error {
     display: block;
@@ -501,7 +501,7 @@ input[type="checkbox"] {
     padding-left: 1.25rem;
 }
 
-/* Pantallas pequeñas */
+/* Ajustes de distribución para pantallas estrechas. */
 
 @media (max-width: 48rem) {
     .encabezado-sitio > .contenedor {
@@ -546,7 +546,7 @@ input[type="checkbox"] {
     }
 }
 
-/* Detalles de registros */
+/* Presentación de pares de datos en las fichas. */
 
 .detalle-registro {
     display: grid;

@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <!-- Configuración base del servicio HTTP API. -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- Modelos contiene los contratos y entidades compartidos. -->
   <ItemGroup>
     <ProjectReference Include="..\Carniceria.Modelos\Carniceria.Modelos.csproj" />
   </ItemGroup>

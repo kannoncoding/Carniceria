@@ -2,6 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
+// Unidades admitidas para expresar precios y existencias.
 public enum UnidadMedida
 {
     [Display(Name = "Kilogramo")]

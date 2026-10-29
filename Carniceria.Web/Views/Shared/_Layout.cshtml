@@ -1,5 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@* Define navegación, contenido principal y recursos comunes del sitio. *@
+<!DOCTYPE html>
 <html lang="es-CR">
+@* Metadatos del documento y hojas de estilo compartidas. *@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,6 +27,7 @@
                 Carnicería
             </a>
 
+            @* Enlaces principales a los módulos de la aplicación. *@
             <nav class="navegacion-principal"
                  aria-label="Navegación principal">
                 <ul class="menu-principal">
@@ -68,6 +71,7 @@
         </div>
     </header>
 
+    @* Área central donde se renderiza cada página. *@
     <main id="contenido-principal"
           class="contenedor contenido-principal"
           tabindex="-1">
@@ -76,12 +80,14 @@
         @RenderBody()
     </main>
 
+    @* Pie común con el año de presentación. *@
     <footer class="pie-sitio">
         <div class="contenedor">
             <p>&copy; @DateTime.Now.Year Carnicería</p>
         </div>
     </footer>
 
+    @* Carga la inicialización compartida de las vistas. *@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

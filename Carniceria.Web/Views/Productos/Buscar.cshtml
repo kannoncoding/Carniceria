@@ -1,4 +1,5 @@
 ﻿@model BusquedaViewModel<Producto>
+@* Permite buscar productos por código o nombre. *@
 
 @{
     ViewData["Title"] = "Buscar productos";
@@ -10,6 +11,7 @@
     Busque productos por su código completo o por una parte de su nombre.
 </p>
 
+@* Captura el criterio y el texto de búsqueda del producto. *@
 <form asp-area=""
       asp-controller="Productos"
       asp-action="Buscar"
@@ -98,6 +100,7 @@
     </div>
 </form>
 
+@* Distingue instrucciones iniciales, lista vacía y resultados encontrados. *@
 @if (!Model.BusquedaRealizada && ViewData.ModelState.IsValid)
 {
     <p class="estado-vacio">
@@ -150,6 +153,7 @@ else if (Model.BusquedaRealizada)
                 </tr>
             </thead>
             <tbody>
+                @* Renderiza una fila por producto encontrado. *@
                 @foreach (var producto in Model.Resultados)
                 {
                     <tr>

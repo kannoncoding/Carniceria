@@ -11,16 +11,20 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
+// Atiende las páginas MVC de consulta y mantenimiento de productos.
 public class ProductosController : Controller
 {
+    // Acceso al almacén en memoria usado temporalmente por Web.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén registrado para las acciones del controlador.
     public ProductosController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
     [HttpGet]
+    // Muestra el listado de productos.
     public IActionResult Index()
     {
         var productos = _almacen.ListarProductos();
@@ -29,6 +33,7 @@ public class ProductosController : Controller
     }
 
     [HttpGet]
+    // Muestra la ficha del producto indicado.
     public IActionResult Detalles([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -51,6 +56,7 @@ public class ProductosController : Controller
     }
 
     [HttpGet]
+    // Presenta el formulario vacío de alta.
     public IActionResult Crear()
     {
         var formulario = new ProductoFormulario();
@@ -59,6 +65,7 @@ public class ProductosController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda el producto enviado desde el formulario.
     public IActionResult Crear([FromForm] ProductoFormulario formulario)
     {
         // Conservar los valores enviados y mostrar los errores del formulario.
@@ -84,6 +91,7 @@ public class ProductosController : Controller
     }
 
     [HttpGet]
+    // Busca productos por código exacto o nombre parcial.
     public IActionResult Buscar(
         [FromQuery] string? criterio,
         [FromQuery] string? consulta)
@@ -143,6 +151,7 @@ public class ProductosController : Controller
     }
 
     [HttpGet]
+    // Carga los datos del producto para editarlo.
     public IActionResult Editar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -177,6 +186,7 @@ public class ProductosController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda los cambios del producto indicado.
     public IActionResult Editar(
         [FromRoute] Guid id,
         [FromForm] ProductoFormulario formulario)
@@ -224,6 +234,7 @@ public class ProductosController : Controller
     }
 
     [HttpGet]
+    // Muestra la confirmación antes de eliminar al producto.
     public IActionResult Eliminar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -247,6 +258,7 @@ public class ProductosController : Controller
     }
 
     [HttpPost]
+    // Ejecuta la eliminación confirmada del producto.
     public IActionResult EliminarConfirmado([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||

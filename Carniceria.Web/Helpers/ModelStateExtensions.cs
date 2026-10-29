@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Web.Helpers;
 
+// Integra los errores del almacén con los mensajes del formulario MVC.
 public static class ModelStateExtensions
 {
+    // Asocia cada error de dominio al campo correspondiente del formulario.
     public static void AgregarErrores(
         this ModelStateDictionary modelState,
         ResultadoOperacion resultado)

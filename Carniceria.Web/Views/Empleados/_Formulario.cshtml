@@ -1,5 +1,7 @@
 ﻿@model EmpleadoFormulario
+@* Campos reutilizados en alta y edición de empleados. *@
 
+@* Tipo de documento admitido para el empleado. *@
 <div class="campo">
     <label asp-for="TipoIdentificacion"></label>
 
@@ -15,6 +17,7 @@
           id="error-tipo-identificacion"></span>
 </div>
 
+@* Número de identificación laboral. *@
 <div class="campo">
     <label asp-for="Identificacion"></label>
 
@@ -36,6 +39,7 @@
           id="error-identificacion"></span>
 </div>
 
+@* Nombre de pila del empleado. *@
 <div class="campo">
     <label asp-for="Nombre"></label>
 
@@ -55,6 +59,7 @@
           id="error-nombre"></span>
 </div>
 
+@* Primer apellido. *@
 <div class="campo">
     <label asp-for="PrimerApellido"></label>
 
@@ -74,6 +79,7 @@
           id="error-primer-apellido"></span>
 </div>
 
+@* Segundo apellido. *@
 <div class="campo">
     <label asp-for="SegundoApellido"></label>
 
@@ -93,6 +99,7 @@
           id="error-segundo-apellido"></span>
 </div>
 
+@* Fecha civil de nacimiento. *@
 <div class="campo">
     <label asp-for="FechaNacimiento"></label>
 
@@ -115,6 +122,7 @@
     <span asp-validation-for="FechaNacimiento"
           id="error-fecha-nacimiento"></span>
 </div>
+@* Salario mensual registrado para el puesto. *@
 <div class="campo">
     <label asp-for="SalarioMensual"></label>
 
@@ -135,6 +143,7 @@
           id="error-salario"></span>
 </div>
 
+@* Fecha en que inicia la relación laboral. *@
 <div class="campo">
     <label asp-for="FechaIngreso"></label>
 
@@ -158,6 +167,7 @@
           id="error-fecha-ingreso"></span>
 </div>
 
+@* Área que determina los puestos disponibles. *@
 <div class="campo">
     <label asp-for="AreaTrabajo"></label>
 
@@ -173,6 +183,7 @@
           id="error-area-trabajo"></span>
 </div>
 
+@* Puesto filtrado según el área seleccionada. *@
 <div class="campo">
     <label asp-for="Puesto"></label>
 
@@ -192,6 +203,7 @@
           id="error-puesto"></span>
 </div>
 
+@* Turno asignado al empleado. *@
 <fieldset aria-describedby="error-turno">
     <legend>Turno</legend>
 
@@ -213,6 +225,7 @@
     <span asp-validation-for="Turno"
           id="error-turno"></span>
 </fieldset>
+@* Serializa el catálogo de puestos por área para el navegador. *@
 @{
     var puestosPorArea =
         new Dictionary<string, IReadOnlyList<string>>();

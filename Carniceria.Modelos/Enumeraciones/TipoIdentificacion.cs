@@ -2,6 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
+// Documentos de identificación aceptados por los formularios.
 public enum TipoIdentificacion
 {
     [Display(Name = "Cédula nacional")]

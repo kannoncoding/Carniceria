@@ -9,19 +9,26 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Controllers;
 
+// Atiende la página inicial y las rutas comunes de información y error.
 public class HomeController : Controller
 {
+    // Fábrica de clientes HTTP para consultar la API.
     private readonly IHttpClientFactory _fabricaClientesHttp;
 
+    // Recibe la fábrica de clientes HTTP registrada en el inicio.
     public HomeController(IHttpClientFactory fabricaClientesHttp)
     {
         _fabricaClientesHttp = fabricaClientesHttp;
     }
 
+    // Consulta el estado de la API y prepara un mensaje visible para la página.
     public async Task<IActionResult> Index(CancellationToken cancelacion)
     {
+        // Prepara el modelo de presentación y el cliente HTTP.
         var modelo = new ModeloEstadoServicio();
         var cliente = _fabricaClientesHttp.CreateClient("ApiCarniceria");
+
+        // Limita la espera total sin ignorar la cancelación del navegador.
         using var limiteEspera = CancellationTokenSource.CreateLinkedTokenSource(
             cancelacion);
         limiteEspera.CancelAfter(TimeSpan.FromSeconds(3));
@@ -76,6 +83,7 @@ public class HomeController : Controller
         return View(modelo);
     }
 
+    // Muestra la página informativa configurada para la aplicación.
     public IActionResult Privacy()
     {
         return View();
@@ -86,6 +94,7 @@ public class HomeController : Controller
         Duration = 0,
         Location = ResponseCacheLocation.None,
         NoStore = true)]
+    // Presenta una página de error con el código HTTP recibido.
     public IActionResult EstadoHttp([FromRoute] int id)
     {
         if (id == StatusCodes.Status404NotFound)
@@ -112,6 +121,7 @@ public class HomeController : Controller
         Duration = 0,
         Location = ResponseCacheLocation.None,
         NoStore = true)]
+    // Presenta la página para errores internos no controlados.
     public IActionResult Error()
     {
         var vista = View("Error", CrearModeloError());
@@ -121,6 +131,7 @@ public class HomeController : Controller
         return vista;
     }
 
+    // Adjunta el identificador de diagnóstico de la solicitud actual.
     private ErrorViewModel CrearModeloError()
     {
         return new ErrorViewModel

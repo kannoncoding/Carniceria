@@ -6,16 +6,20 @@ using TipoDocumento = Carniceria.Modelos.Enumeraciones.TipoIdentificacion;
 
 namespace Carniceria.Modelos.Formularios;
 
+// Define campos y reglas compartidos por formularios de personas.
 public abstract class PersonaFormulario : IValidatableObject
 {
+    // Almacena texto normalizado y fecha sin hora durante el enlace del formulario.
     private string _identificacion = string.Empty;
     private string _nombre = string.Empty;
     private string _primerApellido = string.Empty;
     private string _segundoApellido = string.Empty;
     private DateTime? _fechaNacimiento;
 
+    // Restringe el tipo de identificación según la entidad derivada.
     protected abstract TipoDocumento[] TiposPermitidos { get; }
 
+    // Tipo e identificador usados para validar los datos personales.
     [Display(Name = "Tipo de identificación")]
     [Required(ErrorMessage = "Seleccione un tipo de identificación.")]
     [EnumDataType(
@@ -23,6 +27,7 @@ public abstract class PersonaFormulario : IValidatableObject
         ErrorMessage = "Seleccione un tipo de identificación válido.")]
     public TipoDocumento? TipoIdentificacion { get; set; }
 
+    // El valor se recorta antes de aplicar las reglas específicas del documento.
     [Display(Name = "Identificación")]
     [Required(ErrorMessage = "La identificación es obligatoria.")]
     public string Identificacion
@@ -31,6 +36,7 @@ public abstract class PersonaFormulario : IValidatableObject
         set => _identificacion = ReglasTexto.Normalizar(value);
     }
 
+    // Nombre y apellidos se recortan antes de validarlos.
     [Display(Name = "Nombre")]
     [Required(ErrorMessage = "El nombre es obligatorio.")]
     [StringLength(
@@ -67,6 +73,7 @@ public abstract class PersonaFormulario : IValidatableObject
         set => _segundoApellido = ReglasTexto.Normalizar(value);
     }
 
+    // Conserva únicamente el día indicado en la fecha recibida.
     [Display(Name = "Fecha de nacimiento")]
     [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
     [DataType(DataType.Date)]
@@ -79,6 +86,7 @@ public abstract class PersonaFormulario : IValidatableObject
     public virtual IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
     {
+        // Aplica el formato del documento y la lista permitida por el módulo.
         return ReglasIdentificacion.Validar(
             TipoIdentificacion,
             Identificacion,

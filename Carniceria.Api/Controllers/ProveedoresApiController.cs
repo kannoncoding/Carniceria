@@ -8,17 +8,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Api.Controllers;
 
+// Expone operaciones HTTP para consultar y mantener proveedores.
 [ApiController]
 [Route("api/proveedores")]
 public class ProveedoresApiController : ControladorApiBase
 {
+    // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén singleton registrado en la aplicación.
     public ProveedoresApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
+    // Devuelve la colección actual de proveedores.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -29,6 +33,7 @@ public class ProveedoresApiController : ControladorApiBase
         return Ok(proveedores);
     }
 
+    // Busca por identificación exacta o razón social parcial.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery] string? criterio,
@@ -63,6 +68,7 @@ public class ProveedoresApiController : ControladorApiBase
         return CrearCriterioInvalido("Criterio");
     }
 
+    // Obtiene un proveedor por su identificador.
     [HttpGet("{id:guid}")]
     public IActionResult ObtenerPorId(Guid id)
     {
@@ -73,6 +79,7 @@ public class ProveedoresApiController : ControladorApiBase
             : Ok(MapeadorRespuestas.Convertir(proveedor));
     }
 
+    // Crea el proveedor y devuelve la ruta de consulta del registro.
     [HttpPost]
     public IActionResult Crear([FromBody] SolicitudProveedor solicitud)
     {
@@ -100,6 +107,7 @@ public class ProveedoresApiController : ControladorApiBase
             alta.Respuesta);
     }
 
+    // Actualiza un proveedor usando el identificador de la ruta.
     [HttpPut("{id:guid}")]
     public IActionResult Actualizar(
         Guid id,
@@ -128,6 +136,7 @@ public class ProveedoresApiController : ControladorApiBase
             : Ok(actualizacion.Respuesta);
     }
 
+    // Elimina el proveedor si no tiene productos relacionados.
     [HttpDelete("{id:guid}")]
     public IActionResult Eliminar(Guid id)
     {

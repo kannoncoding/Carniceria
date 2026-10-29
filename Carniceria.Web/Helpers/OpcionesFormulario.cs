@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Carniceria.Web.Helpers;
 
+// Construye listas de selección compatibles con los catálogos del modelo.
 public static class OpcionesFormulario
 {
+    // Filtra los tipos de documento admitidos para clientes.
     public static IReadOnlyList<SelectListItem> TiposIdentificacionCliente(
         this IHtmlHelper html)
     {
@@ -20,6 +22,7 @@ public static class OpcionesFormulario
             TipoIdentificacion.Pasaporte);
     }
 
+    // Filtra los tipos de documento admitidos para empleados.
     public static IReadOnlyList<SelectListItem> TiposIdentificacionEmpleado(
         this IHtmlHelper html)
     {
@@ -29,6 +32,7 @@ public static class OpcionesFormulario
             TipoIdentificacion.Dimex);
     }
 
+    // Filtra los tipos de documento admitidos para proveedores.
     public static IReadOnlyList<SelectListItem> TiposIdentificacionProveedor(
         this IHtmlHelper html)
     {
@@ -39,6 +43,7 @@ public static class OpcionesFormulario
             TipoIdentificacion.Dimex);
     }
 
+    // Devuelve los puestos asociados al área seleccionada.
     public static IReadOnlyList<SelectListItem> PuestosEmpleado(
         AreaTrabajo? areaTrabajo)
     {
@@ -57,6 +62,7 @@ public static class OpcionesFormulario
             .ToArray();
     }
 
+    // Limita la lista de enum a los tipos permitidos por el formulario.
     private static IReadOnlyList<SelectListItem> FiltrarTiposIdentificacion(
         IHtmlHelper html,
         params TipoIdentificacion[] tiposPermitidos)

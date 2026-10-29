@@ -11,16 +11,20 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
+// Atiende las páginas MVC de consulta y mantenimiento de clientes.
 public class ClientesController : Controller
 {
+    // Acceso al almacén en memoria usado temporalmente por Web.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén registrado para las acciones del controlador.
     public ClientesController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
     [HttpGet]
+    // Muestra el listado de clientes.
     public IActionResult Index()
     {
         var clientes = _almacen.ListarClientes();
@@ -29,6 +33,7 @@ public class ClientesController : Controller
     }
 
     [HttpGet]
+    // Muestra la ficha del cliente indicado.
     public IActionResult Detalles([FromRoute] Guid id)
     {
         if (id == Guid.Empty || !ModelState.IsValid)
@@ -49,6 +54,7 @@ public class ClientesController : Controller
     }
 
     [HttpGet]
+    // Presenta el formulario vacío de alta.
     public IActionResult Crear()
     {
         var formulario = new ClienteFormulario();
@@ -57,6 +63,7 @@ public class ClientesController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda el cliente enviado desde el formulario.
     public IActionResult Crear([FromForm] ClienteFormulario formulario)
     {
         // Conservar el formulario y sus errores cuando los datos sean inválidos.
@@ -82,6 +89,7 @@ public class ClientesController : Controller
     }
 
     [HttpGet]
+    // Busca coincidencias de clientes por identificación.
     public IActionResult Buscar([FromQuery] string? consulta)
     {
         var modelo = new BusquedaViewModel<Cliente>
@@ -115,6 +123,7 @@ public class ClientesController : Controller
     }
 
     [HttpGet]
+    // Carga los datos del cliente para editarlo.
     public IActionResult Editar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -147,6 +156,7 @@ public class ClientesController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda los cambios del cliente indicado.
     public IActionResult Editar(
         [FromRoute] Guid id,
         [FromForm] ClienteFormulario formulario)
@@ -193,6 +203,7 @@ public class ClientesController : Controller
     }
 
     [HttpGet]
+    // Muestra la confirmación antes de eliminar al cliente.
     public IActionResult Eliminar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -215,6 +226,7 @@ public class ClientesController : Controller
     }
 
     [HttpPost]
+    // Ejecuta la eliminación confirmada del cliente.
     public IActionResult EliminarConfirmado([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||

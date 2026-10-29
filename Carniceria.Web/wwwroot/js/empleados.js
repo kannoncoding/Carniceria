@@ -1,6 +1,7 @@
 ﻿(() => {
     "use strict";
 
+    // Mantiene los puestos disponibles sincronizados con el área seleccionada.
     function inicializarPuestosEmpleado() {
         const campoArea = document.getElementById("AreaTrabajo");
         const campoPuesto = document.getElementById("Puesto");
@@ -12,6 +13,7 @@
             return;
         }
 
+        // Catálogo serializado por la vista para filtrar puestos por área.
         let puestosPorArea;
 
         try {
@@ -26,7 +28,7 @@
         }
 
         function actualizarPuestos() {
-            // Conservar la selección únicamente si pertenece al área actual.
+            // Conserva el puesto solo si sigue disponible para el área actual.
             const puestoAnterior = campoPuesto.value;
             const puestosDelArea = puestosPorArea[campoArea.value];
 
@@ -38,7 +40,7 @@
                 ? "Seleccione un puesto"
                 : "Seleccione primero un área de trabajo";
 
-            // Reconstruir las opciones usando texto, sin insertar HTML.
+            // Construye las opciones como texto, sin insertar marcado.
             const opciones = document.createDocumentFragment();
 
             const opcionInicial = document.createElement("option");
@@ -62,13 +64,13 @@
             campoPuesto.disabled = puestosPermitidos.length === 0;
         }
 
-        // Actualizar las opciones cuando el usuario cambie de área.
+        // El evento change actualiza los puestos disponibles.
         campoArea.addEventListener("change", actualizarPuestos);
 
-        // Sincronizar también al volver mediante Atrás/Adelante.
+        // El evento pageshow sincroniza el formulario restaurado.
         window.addEventListener("pageshow", actualizarPuestos);
 
-        // Respetar una selección válida renderizada por el servidor.
+        // La selección inicial conserva el valor renderizado por el servidor.
         actualizarPuestos();
     }
 

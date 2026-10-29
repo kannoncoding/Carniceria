@@ -8,11 +8,14 @@ using TipoDocumento = Carniceria.Modelos.Enumeraciones.TipoIdentificacion;
 
 namespace Carniceria.Modelos.Formularios;
 
+// Valida datos personales y laborales de un empleado.
 public class EmpleadoFormulario : PersonaFormulario
 {
+    // Normaliza el puesto y la fecha ingresados por el formulario.
     private string _puesto = string.Empty;
     private DateTime? _fechaIngreso;
 
+    // Los empleados pueden usar cédula nacional o DIMEX.
     protected override TipoDocumento[] TiposPermitidos =>
         new[]
         {
@@ -20,6 +23,7 @@ public class EmpleadoFormulario : PersonaFormulario
             TipoDocumento.Dimex
         };
 
+    // Datos laborales con validación de salario y catálogos.
     [Display(Name = "Salario mensual")]
     [Required(ErrorMessage = "El salario mensual es obligatorio.")]
     [Range(
@@ -60,6 +64,7 @@ public class EmpleadoFormulario : PersonaFormulario
         ErrorMessage = "Seleccione un turno válido.")]
     public Turno? Turno { get; set; }
 
+    // Verifica que el puesto pertenezca al área elegida.
     public override IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
     {
@@ -68,6 +73,7 @@ public class EmpleadoFormulario : PersonaFormulario
             yield return error;
         }
 
+        // Solo se valida la relación cuando ambos valores están presentes.
         if (AreaTrabajo.HasValue &&
             !string.IsNullOrWhiteSpace(Puesto) &&
             !CatalogoPuestos.EsPuestoValido(AreaTrabajo.Value, Puesto))

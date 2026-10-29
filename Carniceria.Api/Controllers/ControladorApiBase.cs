@@ -7,8 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Api.Controllers;
 
+// Comparte la conversión de resultados y errores entre los controladores API.
 public abstract class ControladorApiBase : ControllerBase
 {
+    // Traduce el estado del almacén al código HTTP correspondiente.
     protected IActionResult ConvertirResultadoFallido(
         ResultadoOperacion resultado)
     {
@@ -26,6 +28,7 @@ public abstract class ControladorApiBase : ControllerBase
         };
     }
 
+    // Genera un ErrorApi para rutas que no encuentran su recurso.
     protected IActionResult CrearNoEncontrado(string mensaje)
     {
         return NotFound(new ErrorApi
@@ -35,6 +38,7 @@ public abstract class ControladorApiBase : ControllerBase
         });
     }
 
+    // Devuelve un error de campo cuando el criterio no es admitido.
     protected IActionResult CrearCriterioInvalido(string nombreCriterio)
     {
         return BadRequest(new ErrorApi

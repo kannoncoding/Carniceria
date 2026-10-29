@@ -6,10 +6,13 @@ using Carniceria.Modelos.Validacion;
 
 namespace Carniceria.Api.Datos;
 
+// Mantiene los registros en memoria y coordina su acceso concurrente.
 public partial class AlmacenCarniceria : IAlmacenCarniceria
 {
+    // Protege las colecciones y operaciones compuestas del almacén.
     private readonly object _sincronizacion = new();
 
+    // Registros en memoria separados por tipo de entidad.
     private readonly List<Cliente> _clientes = new();
 
     private readonly List<Empleado> _empleados = new();
@@ -18,11 +21,13 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
 
     private readonly List<Proveedor> _proveedores = new();
 
+    // Carga los datos iniciales una vez al crear el almacén.
     public AlmacenCarniceria()
     {
         SembrarDatosIniciales();
     }
 
+    // Ejecuta una operación compuesta bajo el mismo bloqueo de las colecciones.
     public TResultado EjecutarConBloqueo<TResultado>(Func<TResultado> operacion)
     {
         ArgumentNullException.ThrowIfNull(operacion);
@@ -33,8 +38,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Clientes
-
+    // Devuelve una colección de solo lectura con copias independientes.
     public IReadOnlyList<Cliente> ListarClientes()
     {
         lock (_sincronizacion)
@@ -46,6 +50,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Obtiene una copia del cliente que coincide con el Id.
     public Cliente? ObtenerCliente(Guid id)
     {
         lock (_sincronizacion)
@@ -56,6 +61,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Busca identificación exacta y omite consultas vacías.
     public IReadOnlyList<Cliente> BuscarClientesPorIdentificacion(
         string identificacion)
     {
@@ -79,8 +85,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Empleados
-
+    // Devuelve una colección de solo lectura con copias independientes.
     public IReadOnlyList<Empleado> ListarEmpleados()
     {
         lock (_sincronizacion)
@@ -92,6 +97,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Obtiene una copia del empleado que coincide con el Id.
     public Empleado? ObtenerEmpleado(Guid id)
     {
         lock (_sincronizacion)
@@ -102,6 +108,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Busca identificación exacta y omite consultas vacías.
     public IReadOnlyList<Empleado> BuscarEmpleadosPorIdentificacion(
         string identificacion)
     {
@@ -125,8 +132,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Productos
-
+    // Devuelve una colección de solo lectura con copias independientes.
     public IReadOnlyList<Producto> ListarProductos()
     {
         lock (_sincronizacion)
@@ -138,6 +144,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Obtiene una copia del producto que coincide con el Id.
     public Producto? ObtenerProducto(Guid id)
     {
         lock (_sincronizacion)
@@ -148,6 +155,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Busca códigos exactos y omite consultas vacías.
     public IReadOnlyList<Producto> BuscarProductosPorCodigo(
         string codigo)
     {
@@ -171,6 +179,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Busca nombres parciales y omite consultas vacías.
     public IReadOnlyList<Producto> BuscarProductosPorNombre(
         string nombre)
     {
@@ -193,8 +202,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Proveedores
-
+    // Devuelve una colección de solo lectura con copias independientes.
     public IReadOnlyList<Proveedor> ListarProveedores()
     {
         lock (_sincronizacion)
@@ -206,6 +214,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Obtiene una copia del proveedor que coincide con el Id.
     public Proveedor? ObtenerProveedor(Guid id)
     {
         lock (_sincronizacion)
@@ -216,6 +225,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Busca identificación exacta y omite consultas vacías.
     public IReadOnlyList<Proveedor> BuscarProveedoresPorIdentificacion(
         string identificacion)
     {
@@ -239,6 +249,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
+    // Busca razón social parcial y omite consultas vacías.
     public IReadOnlyList<Proveedor> BuscarProveedoresPorRazonSocial(
         string razonSocial)
     {

@@ -1,4 +1,5 @@
 ﻿@model Cliente
+@* Muestra los datos del cliente antes de confirmar su eliminación. *@
 
 @{
     ViewData["Title"] = "Eliminar cliente";
@@ -6,6 +7,7 @@
 
 <h1>Eliminar cliente</h1>
 
+@* Resume la consecuencia antes de confirmar la operación. *@
 <div class="mensaje mensaje-advertencia">
     <p>
         <strong>¿Desea eliminar este cliente?</strong>
@@ -17,6 +19,7 @@
     </p>
 </div>
 
+@* Datos usados para identificar al cliente que se eliminará. *@
 <dl class="detalle-registro">
     <div>
         <dt>Tipo de identificación</dt>
@@ -43,6 +46,7 @@
     </div>
 </dl>
 
+@* Envía la confirmación mediante POST protegido contra falsificación. *@
 <form asp-area=""
       asp-controller="Clientes"
       asp-action="EliminarConfirmado"

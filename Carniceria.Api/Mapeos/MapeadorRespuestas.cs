@@ -3,8 +3,10 @@ using Carniceria.Modelos.Entidades;
 
 namespace Carniceria.Api.Mapeos;
 
+// Proyecta entidades del almacén a contratos que no exponen su estado interno.
 public static class MapeadorRespuestas
 {
+    // Copia los datos públicos del cliente a su contrato de respuesta.
     public static RespuestaCliente Convertir(Cliente cliente)
     {
         return new RespuestaCliente
@@ -19,6 +21,7 @@ public static class MapeadorRespuestas
         };
     }
 
+    // Copia los datos personales y laborales del empleado.
     public static RespuestaEmpleado Convertir(Empleado empleado)
     {
         return new RespuestaEmpleado
@@ -38,6 +41,7 @@ public static class MapeadorRespuestas
         };
     }
 
+    // Incluye los datos actuales del proveedor relacionado con el producto.
     public static RespuestaProducto Convertir(
         Producto producto,
         Proveedor proveedor)
@@ -66,6 +70,7 @@ public static class MapeadorRespuestas
         };
     }
 
+    // Copia los datos comerciales y de contacto del proveedor.
     public static RespuestaProveedor Convertir(Proveedor proveedor)
     {
         return new RespuestaProveedor

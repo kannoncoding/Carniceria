@@ -6,14 +6,18 @@ using Carniceria.Modelos.Validacion;
 
 namespace Carniceria.Modelos.Formularios;
 
+// Define los datos editables y reglas de inventario de un producto.
 public class ProductoFormulario : IValidatableObject
 {
+    // Conserva código y nombre normalizados al enlazar la solicitud.
     private string _codigo = string.Empty;
     private string _nombre = string.Empty;
 
+    // Referencia opcional del formulario compartido; la API la exige al guardar.
     [Display(Name = "Proveedor")]
     public Guid? ProveedorId { get; set; }
 
+    // Código y nombre identifican el producto en los listados.
     [Display(Name = "Código")]
     [Required(ErrorMessage = "El código es obligatorio.")]
     [StringLength(
@@ -44,6 +48,7 @@ public class ProductoFormulario : IValidatableObject
         set => _nombre = ReglasTexto.Normalizar(value);
     }
 
+    // Clasificación comercial y unidad de medida.
     [Display(Name = "Categoría")]
     [Required(ErrorMessage = "Seleccione una categoría.")]
     [EnumDataType(
@@ -58,6 +63,7 @@ public class ProductoFormulario : IValidatableObject
         ErrorMessage = "Seleccione una unidad de medida válida.")]
     public UnidadMedida? UnidadMedida { get; set; }
 
+    // Valores de precio e inventario verificados por Validate.
     [Display(Name = "Precio por unidad de medida")]
     [Required(ErrorMessage = "El precio por unidad de medida es obligatorio.")]
     public decimal? PrecioUnidadMedida { get; set; }
@@ -73,6 +79,7 @@ public class ProductoFormulario : IValidatableObject
     public IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
     {
+        // Acepta solo precios positivos y cantidades no negativas.
         if (PrecioUnidadMedida.HasValue &&
             PrecioUnidadMedida.Value <= 0m)
         {

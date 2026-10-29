@@ -9,17 +9,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Api.Controllers;
 
+// Expone operaciones HTTP para consultar y mantener clientes.
 [ApiController]
 [Route("api/clientes")]
 public class ClientesApiController : ControladorApiBase
 {
+    // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén singleton registrado en la aplicación.
     public ClientesApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
+    // Devuelve la colección actual de clientes.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -30,6 +34,7 @@ public class ClientesApiController : ControladorApiBase
         return Ok(clientes);
     }
 
+    // Busca clientes por identificación exacta.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery(Name = "identificacion")] string? identificacion)
@@ -42,6 +47,7 @@ public class ClientesApiController : ControladorApiBase
         return Ok(clientes);
     }
 
+    // Obtiene un cliente por su identificador.
     [HttpGet("{id:guid}")]
     public IActionResult ObtenerPorId(Guid id)
     {
@@ -52,6 +58,7 @@ public class ClientesApiController : ControladorApiBase
             : Ok(MapeadorRespuestas.Convertir(cliente));
     }
 
+    // Crea el cliente y devuelve la ruta de consulta del registro.
     [HttpPost]
     public IActionResult Crear([FromBody] SolicitudCliente solicitud)
     {
@@ -79,6 +86,7 @@ public class ClientesApiController : ControladorApiBase
             alta.Respuesta);
     }
 
+    // Actualiza un cliente usando el identificador de la ruta.
     [HttpPut("{id:guid}")]
     public IActionResult Actualizar(
         Guid id,
@@ -107,6 +115,7 @@ public class ClientesApiController : ControladorApiBase
             : Ok(actualizacion.Respuesta);
     }
 
+    // Elimina el cliente indicado o devuelve el resultado fallido.
     [HttpDelete("{id:guid}")]
     public IActionResult Eliminar(Guid id)
     {

@@ -6,14 +6,16 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Validacion;
 
+// Centraliza los formatos de identificación aceptados.
 public static class ReglasIdentificacion
 {
+    // Aplica el formato propio de cada documento y la lista del módulo.
     public static IEnumerable<ValidationResult> Validar(
         TipoIdentificacion? tipo,
         string? identificacion,
         params TipoIdentificacion[] tiposPermitidos)
     {
-        // Required attributes handle missing selections.
+        // El atributo Required informa si falta seleccionar el tipo.
         if (!tipo.HasValue)
         {
             yield break;
@@ -30,7 +32,7 @@ public static class ReglasIdentificacion
 
         string valor = ReglasTexto.Normalizar(identificacion);
 
-        // Required attributes handle missing identification.
+        // El atributo Required informa si falta el número de identificación.
         if (valor.Length == 0)
         {
             yield break;

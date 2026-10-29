@@ -7,6 +7,7 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
+    // Elimina el cliente si el identificador existe.
     public ResultadoOperacion EliminarCliente(Guid id)
     {
         lock (_sincronizacion)
@@ -28,6 +29,7 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Elimina el empleado si el identificador existe.
     public ResultadoOperacion EliminarEmpleado(Guid id)
     {
         lock (_sincronizacion)
@@ -49,6 +51,7 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Elimina el producto si el identificador existe.
     public ResultadoOperacion EliminarProducto(Guid id)
     {
         lock (_sincronizacion)
@@ -70,6 +73,7 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Impide borrar proveedores mientras tengan productos relacionados.
     public ResultadoOperacion EliminarProveedor(Guid id)
     {
         lock (_sincronizacion)
@@ -83,6 +87,7 @@ public partial class AlmacenCarniceria
                     "El proveedor solicitado no existe.");
             }
 
+            // Mantiene la referencia de proveedor de todos los productos.
             if (_productos.Any(producto => producto.ProveedorId == id))
             {
                 return ResultadoOperacion.ConflictoIntegridad(

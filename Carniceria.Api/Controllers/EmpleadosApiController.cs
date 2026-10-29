@@ -8,17 +8,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Api.Controllers;
 
+// Expone operaciones HTTP para consultar y mantener empleados.
 [ApiController]
 [Route("api/empleados")]
 public class EmpleadosApiController : ControladorApiBase
 {
+    // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén singleton registrado en la aplicación.
     public EmpleadosApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
+    // Devuelve la colección actual de empleados.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -29,6 +33,7 @@ public class EmpleadosApiController : ControladorApiBase
         return Ok(empleados);
     }
 
+    // Busca empleados por identificación exacta.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery(Name = "identificacion")] string? identificacion)
@@ -41,6 +46,7 @@ public class EmpleadosApiController : ControladorApiBase
         return Ok(empleados);
     }
 
+    // Obtiene un empleado por su identificador.
     [HttpGet("{id:guid}")]
     public IActionResult ObtenerPorId(Guid id)
     {
@@ -51,6 +57,7 @@ public class EmpleadosApiController : ControladorApiBase
             : Ok(MapeadorRespuestas.Convertir(empleado));
     }
 
+    // Crea el empleado y devuelve la ruta de consulta del registro.
     [HttpPost]
     public IActionResult Crear([FromBody] SolicitudEmpleado solicitud)
     {
@@ -78,6 +85,7 @@ public class EmpleadosApiController : ControladorApiBase
             alta.Respuesta);
     }
 
+    // Actualiza un empleado usando el identificador de la ruta.
     [HttpPut("{id:guid}")]
     public IActionResult Actualizar(
         Guid id,
@@ -106,6 +114,7 @@ public class EmpleadosApiController : ControladorApiBase
             : Ok(actualizacion.Respuesta);
     }
 
+    // Elimina el empleado indicado o devuelve el resultado fallido.
     [HttpDelete("{id:guid}")]
     public IActionResult Eliminar(Guid id)
     {

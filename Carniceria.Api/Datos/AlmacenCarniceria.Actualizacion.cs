@@ -9,6 +9,7 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
+    // Valida y reemplaza los campos editables del cliente existente.
     public ResultadoOperacion ActualizarCliente(
         Guid id,
         ClienteFormulario formulario)
@@ -24,6 +25,7 @@ public partial class AlmacenCarniceria
                     "El cliente solicitado no existe.");
             }
 
+            // Revisa el formulario antes de cambiar el registro encontrado.
             var errores = ValidadorFormularios.Validar(formulario);
 
             if (errores.Count > 0)
@@ -31,6 +33,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
+            // Excluye el registro actual al buscar identificación duplicada.
             bool identificacionDuplicada = _clientes.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -45,6 +48,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro cliente con esta identificación.");
             }
 
+            // Sustituye los campos editables después de validar el formulario.
             cliente.TipoIdentificacion = formulario.TipoIdentificacion!.Value;
             cliente.Identificacion = formulario.Identificacion;
             cliente.Nombre = formulario.Nombre;
@@ -58,6 +62,7 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Valida y reemplaza los campos editables del empleado existente.
     public ResultadoOperacion ActualizarEmpleado(
         Guid id,
         EmpleadoFormulario formulario)
@@ -73,6 +78,7 @@ public partial class AlmacenCarniceria
                     "El empleado solicitado no existe.");
             }
 
+            // Revisa el formulario antes de cambiar el registro encontrado.
             var errores = ValidadorFormularios.Validar(formulario);
 
             if (errores.Count > 0)
@@ -80,6 +86,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
+            // Excluye el registro actual al buscar identificación duplicada.
             bool identificacionDuplicada = _empleados.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -94,6 +101,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro empleado con esta identificación.");
             }
 
+            // Sustituye los campos personales y laborales ya validados.
             empleado.TipoIdentificacion = formulario.TipoIdentificacion!.Value;
             empleado.Identificacion = formulario.Identificacion;
             empleado.Nombre = formulario.Nombre;
@@ -112,6 +120,7 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Valida la referencia y los campos antes de modificar el producto.
     public ResultadoOperacion ActualizarProducto(
         Guid id,
         ProductoFormulario formulario)
@@ -127,6 +136,7 @@ public partial class AlmacenCarniceria
                     "El producto solicitado no existe.");
             }
 
+            // Revisa el formulario antes de cambiar el registro encontrado.
             var errores = ValidadorFormularios.Validar(formulario);
 
             if (errores.Count > 0)
@@ -134,6 +144,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
+            // Comprueba la referencia para conservar la integridad del producto.
             if (!formulario.ProveedorId.HasValue ||
                 formulario.ProveedorId.Value == Guid.Empty ||
                 !_proveedores.Any(proveedor =>
@@ -148,6 +159,7 @@ public partial class AlmacenCarniceria
                     });
             }
 
+            // Excluye el registro actual al buscar código duplicado.
             bool codigoDuplicado = _productos.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -162,6 +174,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro producto con este código.");
             }
 
+            // Actualiza referencia, descripción y valores de inventario validados.
             producto.ProveedorId = formulario.ProveedorId.Value;
             producto.Codigo = formulario.Codigo;
             producto.Nombre = formulario.Nombre;
@@ -177,6 +190,7 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Valida y reemplaza los campos editables del proveedor existente.
     public ResultadoOperacion ActualizarProveedor(
         Guid id,
         ProveedorFormulario formulario)
@@ -192,6 +206,7 @@ public partial class AlmacenCarniceria
                     "El proveedor solicitado no existe.");
             }
 
+            // Revisa el formulario antes de cambiar el registro encontrado.
             var errores = ValidadorFormularios.Validar(formulario);
 
             if (errores.Count > 0)
@@ -199,6 +214,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
+            // Excluye el registro actual al buscar identificación duplicada.
             bool identificacionDuplicada = _proveedores.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -213,6 +229,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro proveedor con esta identificación.");
             }
 
+            // Sustituye los datos legales, de contacto y suministro validados.
             proveedor.TipoIdentificacion = formulario.TipoIdentificacion!.Value;
             proveedor.Identificacion = formulario.Identificacion;
             proveedor.RazonSocial = formulario.RazonSocial;

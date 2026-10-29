@@ -11,16 +11,20 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
+// Atiende las páginas MVC de consulta y mantenimiento de proveedores.
 public class ProveedoresController : Controller
 {
+    // Acceso al almacén en memoria usado temporalmente por Web.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén registrado para las acciones del controlador.
     public ProveedoresController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
     [HttpGet]
+    // Muestra el listado de proveedores.
     public IActionResult Index()
     {
         var proveedores = _almacen.ListarProveedores();
@@ -29,6 +33,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpGet]
+    // Muestra la ficha del proveedor indicado.
     public IActionResult Detalles([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -51,6 +56,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpGet]
+    // Presenta el formulario vacío de alta.
     public IActionResult Crear()
     {
         var formulario = new ProveedorFormulario();
@@ -59,6 +65,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda el proveedor enviado desde el formulario.
     public IActionResult Crear([FromForm] ProveedorFormulario formulario)
     {
         // Conservar los valores enviados y mostrar los errores del formulario.
@@ -84,6 +91,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpGet]
+    // Busca por identificación exacta o razón social parcial.
     public IActionResult Buscar(
         [FromQuery] string? criterio,
         [FromQuery] string? consulta)
@@ -143,6 +151,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpGet]
+    // Carga los datos del proveedor para editarlo.
     public IActionResult Editar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -178,6 +187,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda los cambios del proveedor indicado.
     public IActionResult Editar(
         [FromRoute] Guid id,
         [FromForm] ProveedorFormulario formulario)
@@ -225,6 +235,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpGet]
+    // Muestra la confirmación antes de eliminar al proveedor.
     public IActionResult Eliminar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -248,6 +259,7 @@ public class ProveedoresController : Controller
     }
 
     [HttpPost]
+    // Ejecuta la eliminación confirmada del proveedor.
     public IActionResult EliminarConfirmado([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||

@@ -1,4 +1,5 @@
 ﻿@model IReadOnlyList<Producto>
+@* Lista productos y enlaza con sus operaciones disponibles. *@
 
 @{
     ViewData["Title"] = "Inventario de Productos";
@@ -6,6 +7,7 @@
 
 <h1>Inventario de Productos</h1>
 
+@* Enlaces para registrar y buscar productos. *@
 <div class="acciones">
     <a class="boton"
        asp-area=""
@@ -24,6 +26,7 @@
     </a>
 </div>
 
+@* Alterna entre el estado vacío y la tabla de inventario. *@
 @if (Model.Count == 0)
 {
     <p class="estado-vacio">
@@ -42,6 +45,7 @@ else
         de medida indicada en cada fila.
     </p>
 
+    @* Tabla de inventario con niveles y acciones por producto. *@
     <div class="tabla-contenedor"
          role="region"
          aria-label="Inventario de productos"
@@ -61,6 +65,7 @@ else
                 </tr>
             </thead>
             <tbody>
+                @* Renderiza una fila por producto registrado. *@
                 @foreach (var producto in Model)
                 {
                     <tr>
@@ -82,6 +87,7 @@ else
                             @producto.ExistenciaMinima.ToString("G")
                         </td>
                         <td>
+                            @* Distingue existencias bajas del nivel normal. *@
                             @if (producto.TieneExistenciaBaja)
                             {
                                 <strong class="estado-stock estado-stock-bajo">

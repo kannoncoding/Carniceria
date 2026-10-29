@@ -1,4 +1,5 @@
 ﻿@model Cliente
+@* Presenta los datos personales y de identificación del cliente. *@
 
 @{
     ViewData["Title"] = "Detalles del cliente";
@@ -6,6 +7,7 @@
 
 <h1>Detalles del cliente</h1>
 
+@* Datos personales y de identificación del cliente. *@
 <dl class="detalle-registro">
     <div>
         <dt>Tipo de identificación</dt>
@@ -45,6 +47,7 @@
     </div>
 </dl>
 
+@* Enlaces para editar, eliminar o volver al listado. *@
 <div class="acciones">
     <a class="boton"
        asp-area=""

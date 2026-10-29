@@ -4,6 +4,7 @@ using Carniceria.Web.ModelBinding;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
+// Registra MVC, servicios compartidos y configuración de solicitudes.
 var constructor = WebApplication.CreateBuilder(args);
 
 // Usar una cultura fija para todas las solicitudes de la aplicación.
@@ -89,8 +90,10 @@ constructor.Services.AddControllersWithViews(opciones =>
 });
 
 // Compartir una instancia del almacén mediante su interfaz.
+// Comparte una instancia del almacén durante la vida del proceso.
 constructor.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
+// Configura el cliente nombrado para consultar la API.
 constructor.Services.AddHttpClient("ApiCarniceria", cliente =>
 {
     var direccionBase = constructor.Configuration["Api:DireccionBase"];
@@ -98,6 +101,7 @@ constructor.Services.AddHttpClient("ApiCarniceria", cliente =>
     cliente.Timeout = TimeSpan.FromSeconds(3);
 });
 
+// Construye la aplicación web con los servicios registrados.
 var aplicacion = constructor.Build();
 
 // Configurar el manejo de errores fuera del entorno de desarrollo.
@@ -112,6 +116,7 @@ aplicacion.UseRequestLocalization();
 // Mostrar los errores HTTP mediante una página de la aplicación.
 aplicacion.UseStatusCodePagesWithReExecute("/Inicio/EstadoHttp/{0}");
 
+// Resuelve rutas antes de aplicar autorización y controladores.
 aplicacion.UseRouting();
 
 aplicacion.UseAuthorization();

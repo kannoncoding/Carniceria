@@ -11,16 +11,20 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
+// Atiende las páginas MVC de consulta y mantenimiento de empleados.
 public class EmpleadosController : Controller
 {
+    // Acceso al almacén en memoria usado temporalmente por Web.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén registrado para las acciones del controlador.
     public EmpleadosController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
     [HttpGet]
+    // Muestra el listado de empleados.
     public IActionResult Index()
     {
         var empleados = _almacen.ListarEmpleados();
@@ -29,6 +33,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpGet]
+    // Muestra la ficha del empleado indicado.
     public IActionResult Detalles([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -51,6 +56,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpGet]
+    // Presenta el formulario vacío de alta.
     public IActionResult Crear()
     {
         var formulario = new EmpleadoFormulario();
@@ -59,6 +65,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda el empleado enviado desde el formulario.
     public IActionResult Crear([FromForm] EmpleadoFormulario formulario)
     {
         // Conservar los valores enviados y mostrar los errores del formulario.
@@ -84,6 +91,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpGet]
+    // Busca coincidencias de empleados por identificación.
     public IActionResult Buscar([FromQuery] string? consulta)
     {
         var modelo = new BusquedaViewModel<Empleado>
@@ -117,6 +125,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpGet]
+    // Carga los datos del empleado para editarlo.
     public IActionResult Editar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -155,6 +164,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpPost]
+    // Valida y guarda los cambios del empleado indicado.
     public IActionResult Editar(
         [FromRoute] Guid id,
         [FromForm] EmpleadoFormulario formulario)
@@ -202,6 +212,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpGet]
+    // Muestra la confirmación antes de eliminar al empleado.
     public IActionResult Eliminar([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||
@@ -225,6 +236,7 @@ public class EmpleadosController : Controller
     }
 
     [HttpPost]
+    // Ejecuta la eliminación confirmada del empleado.
     public IActionResult EliminarConfirmado([FromRoute] Guid id)
     {
         if (id == Guid.Empty ||

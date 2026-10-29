@@ -2,6 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
+// Turnos de trabajo asignables a un empleado.
 public enum Turno
 {
     [Display(Name = "Mañana")]

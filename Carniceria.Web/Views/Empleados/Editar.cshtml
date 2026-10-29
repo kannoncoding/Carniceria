@@ -1,4 +1,5 @@
 ﻿@model EmpleadoFormulario
+@* Envía los cambios del empleado asociado al Id de la ruta. *@
 
 @{
     ViewData["Title"] = "Editar empleado";
@@ -12,6 +13,7 @@
     Actualice los datos del empleado. Todos los campos son obligatorios.
 </p>
 
+@* Envía los cambios junto con el Id de la ruta y protección antifalsificación. *@
 <form asp-area=""
       asp-controller="Empleados"
       asp-action="Editar"
@@ -21,10 +23,13 @@
       class="formulario"
       novalidate>
 
+    @* Muestra los errores antes de los campos editables. *@
     <partial name="_ResumenValidacion" />
 
+    @* Reutiliza los campos personales y laborales del empleado. *@
     <partial name="_Formulario" model="@Model" />
 
+    @* Acciones para guardar o cancelar la edición. *@
     <div class="acciones">
         <button type="submit" class="boton">
             Guardar cambios

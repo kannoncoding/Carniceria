@@ -1,5 +1,7 @@
 ﻿@model ProductoFormulario
+@* Campos reutilizados en alta y edición de productos. *@
 
+@* Código único y nombre descriptivo del producto. *@
 <div class="campo">
     <label asp-for="Codigo"></label>
 
@@ -22,6 +24,7 @@
           id="error-codigo"></span>
 </div>
 
+@* Nombre comercial del producto. *@
 <div class="campo">
     <label asp-for="Nombre"></label>
 
@@ -42,6 +45,7 @@
           id="error-nombre"></span>
 </div>
 
+@* Categoría comercial del producto. *@
 <div class="campo">
     <label asp-for="Categoria"></label>
 
@@ -57,6 +61,7 @@
           id="error-categoria"></span>
 </div>
 
+@* Unidad que determina la escala del precio y las existencias. *@
 <div class="campo">
     <label asp-for="UnidadMedida"></label>
 
@@ -80,6 +85,7 @@
           id="error-unidad-medida"></span>
 </div>
 
+@* Aclara que cambiar de unidad no convierte los valores capturados. *@
 <p id="aviso-cambio-unidad" class="aviso">
     <strong>Al cambiar la unidad de medida:</strong>
     revise el precio y ambas existencias.
@@ -87,11 +93,13 @@
     a la nueva unidad. No se realiza una conversión automática.
 </p>
 
+@* Resume el formato numérico aceptado por el model binder. *@
 <p id="ayuda-decimales" class="ayuda-campo">
     Use coma para los decimales, por ejemplo: 4500,50 o 0,125.
     No escriba el símbolo ₡ ni separadores de miles en los campos numéricos.
 </p>
 
+@* Precio asociado a la unidad seleccionada. *@
 <div class="campo">
     <label asp-for="PrecioUnidadMedida" id="etiqueta-precio">
         Precio por unidad de medida (₡)
@@ -114,6 +122,7 @@
           id="error-precio"></span>
 </div>
 
+@* Existencia disponible y umbral mínimo de inventario. *@
 <div class="campo">
     <label asp-for="ExistenciaActual" id="etiqueta-existencia-actual">
         Existencia actual
@@ -136,6 +145,7 @@
           id="error-existencia-actual"></span>
 </div>
 
+@* Umbral que permite señalar niveles bajos de inventario. *@
 <div class="campo">
     <label asp-for="ExistenciaMinima" id="etiqueta-existencia-minima">
         Existencia mínima

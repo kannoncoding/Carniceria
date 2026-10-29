@@ -1,4 +1,5 @@
 ﻿@model Producto
+@* Presenta la información y existencias del producto seleccionado. *@
 
 @{
     ViewData["Title"] = "Detalles del producto";
@@ -6,6 +7,7 @@
 
 <h1>Detalles del producto</h1>
 
+@* Presenta el aviso que corresponde al nivel actual de existencias. *@
 @if (Model.TieneExistenciaBaja)
 {
     <div class="mensaje mensaje-advertencia">
@@ -25,6 +27,7 @@ else
     </div>
 }
 
+@* Identificación, proveedor, precio y niveles de inventario. *@
 <dl class="detalle-registro">
     <div>
         <dt>Código</dt>
@@ -80,6 +83,7 @@ else
     </div>
 </dl>
 
+@* Enlaces para editar, eliminar o volver al listado. *@
 <div class="acciones">
     <a class="boton boton-secundario"
        asp-area=""

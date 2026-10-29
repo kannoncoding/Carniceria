@@ -8,6 +8,7 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
+    // Crea registros iniciales usando las mismas reglas de alta del almacén.
     private void SembrarDatosIniciales()
     {
         var resultadoCliente = CrearCliente(new ClienteFormulario
@@ -79,6 +80,7 @@ public partial class AlmacenCarniceria
         ObtenerIdentificadorSemilla(resultadoPollo, "el producto POL001");
     }
 
+    // Falla el inicio si una semilla no se creó con un Id válido.
     private static Guid ObtenerIdentificadorSemilla(
         ResultadoOperacion resultado,
         string nombreRegistro)

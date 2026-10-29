@@ -1,6 +1,7 @@
 ﻿(() => {
     "use strict";
 
+    // Ajusta etiquetas y ayudas a la unidad seleccionada en el formulario.
     function inicializarEtiquetasProducto() {
         const campoUnidad = document.getElementById("UnidadMedida");
         const etiquetaPrecio = document.getElementById("etiqueta-precio");
@@ -26,6 +27,7 @@
         }
 
         function actualizarEtiquetas() {
+            // Lee el texto de la opción seleccionada en el formulario.
             const opcionSeleccionada = campoUnidad.selectedOptions[0];
 
             if (!opcionSeleccionada || opcionSeleccionada.value === "") {
@@ -45,12 +47,12 @@
                 return;
             }
 
-            // Leer el nombre que el servidor ya incluyó en el desplegable.
+            // Obtiene el nombre visible de la opción renderizada por el servidor.
             const unidadSingular = opcionSeleccionada.textContent
                 .trim()
                 .toLowerCase();
 
-            // Formar el plural de las cinco unidades del catálogo actual.
+            // El plural especial cubre la unidad singular del catálogo.
             const unidadPlural = unidadSingular === "unidad"
                 ? "unidades"
                 : `${unidadSingular}s`;
@@ -69,13 +71,13 @@
                 `La existencia actual y la mínima se expresan en ${unidadPlural}.`;
         }
 
-        // Actualizar los textos cuando cambie la unidad seleccionada.
+        // El cambio de unidad actualiza etiquetas y ayudas.
         campoUnidad.addEventListener("change", actualizarEtiquetas);
 
-        // Sincronizar al restaurar la página mediante Atrás/Adelante.
+        // El evento pageshow restaura las etiquetas al volver a la página.
         window.addEventListener("pageshow", actualizarEtiquetas);
 
-        // Usar la selección inicial o la conservada después de un error.
+        // Las etiquetas iniciales reflejan la selección del formulario.
         actualizarEtiquetas();
     }
 

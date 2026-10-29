@@ -2,6 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
+// Clases de bienes que puede suministrar un proveedor.
 public enum TipoSuministro
 {
     [Display(Name = "Carne de Res")]

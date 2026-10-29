@@ -10,17 +10,21 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Api.Controllers;
 
+// Expone operaciones HTTP y datos descriptivos del proveedor de cada producto.
 [ApiController]
 [Route("api/productos")]
 public class ProductosApiController : ControladorApiBase
 {
+    // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
+    // Recibe el almacén singleton registrado en la aplicación.
     public ProductosApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
+    // Devuelve productos junto con su proveedor dentro del mismo bloqueo.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -32,6 +36,7 @@ public class ProductosApiController : ControladorApiBase
         return Ok(productos);
     }
 
+    // Busca por código exacto o nombre parcial según el criterio indicado.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery] string? criterio,
@@ -68,6 +73,7 @@ public class ProductosApiController : ControladorApiBase
         return Ok(productos);
     }
 
+    // Obtiene el producto y su proveedor asociado por identificador.
     [HttpGet("{id:guid}")]
     public IActionResult ObtenerPorId(Guid id)
     {
@@ -82,6 +88,7 @@ public class ProductosApiController : ControladorApiBase
             : Ok(respuesta);
     }
 
+    // Crea el producto y devuelve la ruta de consulta del registro.
     [HttpPost]
     public IActionResult Crear([FromBody] SolicitudProducto solicitud)
     {
@@ -109,6 +116,7 @@ public class ProductosApiController : ControladorApiBase
             alta.Respuesta);
     }
 
+    // Actualiza el producto usando el identificador de la ruta.
     [HttpPut("{id:guid}")]
     public IActionResult Actualizar(
         Guid id,
@@ -137,6 +145,7 @@ public class ProductosApiController : ControladorApiBase
             : Ok(actualizacion.Respuesta);
     }
 
+    // Elimina el producto indicado o devuelve el resultado fallido.
     [HttpDelete("{id:guid}")]
     public IActionResult Eliminar(Guid id)
     {
@@ -147,6 +156,7 @@ public class ProductosApiController : ControladorApiBase
             : ConvertirResultadoFallido(resultado);
     }
 
+    // Crea una respuesta coherente con los datos actuales del proveedor.
     private RespuestaProducto MapearProducto(Producto producto)
     {
         var proveedor = _almacen.ObtenerProveedor(producto.ProveedorId)

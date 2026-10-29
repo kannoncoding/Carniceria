@@ -1,5 +1,7 @@
 ﻿@model ClienteFormulario
+@* Campos reutilizados en alta y edición de clientes. *@
 
+@* Tipo de documento que determina el formato de identificación. *@
 <div class="campo">
     <label asp-for="TipoIdentificacion"></label>
 
@@ -15,6 +17,7 @@
           id="error-tipo-identificacion"></span>
 </div>
 
+@* Número de documento con ayuda según el tipo seleccionado. *@
 <div class="campo">
     <label asp-for="Identificacion"></label>
 
@@ -37,6 +40,7 @@
           id="error-identificacion"></span>
 </div>
 
+@* Nombre de pila del cliente. *@
 <div class="campo">
     <label asp-for="Nombre"></label>
 
@@ -56,6 +60,7 @@
           id="error-nombre"></span>
 </div>
 
+@* Primer apellido. *@
 <div class="campo">
     <label asp-for="PrimerApellido"></label>
 
@@ -75,6 +80,7 @@
           id="error-primer-apellido"></span>
 </div>
 
+@* Segundo apellido. *@
 <div class="campo">
     <label asp-for="SegundoApellido"></label>
 
@@ -94,6 +100,7 @@
           id="error-segundo-apellido"></span>
 </div>
 
+@* Fecha civil de nacimiento. *@
 <div class="campo">
     <label asp-for="FechaNacimiento"></label>
 

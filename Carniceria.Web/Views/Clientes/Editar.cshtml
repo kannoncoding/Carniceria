@@ -1,4 +1,5 @@
 ﻿@model ClienteFormulario
+@* Envía los cambios del cliente asociado al Id de la ruta. *@
 
 @{
     ViewData["Title"] = "Editar cliente";
@@ -12,6 +13,7 @@
     Actualice los datos del cliente. Todos los campos son obligatorios.
 </p>
 
+@* Envía los cambios junto con el Id de la ruta y protección antifalsificación. *@
 <form asp-area=""
       asp-controller="Clientes"
       asp-action="Editar"
@@ -21,10 +23,13 @@
       class="formulario"
       novalidate>
 
+    @* Muestra los errores antes de los campos editables. *@
     <partial name="_ResumenValidacion" />
 
+    @* Reutiliza los campos compartidos del cliente. *@
     <partial name="_Formulario" model="@Model" />
 
+    @* Acciones para guardar o cancelar la edición. *@
     <div class="acciones">
         <button type="submit" class="boton">
             Guardar cambios

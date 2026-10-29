@@ -4,6 +4,7 @@ using Carniceria.Modelos.Contratos.Respuestas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
+// Registra los controladores, el formato de errores y el almacén compartido.
 var constructor = WebApplication.CreateBuilder(args);
 
 constructor.Services
@@ -13,6 +14,7 @@ constructor.Services
         opciones.SuppressMapClientErrors = true;
         opciones.InvalidModelStateResponseFactory = contexto =>
         {
+            // Conserva los errores de enlace agrupados por nombre de campo.
             var erroresPorCampo = contexto.ModelState
                 .Where(entrada => entrada.Value?.Errors.Count > 0)
                 .ToDictionary(
@@ -33,12 +35,15 @@ constructor.Services
             });
         };
     });
+// Mantiene un único almacén para las solicitudes de la API.
 constructor.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
+// Construye la aplicación y materializa las semillas al iniciar.
 var aplicacion = constructor.Build();
 
 _ = aplicacion.Services.GetRequiredService<IAlmacenCarniceria>();
 
+// Completa respuestas HTTP de error que todavía no tienen contenido.
 aplicacion.UseStatusCodePages(async contexto =>
 {
     var respuesta = contexto.HttpContext.Response;

@@ -9,9 +9,11 @@ namespace Carniceria.Web.Data;
 
 public partial class AlmacenCarniceria
 {
+    // Valida campos, duplicados y asigna el Id antes de insertar al cliente.
     public ResultadoOperacion CrearCliente(
         ClienteFormulario formulario)
     {
+        // Revisa los atributos y reglas propios del formulario.
         var errores = ValidadorFormularios.Validar(formulario);
 
         if (errores.Count > 0)
@@ -21,6 +23,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
+            // Rechaza una identificación ya asignada a otro cliente.
             bool identificacionDuplicada = _clientes.Any(cliente =>
                 string.Equals(
                     cliente.Identificacion,
@@ -34,10 +37,12 @@ public partial class AlmacenCarniceria
                     "Ya existe un cliente con esta identificación.");
             }
 
+            // Repite si el Id generado ya existe en la colección.
             Cliente nuevoCliente;
 
             do
             {
+                // Copia los campos validados y genera un Id para la entidad.
                 nuevoCliente = new Cliente
                 {
                     TipoIdentificacion = formulario.TipoIdentificacion!.Value,
@@ -52,6 +57,7 @@ public partial class AlmacenCarniceria
                 nuevoCliente.Id == Guid.Empty ||
                 _clientes.Any(cliente => cliente.Id == nuevoCliente.Id));
 
+            // Inserta el registro solo después de completar la validación.
             _clientes.Add(nuevoCliente);
 
             return ResultadoOperacion.Correcto(
@@ -60,9 +66,11 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Valida campos y duplicados antes de insertar al empleado.
     public ResultadoOperacion CrearEmpleado(
         EmpleadoFormulario formulario)
     {
+        // Revisa los atributos y reglas propios del formulario.
         var errores = ValidadorFormularios.Validar(formulario);
 
         if (errores.Count > 0)
@@ -72,6 +80,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
+            // Rechaza una identificación ya asignada a otro empleado.
             bool identificacionDuplicada = _empleados.Any(empleado =>
                 string.Equals(
                     empleado.Identificacion,
@@ -85,10 +94,12 @@ public partial class AlmacenCarniceria
                     "Ya existe un empleado con esta identificación.");
             }
 
+            // Repite si el Id generado ya existe en la colección.
             Empleado nuevoEmpleado;
 
             do
             {
+                // Copia los campos personales y laborales ya validados.
                 nuevoEmpleado = new Empleado
                 {
                     TipoIdentificacion = formulario.TipoIdentificacion!.Value,
@@ -108,6 +119,7 @@ public partial class AlmacenCarniceria
                 nuevoEmpleado.Id == Guid.Empty ||
                 _empleados.Any(empleado => empleado.Id == nuevoEmpleado.Id));
 
+            // Inserta el registro solo después de completar la validación.
             _empleados.Add(nuevoEmpleado);
 
             return ResultadoOperacion.Correcto(
@@ -116,9 +128,11 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Valida campos y duplicados antes de insertar al producto.
     public ResultadoOperacion CrearProducto(
         ProductoFormulario formulario)
     {
+        // Revisa los atributos y reglas propios del formulario.
         var errores = ValidadorFormularios.Validar(formulario);
 
         if (errores.Count > 0)
@@ -128,6 +142,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
+            // Rechaza un código ya utilizado por otro producto.
             bool codigoDuplicado = _productos.Any(producto =>
                 string.Equals(
                     producto.Codigo,
@@ -141,10 +156,12 @@ public partial class AlmacenCarniceria
                     "Ya existe un producto con este código.");
             }
 
+            // Repite si el Id generado ya existe en la colección.
             Producto nuevoProducto;
 
             do
             {
+                // Copia los valores validados y genera un Id para el producto.
                 nuevoProducto = new Producto
                 {
                     Codigo = formulario.Codigo,
@@ -160,6 +177,7 @@ public partial class AlmacenCarniceria
                 nuevoProducto.Id == Guid.Empty ||
                 _productos.Any(producto => producto.Id == nuevoProducto.Id));
 
+            // Inserta el registro solo después de completar la validación.
             _productos.Add(nuevoProducto);
 
             return ResultadoOperacion.Correcto(
@@ -168,9 +186,11 @@ public partial class AlmacenCarniceria
         }
     }
 
+    // Valida campos y duplicados antes de insertar al proveedor.
     public ResultadoOperacion CrearProveedor(
         ProveedorFormulario formulario)
     {
+        // Revisa los atributos y reglas propios del formulario.
         var errores = ValidadorFormularios.Validar(formulario);
 
         if (errores.Count > 0)
@@ -180,6 +200,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
+            // Rechaza una identificación ya asignada a otro proveedor.
             bool identificacionDuplicada = _proveedores.Any(proveedor =>
                 string.Equals(
                     proveedor.Identificacion,
@@ -193,10 +214,12 @@ public partial class AlmacenCarniceria
                     "Ya existe un proveedor con esta identificación.");
             }
 
+            // Repite si el Id generado ya existe en la colección.
             Proveedor nuevoProveedor;
 
             do
             {
+                // Copia los datos comerciales y de contacto validados.
                 nuevoProveedor = new Proveedor
                 {
                     TipoIdentificacion = formulario.TipoIdentificacion!.Value,
@@ -213,6 +236,7 @@ public partial class AlmacenCarniceria
                 nuevoProveedor.Id == Guid.Empty ||
                 _proveedores.Any(proveedor => proveedor.Id == nuevoProveedor.Id));
 
+            // Inserta el registro solo después de completar la validación.
             _proveedores.Add(nuevoProveedor);
 
             return ResultadoOperacion.Correcto(

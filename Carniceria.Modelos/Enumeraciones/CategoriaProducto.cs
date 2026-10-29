@@ -2,6 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
+// Categorías comerciales disponibles para clasificar productos.
 public enum CategoriaProducto
 {
     [Display(Name = "Carne de Res")]

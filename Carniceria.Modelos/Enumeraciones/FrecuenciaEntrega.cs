@@ -2,6 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
+// Periodicidades disponibles para la entrega de suministros.
 public enum FrecuenciaEntrega
 {
     [Display(Name = "Diaria")]

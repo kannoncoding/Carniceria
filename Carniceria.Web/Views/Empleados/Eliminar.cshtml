@@ -1,4 +1,5 @@
 ﻿@model Empleado
+@* Muestra los datos del empleado antes de confirmar su eliminación. *@
 
 @{
     ViewData["Title"] = "Eliminar empleado";
@@ -6,6 +7,7 @@
 
 <h1>Eliminar empleado</h1>
 
+@* Resume la consecuencia antes de confirmar la operación. *@
 <div class="mensaje mensaje-advertencia">
     <p>
         <strong>¿Desea eliminar este empleado?</strong>
@@ -17,6 +19,7 @@
     </p>
 </div>
 
+@* Datos usados para identificar al empleado que se eliminará. *@
 <dl class="detalle-registro">
     <div>
         <dt>Tipo de identificación</dt>
@@ -62,6 +65,7 @@
     </div>
 </dl>
 
+@* Envía la confirmación mediante POST protegido contra falsificación. *@
 <form asp-area=""
       asp-controller="Empleados"
       asp-action="EliminarConfirmado"
