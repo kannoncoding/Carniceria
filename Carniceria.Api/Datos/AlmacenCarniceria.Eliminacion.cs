@@ -7,7 +7,7 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
-    // Elimina el cliente si el identificador existe.
+    // Elimina el cliente si existe y no tiene facturas relacionadas.
     public ResultadoOperacion EliminarCliente(Guid id)
     {
         lock (_sincronizacion)
@@ -21,6 +21,14 @@ public partial class AlmacenCarniceria
                     "El cliente solicitado no existe.");
             }
 
+            // Conserva la referencia del cliente de cada factura.
+            if (_facturas.Any(factura => factura.ClienteId == id))
+            {
+                return ResultadoOperacion.ConflictoIntegridad(
+                    nameof(Factura.ClienteId),
+                    "No se puede eliminar el cliente porque tiene facturas relacionadas.");
+            }
+
             _clientes.Remove(cliente);
 
             return ResultadoOperacion.Correcto(
@@ -29,7 +37,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Elimina el empleado si el identificador existe.
+    // Elimina el empleado si existe y no tiene facturas relacionadas.
     public ResultadoOperacion EliminarEmpleado(Guid id)
     {
         lock (_sincronizacion)
@@ -43,6 +51,14 @@ public partial class AlmacenCarniceria
                     "El empleado solicitado no existe.");
             }
 
+            // Conserva la referencia del empleado de cada factura.
+            if (_facturas.Any(factura => factura.EmpleadoId == id))
+            {
+                return ResultadoOperacion.ConflictoIntegridad(
+                    nameof(Factura.EmpleadoId),
+                    "No se puede eliminar el empleado porque tiene facturas relacionadas.");
+            }
+
             _empleados.Remove(empleado);
 
             return ResultadoOperacion.Correcto(
@@ -51,7 +67,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Elimina el producto si el identificador existe.
+    // Elimina el producto si existe y no tiene detalles de factura.
     public ResultadoOperacion EliminarProducto(Guid id)
     {
         lock (_sincronizacion)
@@ -63,6 +79,15 @@ public partial class AlmacenCarniceria
             {
                 return ResultadoOperacion.NoEncontrado(
                     "El producto solicitado no existe.");
+            }
+
+            // Conserva la referencia al producto capturada en cada línea.
+            if (_facturas.Any(factura =>
+                    factura.Detalles.Any(detalle => detalle.ProductoId == id)))
+            {
+                return ResultadoOperacion.ConflictoIntegridad(
+                    nameof(DetalleFactura.ProductoId),
+                    "No se puede eliminar el producto porque tiene líneas de factura relacionadas.");
             }
 
             _productos.Remove(producto);

@@ -21,6 +21,9 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
 
     private readonly List<Proveedor> _proveedores = new();
 
+    // Conserva las facturas completas registradas por la API.
+    private readonly List<Factura> _facturas = new();
+
     // Conserva la siguiente secuencia de número de factura.
     private int _siguienteNumeroFactura = 1;
 

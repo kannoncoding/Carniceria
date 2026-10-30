@@ -13,6 +13,136 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
+    // Devuelve una colección de solo lectura con copias profundas.
+    public IReadOnlyList<Factura> ListarFacturas()
+    {
+        lock (_sincronizacion)
+        {
+            return Array.AsReadOnly(
+                _facturas.Select(factura => factura.Copiar()).ToArray());
+        }
+    }
+
+    // Obtiene una copia independiente de la factura por Id.
+    public Factura? ObtenerFactura(Guid id)
+    {
+        lock (_sincronizacion)
+        {
+            return _facturas
+                .FirstOrDefault(factura => factura.Id == id)
+                ?.Copiar();
+        }
+    }
+
+    // Busca un número exacto de factura sin distinguir mayúsculas.
+    public Factura? ObtenerFacturaPorNumero(string numero)
+    {
+        var consulta = numero?.Trim() ?? string.Empty;
+        if (consulta.Length == 0)
+        {
+            return null;
+        }
+
+        lock (_sincronizacion)
+        {
+            return _facturas
+                .FirstOrDefault(factura => string.Equals(
+                    factura.Numero,
+                    consulta,
+                    StringComparison.OrdinalIgnoreCase))
+                ?.Copiar();
+        }
+    }
+
+    // Busca números exactos de factura sin distinguir mayúsculas.
+    public IReadOnlyList<Factura> BuscarFacturasPorNumero(string numero)
+    {
+        var consulta = numero?.Trim() ?? string.Empty;
+        if (consulta.Length == 0)
+        {
+            return Array.Empty<Factura>();
+        }
+
+        lock (_sincronizacion)
+        {
+            return Array.AsReadOnly(
+                _facturas
+                    .Where(factura => string.Equals(
+                        factura.Numero,
+                        consulta,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(factura => factura.Copiar())
+                    .ToArray());
+        }
+    }
+
+    // Busca facturas por la identificación exacta de su cliente.
+    public IReadOnlyList<Factura> BuscarFacturasPorIdentificacionCliente(
+        string identificacion)
+    {
+        var consulta = identificacion?.Trim() ?? string.Empty;
+        if (consulta.Length == 0)
+        {
+            return Array.Empty<Factura>();
+        }
+
+        lock (_sincronizacion)
+        {
+            var clientesEncontrados = _clientes
+                .Where(cliente => string.Equals(
+                    cliente.Identificacion,
+                    consulta,
+                    StringComparison.OrdinalIgnoreCase))
+                .Select(cliente => cliente.Id)
+                .ToHashSet();
+
+            return Array.AsReadOnly(
+                _facturas
+                    .Where(factura => clientesEncontrados.Contains(factura.ClienteId))
+                    .Select(factura => factura.Copiar())
+                    .ToArray());
+        }
+    }
+
+    // Registra la factura completa dentro del bloqueo del almacén.
+    public ResultadoOperacion CrearFactura(SolicitudFactura solicitud)
+    {
+        ArgumentNullException.ThrowIfNull(solicitud);
+
+        lock (_sincronizacion)
+        {
+            var preparacion = PrepararDetallesFactura(solicitud);
+            if (preparacion.Error is not null)
+            {
+                return preparacion.Error;
+            }
+
+            var candidata = new Factura
+            {
+                ClienteId = solicitud.ClienteId,
+                EmpleadoId = solicitud.EmpleadoId,
+                MetodoPago = solicitud.MetodoPago,
+                PorcentajeDescuento = solicitud.PorcentajeDescuento,
+                Detalles = preparacion.Detalles
+                    .Select(detalle => detalle.Copiar())
+                    .ToList()
+            };
+
+            var calculo = CalcularImportesFactura(candidata);
+            if (calculo.Error is not null)
+            {
+                return calculo.Error;
+            }
+
+            var registrada = PrepararFacturaValidadaParaGuardar(calculo.Factura!);
+            _facturas.Add(registrada);
+
+            return ResultadoOperacion.Correcto(
+                registrada.Id,
+                "Factura registrada correctamente.");
+        }
+    }
+
     // Calcula los importes en una copia y controla desbordamientos decimales.
     private (ResultadoOperacion? Error, Factura? Factura) CalcularImportesFactura(
         Factura candidata)

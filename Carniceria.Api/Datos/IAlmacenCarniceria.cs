@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Carniceria.Modelos.Entidades;
+using Carniceria.Modelos.Contratos.Solicitudes;
 using Carniceria.Modelos.Formularios;
 using Carniceria.Modelos.Resultados;
 
@@ -115,4 +116,25 @@ public interface IAlmacenCarniceria
 
     // Rechaza la eliminación si hay productos relacionados.
     ResultadoOperacion EliminarProveedor(Guid id);
+
+    // Operaciones de consulta y registro de facturas.
+
+    // Devuelve copias de todas las facturas registradas.
+    IReadOnlyList<Factura> ListarFacturas();
+
+    // Obtiene una copia de la factura indicada por su Id.
+    Factura? ObtenerFactura(Guid id);
+
+    // Obtiene una copia por número exacto, sin distinguir mayúsculas.
+    Factura? ObtenerFacturaPorNumero(string numero);
+
+    // Busca números exactos de factura.
+    IReadOnlyList<Factura> BuscarFacturasPorNumero(string numero);
+
+    // Busca facturas asociadas a la identificación exacta del cliente.
+    IReadOnlyList<Factura> BuscarFacturasPorIdentificacionCliente(
+        string identificacion);
+
+    // Valida, calcula, asigna identidad y registra una factura completa.
+    ResultadoOperacion CrearFactura(SolicitudFactura solicitud);
 }
