@@ -1,5 +1,5 @@
 ﻿@model BusquedaViewModel<RespuestaProveedor>
-@* Permite buscar proveedores por identificación o razón social. *@
+@* Permite buscar proveedores por identificacion o razon social. *@
 
 @{
     ViewData["Title"] = "Buscar proveedores";
@@ -12,7 +12,7 @@
     de su razón social o nombre comercial.
 </p>
 
-@* Captura el criterio y el texto de búsqueda del proveedor. *@
+@* Captura el criterio y el texto de busqueda del proveedor. *@
 <form asp-area=""
       asp-controller="Proveedores"
       asp-action="Buscar"
@@ -104,7 +104,7 @@
     </div>
 </form>
 
-@* Distingue instrucciones iniciales, lista vacía y resultados encontrados. *@
+@* Distingue instrucciones iniciales, lista vacia y resultados encontrados. *@
 @if (!Model.BusquedaRealizada && ViewData.ModelState.IsValid)
 {
     <p class="estado-vacio">

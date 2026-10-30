@@ -22,7 +22,7 @@
             }
 
             function actualizarResumen() {
-                // Divide el valor ISO en año, mes y día.
+                // Divide el valor ISO en año, mes y dia.
                 const partes = /^(\d{4})-(\d{2})-(\d{2})$/.exec(
                     campo.value
                 );
@@ -38,7 +38,7 @@
                 const mes = partes[2];
                 const dia = partes[3];
 
-                // Presenta la fecha sin conversión de zona horaria.
+                // Presenta la fecha sin conversion de zona horaria.
                 resumen.textContent =
                     `Fecha seleccionada: ${dia}/${mes}/${anio}.`;
             }

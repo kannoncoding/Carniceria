@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Carniceria.Modelos.Enumeraciones;
 
-// Métodos disponibles para registrar una factura.
+// Metodos disponibles para registrar una factura.
 public enum MetodoPago
 {
     Efectivo = 1,

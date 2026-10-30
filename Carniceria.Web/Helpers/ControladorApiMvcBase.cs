@@ -19,16 +19,16 @@ namespace Carniceria.Web.Helpers;
 // Comparte la lectura de contratos API y el tratamiento de sus errores.
 public abstract class ControladorApiMvcBase : Controller
 {
-    // Fábrica registrada para las consultas HTTP a la API.
+    // Fabrica registrada para las consultas HTTP a la API.
     private readonly IHttpClientFactory _fabricaClientesHttp;
 
-    // Recibe la fábrica de clientes HTTP configurada por la aplicación.
+    // Recibe la fabrica de clientes HTTP configurada por la aplicacion.
     protected ControladorApiMvcBase(IHttpClientFactory fabricaClientesHttp)
     {
         _fabricaClientesHttp = fabricaClientesHttp;
     }
 
-    // Crea el cliente con la dirección base y el tiempo límite registrados.
+    // Crea el cliente con la direccion base y el tiempo limite registrados.
     protected HttpClient CrearClienteHttpApi()
     {
         return _fabricaClientesHttp.CreateClient("ApiCarniceria");
@@ -44,7 +44,7 @@ public abstract class ControladorApiMvcBase : Controller
             cancellationToken: cancelacion);
     }
 
-    // Lee un error uniforme o prepara un mensaje según el código HTTP.
+    // Lee un error uniforme o prepara un mensaje segun el codigo HTTP.
     protected static async Task<ErrorApi> LeerErrorApiAsync(
         HttpResponseMessage respuesta,
         CancellationToken cancelacion)
@@ -75,7 +75,7 @@ public abstract class ControladorApiMvcBase : Controller
         };
     }
 
-    // Rechaza un charset desconocido como respuesta JSON no válida.
+    // Rechaza un charset desconocido como respuesta JSON no valida.
     private static void ValidarCharsetJson(HttpResponseMessage respuesta)
     {
         string? charset = respuesta.Content.Headers.ContentType?.CharSet;
@@ -124,7 +124,7 @@ public abstract class ControladorApiMvcBase : Controller
                 nombreCampo,
                 out string? nombrePropiedad);
 
-            // Ignorar mensajes vacíos y llevar claves desconocidas al resumen.
+            // Ignorar mensajes vacios y llevar claves desconocidas al resumen.
             string[] textos = (mensajes ?? Array.Empty<string>())
                 .Where(mensaje => !string.IsNullOrWhiteSpace(mensaje))
                 .ToArray();
@@ -155,7 +155,7 @@ public abstract class ControladorApiMvcBase : Controller
             }
         }
 
-        // Evitar ocultar errores si el servidor entregó campos sin mensajes.
+        // Evitar ocultar errores si el servidor entrego campos sin mensajes.
         if (ModelState.ErrorCount == erroresIniciales)
         {
             ModelState.AddModelError(
@@ -166,7 +166,7 @@ public abstract class ControladorApiMvcBase : Controller
         }
     }
 
-    // Devuelve el nombre del campo desde claves de validación JSON.
+    // Devuelve el nombre del campo desde claves de validacion JSON.
     private static string NormalizarNombreCampo(string clave)
     {
         string limpia = clave.Trim();
@@ -177,7 +177,7 @@ public abstract class ControladorApiMvcBase : Controller
         return limpia;
     }
 
-    // Presenta una falla de API sin confundirla con una lista vacía.
+    // Presenta una falla de API sin confundirla con una lista vacia.
     protected IActionResult ServicioNoDisponible(string mensaje)
     {
         var vista = View(
@@ -193,7 +193,7 @@ public abstract class ControladorApiMvcBase : Controller
         return vista;
     }
 
-    // Distingue una espera agotada de la cancelación del navegador.
+    // Distingue una espera agotada de la cancelacion del navegador.
     protected IActionResult ErrorDeComunicacion(
         CancellationToken cancelacion,
         bool operacionMutante)
@@ -211,7 +211,7 @@ public abstract class ControladorApiMvcBase : Controller
         return ServicioNoDisponible(mensaje);
     }
 
-    // Conserva el formulario cuando no se pudo confirmar una mutación.
+    // Conserva el formulario cuando no se pudo confirmar una mutacion.
     protected void AgregarErrorMutacionNoConfirmada()
     {
         ModelState.AddModelError(

@@ -3,15 +3,15 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Contratos.Respuestas;
 
-// Datos calculados y descriptivos de una línea de factura.
+// Datos calculados y descriptivos de una linea de factura.
 public sealed class RespuestaDetalleFactura
 {
-    // Identificadores de línea y producto.
+    // Identificadores de linea y producto.
     public Guid Id { get; init; }
 
     public Guid ProductoId { get; init; }
 
-    // Datos descriptivos del producto y la unidad de la línea.
+    // Datos descriptivos del producto y la unidad de la linea.
     public string ProductoCodigo { get; init; } = string.Empty;
 
     public string ProductoNombre { get; init; } = string.Empty;

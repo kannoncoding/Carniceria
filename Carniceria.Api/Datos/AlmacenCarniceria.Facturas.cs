@@ -13,7 +13,7 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
-    // Devuelve una colección de solo lectura con copias profundas.
+    // Devuelve una coleccion de solo lectura con copias profundas.
     public IReadOnlyList<Factura> ListarFacturas()
     {
         lock (_sincronizacion)
@@ -34,7 +34,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Busca un número exacto de factura sin distinguir mayúsculas.
+    // Busca un numero exacto de factura sin distinguir mayusculas.
     public Factura? ObtenerFacturaPorNumero(string numero)
     {
         var consulta = numero?.Trim() ?? string.Empty;
@@ -54,7 +54,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Busca números exactos de factura sin distinguir mayúsculas.
+    // Busca numeros exactos de factura sin distinguir mayusculas.
     public IReadOnlyList<Factura> BuscarFacturasPorNumero(string numero)
     {
         var consulta = numero?.Trim() ?? string.Empty;
@@ -76,7 +76,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Busca facturas por la identificación exacta de su cliente.
+    // Busca facturas por la identificacion exacta de su cliente.
     public IReadOnlyList<Factura> BuscarFacturasPorIdentificacionCliente(
         string identificacion)
     {
@@ -104,7 +104,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Registra la factura completa dentro del bloqueo del almacén.
+    // Registra la factura completa dentro del bloqueo del almacen.
     public ResultadoOperacion CrearFactura(SolicitudFactura solicitud)
     {
         ArgumentNullException.ThrowIfNull(solicitud);
@@ -126,7 +126,7 @@ public partial class AlmacenCarniceria
         }
     }
 
-    // Calcula una copia para presentación sin reservar identidad ni persistirla.
+    // Calcula una copia para presentacion sin reservar identidad ni persistirla.
     public (ResultadoOperacion? Error, Factura? Factura) PrevisualizarFactura(
         SolicitudFactura solicitud)
     {
@@ -135,7 +135,7 @@ public partial class AlmacenCarniceria
         return EjecutarConBloqueo(() => PrepararFacturaCalculada(solicitud));
     }
 
-    // Reutiliza validación, snapshots de productos y cálculo para ambos flujos.
+    // Reutiliza validacion, snapshots de productos y calculo para ambos flujos.
     private (ResultadoOperacion? Error, Factura? Factura) PrepararFacturaCalculada(
         SolicitudFactura solicitud)
     {
@@ -184,7 +184,7 @@ public partial class AlmacenCarniceria
         var factura = candidata.Copiar();
         var subtotal = 0m;
 
-        // Redondea cada línea antes de acumular el subtotal.
+        // Redondea cada linea antes de acumular el subtotal.
         for (var indice = 0; indice < factura.Detalles.Count; indice++)
         {
             var detalle = factura.Detalles[indice];
@@ -255,13 +255,13 @@ public partial class AlmacenCarniceria
         return (null, factura);
     }
 
-    // Redondea importes monetarios con la política adoptada para la fase.
+    // Redondea importes monetarios con la politica adoptada para la fase.
     private static decimal RedondearImporte(decimal importe)
     {
         return Math.Round(importe, 2, MidpointRounding.AwayFromZero);
     }
 
-    // Crea un rechazo controlado asociado al campo que desbordó.
+    // Crea un rechazo controlado asociado al campo que desbordo.
     private static ResultadoOperacion CrearErrorCalculo(
         string campo,
         string mensaje)
@@ -322,7 +322,7 @@ public partial class AlmacenCarniceria
                 }
             }
 
-            // Cada línea conserva su cantidad y usa datos actuales del producto.
+            // Cada linea conserva su cantidad y usa datos actuales del producto.
             var detallesPreparados = solicitud.Detalles
                 .Select(detalle =>
                 {
@@ -344,7 +344,7 @@ public partial class AlmacenCarniceria
         });
     }
 
-    // Asigna identidad a un candidato validado bajo el bloqueo del almacén.
+    // Asigna identidad a un candidato validado bajo el bloqueo del almacen.
     private Factura PrepararFacturaValidadaParaGuardar(Factura candidata)
     {
         ArgumentNullException.ThrowIfNull(candidata);

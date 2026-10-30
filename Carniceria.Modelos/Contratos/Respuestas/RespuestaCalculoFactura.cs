@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Carniceria.Modelos.Contratos.Respuestas;
 
-// Importes y líneas de cálculo sin número, fecha ni Id de factura.
+// Importes y lineas de calculo sin numero, fecha ni Id de factura.
 public sealed class RespuestaCalculoFactura
 {
     // Porcentaje solicitado y valores monetarios calculados.
@@ -18,7 +18,7 @@ public sealed class RespuestaCalculoFactura
 
     public decimal Total { get; init; }
 
-    // Líneas descriptivas sin Id de detalle asignado.
+    // Lineas descriptivas sin Id de detalle asignado.
     public IReadOnlyList<RespuestaDetalleCalculoFactura> Detalles { get; init; } =
         Array.Empty<RespuestaDetalleCalculoFactura>();
 }

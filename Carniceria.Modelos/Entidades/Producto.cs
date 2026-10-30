@@ -3,7 +3,7 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Entidades;
 
-// Representa un artículo del inventario relacionado con un proveedor.
+// Representa un articulo del inventario relacionado con un proveedor.
 public class Producto
 {
     // Identificador interno asignado al crear el producto.
@@ -27,7 +27,7 @@ public class Producto
 
     public decimal ExistenciaMinima { get; set; }
 
-    // Indica si la existencia llegó al mínimo configurado.
+    // Indica si la existencia llego al minimo configurado.
     public bool TieneExistenciaBaja => ExistenciaActual <= ExistenciaMinima;
 
     // Devuelve una copia independiente de los datos simples de la entidad.

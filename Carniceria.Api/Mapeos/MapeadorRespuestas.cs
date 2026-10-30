@@ -3,10 +3,10 @@ using Carniceria.Modelos.Entidades;
 
 namespace Carniceria.Api.Mapeos;
 
-// Proyecta entidades del almacén a contratos que no exponen su estado interno.
+// Proyecta entidades del almacen a contratos que no exponen su estado interno.
 public static class MapeadorRespuestas
 {
-    // Copia los datos públicos del cliente a su contrato de respuesta.
+    // Copia los datos publicos del cliente a su contrato de respuesta.
     public static RespuestaCliente Convertir(Cliente cliente)
     {
         return new RespuestaCliente

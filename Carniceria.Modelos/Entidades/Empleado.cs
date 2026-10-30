@@ -3,13 +3,13 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Entidades;
 
-// Representa una persona con información laboral asignada.
+// Representa una persona con informacion laboral asignada.
 public class Empleado : Persona
 {
     // Conserva la fecha de ingreso sin componente de hora.
     private DateTime _fechaIngreso;
 
-    // Remuneración mensual registrada para el empleado.
+    // Remuneracion mensual registrada para el empleado.
     public decimal SalarioMensual { get; set; }
 
     // Normaliza la fecha de ingreso al asignarla.
@@ -19,7 +19,7 @@ public class Empleado : Persona
         set => _fechaIngreso = value.Date;
     }
 
-    // Área, puesto y turno asignados al empleado.
+    // Area, puesto y turno asignados al empleado.
     public AreaTrabajo AreaTrabajo { get; set; }
 
     public string Puesto { get; set; } = string.Empty;

@@ -16,17 +16,17 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
-// Atiende las páginas MVC de consulta y mantenimiento de clientes.
+// Atiende las paginas MVC de consulta y mantenimiento de clientes.
 public class ClientesController : ControladorApiMvcBase
 {
-    // Recibe la fábrica del cliente HTTP usado por las acciones.
+    // Recibe la fabrica del cliente HTTP usado por las acciones.
     public ClientesController(IHttpClientFactory fabricaClientesHttp)
         : base(fabricaClientesHttp)
     {
     }
 
     [HttpGet]
-    // Consulta la colección de clientes en la API.
+    // Consulta la coleccion de clientes en la API.
     public async Task<IActionResult> Index()
     {
         var cancelacion = HttpContext.RequestAborted;
@@ -38,7 +38,7 @@ public class ClientesController : ControladorApiMvcBase
             if (!respuesta.IsSuccessStatusCode)
                 return ServicioNoDisponible("No se pudo cargar el listado de clientes.");
 
-            // Convertir solo un cuerpo JSON con la colección esperada.
+            // Convertir solo un cuerpo JSON con la coleccion esperada.
             var clientes = await LeerRespuestaAsync<RespuestaCliente[]>(respuesta, cancelacion);
             if (clientes is null || clientes.Any(registro => registro is null || !RespuestaValida(registro)))
                 return ServicioNoDisponible("La API respondió con datos de clientes inesperados.");
@@ -95,11 +95,11 @@ public class ClientesController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Presenta el formulario vacío para registrar un cliente.
+    // Presenta el formulario vacio para registrar un cliente.
     public IActionResult Crear() => View(new ClienteFormulario());
 
     [HttpPost]
-    // Valida el formulario y envía el alta a la API.
+    // Valida el formulario y envia el alta a la API.
     public async Task<IActionResult> Crear([FromForm] ClienteFormulario formulario)
     {
         if (!ModelState.IsValid)
@@ -113,7 +113,7 @@ public class ClientesController : ControladorApiMvcBase
             using var respuesta = await clienteHttp.PostAsJsonAsync("api/clientes", formulario, cancelacion);
             if (respuesta.StatusCode == HttpStatusCode.Created)
             {
-                // Verificar el DTO antes de anunciar que el alta se completó.
+                // Verificar el DTO antes de anunciar que el alta se completo.
                 var registro = await LeerRespuestaAsync<RespuestaCliente>(respuesta, cancelacion);
                 if (registro is null || !RespuestaValida(registro))
                 {
@@ -153,10 +153,10 @@ public class ClientesController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Busca clientes por identificación y conserva el criterio ingresado.
+    // Busca clientes por identificacion y conserva el criterio ingresado.
     public async Task<IActionResult> Buscar([FromQuery] string? consulta)
     {
-        // Conservar el texto ingresado y el criterio fijo del módulo.
+        // Conservar el texto ingresado y el criterio fijo del modulo.
         var modelo = new BusquedaViewModel<RespuestaCliente>
         {
             Criterio = "Identificacion",
@@ -317,7 +317,7 @@ public class ClientesController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Presenta los datos antes de confirmar la eliminación.
+    // Presenta los datos antes de confirmar la eliminacion.
     public async Task<IActionResult> Eliminar([FromRoute] Guid id)
     {
         if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
@@ -355,7 +355,7 @@ public class ClientesController : ControladorApiMvcBase
     }
 
     [HttpPost]
-    // Solicita la eliminación confirmada y conserva la confirmación si falla.
+    // Solicita la eliminacion confirmada y conserva la confirmacion si falla.
     public async Task<IActionResult> EliminarConfirmado([FromRoute] Guid id)
     {
         if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
@@ -364,7 +364,7 @@ public class ClientesController : ControladorApiMvcBase
         try
         {
             using var clienteHttp = CrearClienteHttpApi();
-            // Solicitar una única baja y esperar el resultado del servicio.
+            // Solicitar una unica baja y esperar el resultado del servicio.
             using var respuesta = await clienteHttp.DeleteAsync($"api/clientes/{id:D}", cancelacion);
             if (respuesta.StatusCode == HttpStatusCode.NoContent)
             {

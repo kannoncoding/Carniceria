@@ -6,7 +6,7 @@ using Carniceria.Modelos.Resultados;
 
 var resultados = new List<(string Nombre, bool Aprobada)>();
 
-// Registra comprobaciones del cálculo decimal y de sus límites.
+// Registra comprobaciones del calculo decimal y de sus limites.
 void Verificar(string nombre, bool condicion)
 {
     resultados.Add((nombre, condicion));
@@ -18,14 +18,14 @@ var metodoCalculo = typeof(AlmacenCarniceria).GetMethod(
     BindingFlags.Instance | BindingFlags.NonPublic)
     ?? throw new InvalidOperationException("No se encontró el calculador de facturas.");
 
-// Invoca el cálculo interno sin exponerlo mediante una ruta HTTP.
+// Invoca el calculo interno sin exponerlo mediante una ruta HTTP.
 (ResultadoOperacion? Error, Factura? Factura) Calcular(Factura candidata)
 {
     return ((ResultadoOperacion? Error, Factura? Factura))
         metodoCalculo.Invoke(almacen, [candidata])!;
 }
 
-// Construye un candidato con líneas recibidas desde el almacén.
+// Construye un candidato con lineas recibidas desde el almacen.
 Factura CrearFactura(decimal descuento, params DetalleFactura[] detalles)
 {
     return new Factura
@@ -45,7 +45,7 @@ DetalleFactura Linea(decimal cantidad, decimal precio)
     };
 }
 
-// Comprueba el ejemplo académico y los extremos permitidos del descuento.
+// Comprueba el ejemplo academico y los extremos permitidos del descuento.
 var ejemplo = CrearFactura(10m, Linea(2m, 4000m), Linea(1m, 3000m));
 var calculoEjemplo = Calcular(ejemplo);
 Verificar("El ejemplo 10 % produce importes esperados",
@@ -71,7 +71,7 @@ Verificar("Descuento máximo calcula base, IVA y total",
     descuentoMaximo.Factura.MontoIva == 780m &&
     descuentoMaximo.Factura.Total == 6780m);
 
-// Redondea cada línea antes de sumarla y admite importes finales en cero.
+// Redondea cada linea antes de sumarla y admite importes finales en cero.
 var puntoMedio = Calcular(CrearFactura(0m, Linea(0.005m, 1m), Linea(0.005m, 1m)));
 var importeCero = Calcular(CrearFactura(0m, Linea(0.001m, 1m)));
 Verificar("Los puntos medios redondean cada línea AwayFromZero antes del subtotal",
@@ -83,7 +83,7 @@ Verificar("Un importe redondeado a cero no se rechaza",
     importeCero.Factura!.Subtotal == 0m &&
     importeCero.Factura.Total == 0m);
 
-// El cálculo trabaja en copias y conserva el candidato original.
+// El calculo trabaja en copias y conserva el candidato original.
 Verificar("El resultado y sus líneas son copias independientes",
     calculoEjemplo.Error is null &&
     !ReferenceEquals(ejemplo, calculoEjemplo.Factura) &&

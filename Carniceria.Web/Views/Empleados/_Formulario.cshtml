@@ -1,5 +1,5 @@
 ﻿@model EmpleadoFormulario
-@* Campos reutilizados en alta y edición de empleados. *@
+@* Campos reutilizados en alta y edicion de empleados. *@
 
 @* Tipo de documento admitido para el empleado. *@
 <div class="campo">
@@ -17,7 +17,7 @@
           id="error-tipo-identificacion"></span>
 </div>
 
-@* Número de identificación laboral. *@
+@* Numero de identificacion laboral. *@
 <div class="campo">
     <label asp-for="Identificacion"></label>
 
@@ -143,7 +143,7 @@
           id="error-salario"></span>
 </div>
 
-@* Fecha en que inicia la relación laboral. *@
+@* Fecha en que inicia la relacion laboral. *@
 <div class="campo">
     <label asp-for="FechaIngreso"></label>
 
@@ -167,7 +167,7 @@
           id="error-fecha-ingreso"></span>
 </div>
 
-@* Área que determina los puestos disponibles. *@
+@* Area que determina los puestos disponibles. *@
 <div class="campo">
     <label asp-for="AreaTrabajo"></label>
 
@@ -183,7 +183,7 @@
           id="error-area-trabajo"></span>
 </div>
 
-@* Puesto filtrado según el área seleccionada. *@
+@* Puesto filtrado segun el area seleccionada. *@
 <div class="campo">
     <label asp-for="Puesto"></label>
 
@@ -210,7 +210,7 @@
     <div class="opciones">
         @foreach (var opcion in Html.GetEnumSelectList<Turno>())
         {
-            @* Conserva el valor numérico y selecciona el turno actual. *@
+            @* Conserva el valor numerico y selecciona el turno actual. *@
             <label for="turno-@opcion.Value">
                 <input name="@Html.NameFor(modelo => modelo.Turno)"
                        type="radio"
@@ -227,7 +227,7 @@
     <span asp-validation-for="Turno"
           id="error-turno"></span>
 </fieldset>
-@* Serializa el catálogo de puestos por área para el navegador. *@
+@* Serializa el catalogo de puestos por area para el navegador. *@
 @{
     var puestosPorArea =
         new Dictionary<string, IReadOnlyList<string>>();

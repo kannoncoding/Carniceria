@@ -3,7 +3,7 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Contratos.Respuestas;
 
-// Línea descriptiva de una factura calculada sin identidad definitiva.
+// Linea descriptiva de una factura calculada sin identidad definitiva.
 public sealed class RespuestaDetalleCalculoFactura
 {
     // Referencia del producto y datos descriptivos actuales.

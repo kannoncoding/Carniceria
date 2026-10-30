@@ -22,7 +22,7 @@ public class Proveedor
 
     public string CorreoElectronico { get; set; } = string.Empty;
 
-    // Clasificación del suministro y frecuencia de entrega.
+    // Clasificacion del suministro y frecuencia de entrega.
     public TipoSuministro TipoSuministro { get; set; }
 
     public FrecuenciaEntrega FrecuenciaEntrega { get; set; }

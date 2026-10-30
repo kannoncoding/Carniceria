@@ -4,10 +4,10 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Contratos.Respuestas;
 
-// Cabecera y líneas calculadas de una factura.
+// Cabecera y lineas calculadas de una factura.
 public sealed class RespuestaFactura
 {
-    // Identificador, número y fecha asignados por la API.
+    // Identificador, numero y fecha asignados por la API.
     public Guid Id { get; init; }
 
     public string Numero { get; init; } = string.Empty;
@@ -27,7 +27,7 @@ public sealed class RespuestaFactura
 
     public string EmpleadoNombreCompleto { get; init; } = string.Empty;
 
-    // Método de pago, descuento y estado actual.
+    // Metodo de pago, descuento y estado actual.
     public MetodoPago MetodoPago { get; init; }
 
     public decimal PorcentajeDescuento { get; init; }

@@ -9,7 +9,7 @@ namespace Carniceria.Modelos.Formularios;
 // Define los datos editables y reglas de inventario de un producto.
 public class ProductoFormulario : IValidatableObject
 {
-    // Conserva código y nombre normalizados al enlazar la solicitud.
+    // Conserva codigo y nombre normalizados al enlazar la solicitud.
     private string _codigo = string.Empty;
     private string _nombre = string.Empty;
 
@@ -18,7 +18,7 @@ public class ProductoFormulario : IValidatableObject
     [Required(ErrorMessage = "Seleccione un proveedor.")]
     public Guid? ProveedorId { get; set; }
 
-    // Código y nombre identifican el producto en los listados.
+    // Codigo y nombre identifican el producto en los listados.
     [Display(Name = "Código")]
     [Required(ErrorMessage = "El código es obligatorio.")]
     [StringLength(
@@ -49,7 +49,7 @@ public class ProductoFormulario : IValidatableObject
         set => _nombre = ReglasTexto.Normalizar(value);
     }
 
-    // Clasificación comercial y unidad de medida.
+    // Clasificacion comercial y unidad de medida.
     [Display(Name = "Categoría")]
     [Required(ErrorMessage = "Seleccione una categoría.")]
     [EnumDataType(

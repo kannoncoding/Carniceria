@@ -2,7 +2,7 @@
 
 namespace Carniceria.Modelos.Enumeraciones;
 
-// Áreas operativas disponibles para asignar a un empleado.
+// Areas operativas disponibles para asignar a un empleado.
 public enum AreaTrabajo
 {
     [Display(Name = "Administración")]

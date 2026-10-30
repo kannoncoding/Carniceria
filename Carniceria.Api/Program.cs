@@ -4,7 +4,7 @@ using Carniceria.Modelos.Contratos.Respuestas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-// Registra los controladores, el formato de errores y el almacén compartido.
+// Registra los controladores, el formato de errores y el almacen compartido.
 var constructor = WebApplication.CreateBuilder(args);
 
 constructor.Services
@@ -35,15 +35,15 @@ constructor.Services
             });
         };
     });
-// Mantiene un único almacén para las solicitudes de la API.
+// Mantiene un unico almacen para las solicitudes de la API.
 constructor.Services.AddSingleton<IAlmacenCarniceria, AlmacenCarniceria>();
 
-// Construye la aplicación y materializa las semillas al iniciar.
+// Construye la aplicacion y materializa las semillas al iniciar.
 var aplicacion = constructor.Build();
 
 _ = aplicacion.Services.GetRequiredService<IAlmacenCarniceria>();
 
-// Completa respuestas HTTP de error que todavía no tienen contenido.
+// Completa respuestas HTTP de error que todavia no tienen contenido.
 aplicacion.UseStatusCodePages(async contexto =>
 {
     var respuesta = contexto.HttpContext.Response;

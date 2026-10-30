@@ -8,7 +8,7 @@ using Carniceria.Modelos.Enumeraciones;
 
 var resultados = new List<(string Nombre, bool Aprobada)>();
 
-// Registra resultados del contrato de validación de solicitudes.
+// Registra resultados del contrato de validacion de solicitudes.
 void Verificar(string nombre, bool condicion)
 {
     resultados.Add((nombre, condicion));
@@ -30,7 +30,7 @@ IReadOnlyList<ValidationResult> Validar(SolicitudFactura? solicitud)
     return (IReadOnlyList<ValidationResult>)metodoValidacion.Invoke(almacen, [solicitud])!;
 }
 
-// Construye una solicitud válida que sirve como base de las variaciones.
+// Construye una solicitud valida que sirve como base de las variaciones.
 SolicitudFactura CrearSolicitudValida(
     Guid? productoSeleccionado = null,
     decimal cantidad = 0.5m,
@@ -54,7 +54,7 @@ SolicitudFactura CrearSolicitudValida(
     };
 }
 
-// Comprueba solicitudes válidas, límites y campos acumulados.
+// Comprueba solicitudes validas, limites y campos acumulados.
 Verificar("Solicitud nula reporta el campo general", Validar(null)
     .Any(error => error.MemberNames.Contains("Solicitud")));
 Verificar("Descuentos cero y máximo son válidos", new[]

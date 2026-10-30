@@ -27,7 +27,7 @@
         }
 
         function actualizarEtiquetas() {
-            // Lee el texto de la opción seleccionada en el formulario.
+            // Lee el texto de la opcion seleccionada en el formulario.
             const opcionSeleccionada = campoUnidad.selectedOptions[0];
 
             if (!opcionSeleccionada || opcionSeleccionada.value === "") {
@@ -47,12 +47,12 @@
                 return;
             }
 
-            // Obtiene el nombre visible de la opción renderizada por el servidor.
+            // Obtiene el nombre visible de la opcion renderizada por el servidor.
             const unidadSingular = opcionSeleccionada.textContent
                 .trim()
                 .toLowerCase();
 
-            // El plural especial cubre la unidad singular del catálogo.
+            // El plural especial cubre la unidad singular del catalogo.
             const unidadPlural = unidadSingular === "unidad"
                 ? "unidades"
                 : `${unidadSingular}s`;
@@ -74,10 +74,10 @@
         // El cambio de unidad actualiza etiquetas y ayudas.
         campoUnidad.addEventListener("change", actualizarEtiquetas);
 
-        // El evento pageshow restaura las etiquetas al volver a la página.
+        // El evento pageshow restaura las etiquetas al volver a la pagina.
         window.addEventListener("pageshow", actualizarEtiquetas);
 
-        // Las etiquetas iniciales reflejan la selección del formulario.
+        // Las etiquetas iniciales reflejan la seleccion del formulario.
         actualizarEtiquetas();
     }
 

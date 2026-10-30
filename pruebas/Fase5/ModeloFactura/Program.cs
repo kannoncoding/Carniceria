@@ -5,7 +5,7 @@ using Carniceria.Modelos.Contratos.Solicitudes;
 using Carniceria.Modelos.Entidades;
 using Carniceria.Modelos.Enumeraciones;
 
-// Acumula verificaciones semánticas del modelo de factura.
+// Acumula verificaciones semanticas del modelo de factura.
 var verificaciones = new List<(string Nombre, bool Aprobada)>();
 
 // Registra las condiciones del modelo y conserva el resultado total.
@@ -61,7 +61,7 @@ string[] propiedadesLinea = typeof(SolicitudDetalleFactura)
     .ToArray();
 Verificar("Solicitud de detalle contiene solo producto y cantidad", propiedadesLinea.SequenceEqual(["Cantidad", "ProductoId"]));
 
-// Confirma los valores y la etiqueta de los catálogos de factura.
+// Confirma los valores y la etiqueta de los catalogos de factura.
 Verificar("Catálogo de métodos de pago", Enum.GetValues<MetodoPago>().SequenceEqual(
     [MetodoPago.Efectivo, MetodoPago.Tarjeta, MetodoPago.SinpeMovil, MetodoPago.Transferencia]));
 var etiquetaSinpe = typeof(MetodoPago)

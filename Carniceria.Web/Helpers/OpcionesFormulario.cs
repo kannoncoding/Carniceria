@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Carniceria.Web.Helpers;
 
-// Construye listas de selección compatibles con los catálogos del modelo.
+// Construye listas de seleccion compatibles con los catalogos del modelo.
 public static class OpcionesFormulario
 {
     // Filtra los tipos de documento admitidos para clientes.
@@ -43,7 +43,7 @@ public static class OpcionesFormulario
             TipoIdentificacion.Dimex);
     }
 
-    // Devuelve los puestos asociados al área seleccionada.
+    // Devuelve los puestos asociados al area seleccionada.
     public static IReadOnlyList<SelectListItem> PuestosEmpleado(
         AreaTrabajo? areaTrabajo)
     {

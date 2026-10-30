@@ -18,7 +18,7 @@ public class ProductosApiController : ControladorApiBase
     // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
-    // Recibe el almacén singleton registrado en la aplicación.
+    // Recibe el almacen singleton registrado en la aplicacion.
     public ProductosApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
@@ -36,7 +36,7 @@ public class ProductosApiController : ControladorApiBase
         return Ok(productos);
     }
 
-    // Busca por código exacto o nombre parcial según el criterio indicado.
+    // Busca por codigo exacto o nombre parcial segun el criterio indicado.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery] string? criterio,

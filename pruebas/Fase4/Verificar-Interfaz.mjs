@@ -17,13 +17,13 @@ const procesos=[],resultados=[],solicitudes=[],solicitudesNavegador=[],excepcion
 let proxy,perfil,navegador,cdpPagina,cdpNavegador,fallo=null;
 let navegaciones=0;
 
-// Registra cada condición observable y detiene el recorrido si falla.
+// Registra cada condicion observable y detiene el recorrido si falla.
 function confirmar(caso,condicion,detalle={}){resultados.push({caso,aprobado:!!condicion,...detalle});if(!condicion)throw new Error(caso);}
 
-// Espera una condición observable con un límite de tiempo.
+// Espera una condicion observable con un limite de tiempo.
 async function hasta(condicion,descripcion,limite=15000){const fin=Date.now()+limite;while(Date.now()<fin){try{const valor=await condicion();if(valor)return valor;}catch{}await esperar(100);}throw new Error('No se cumplio: '+descripcion);}
 
-// Comprueba que un puerto esté libre antes de iniciar un servicio propio.
+// Comprueba que un puerto este libre antes de iniciar un servicio propio.
 async function puertoLibre(puerto){const servidor=net.createServer();await new Promise((resolver,rechazar)=>{servidor.once('error',rechazar);servidor.listen(Number(puerto),'127.0.0.1',resolver);});await new Promise(resolver=>servidor.close(resolver));}
 
 // Conserva los registros de un proceso y sus señales de salida.
@@ -34,35 +34,35 @@ function iniciarProyecto(nombre,puerto,entorno={}){return iniciarProceso(nombre,
 
 // Transporta comandos CDP y distribuye eventos sin bibliotecas externas.
 class ConexionCdp{
- // Mantiene respuestas pendientes y observadores de eventos de esta conexión.
+ // Mantiene respuestas pendientes y observadores de eventos de esta conexion.
  constructor(socket){this.socket=socket;this.contador=0;this.pendientes=new Map();this.observadores=[];socket.addEventListener('message',evento=>{const mensaje=JSON.parse(evento.data);if(mensaje.id){const pendiente=this.pendientes.get(mensaje.id);if(pendiente){this.pendientes.delete(mensaje.id);clearTimeout(pendiente.temporizador);mensaje.error?pendiente.rechazar(new Error(JSON.stringify(mensaje.error))):pendiente.resolver(mensaje.result);}}else{for(const observar of this.observadores)observar(mensaje);}});}
- // Abre una conexión local al navegador o a una página.
+ // Abre una conexion local al navegador o a una pagina.
  static async abrir(url){const socket=new WebSocket(url);await new Promise((resolver,rechazar)=>{socket.addEventListener('open',resolver,{once:true});socket.addEventListener('error',rechazar,{once:true});});return new ConexionCdp(socket);}
- // Envía un comando con un plazo para evitar esperas indefinidas.
+ // Envia un comando con un plazo para evitar esperas indefinidas.
  async enviar(method,params={}){const id=++this.contador;return await new Promise((resolver,rechazar)=>{const temporizador=setTimeout(()=>{this.pendientes.delete(id);rechazar(new Error('Tiempo CDP '+method));},15000);this.pendientes.set(id,{resolver,rechazar,temporizador});this.socket.send(JSON.stringify({id,method,params}));});}
  // Cierra el canal y cancela los plazos pendientes.
  cerrar(){for(const pendiente of this.pendientes.values()){clearTimeout(pendiente.temporizador);pendiente.rechazar(new Error('Conexion cerrada'));}this.pendientes.clear();this.socket.close();}
 }
 
-// Obtiene valores serializables del contexto de la página.
+// Obtiene valores serializables del contexto de la pagina.
 async function evaluar(expression){const respuesta=await cdpPagina.enviar('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(respuesta.exceptionDetails)throw new Error(JSON.stringify(respuesta.exceptionDetails));return respuesta.result.value;}
 
-// Navega y espera que el documento nuevo esté completamente cargado.
+// Navega y espera que el documento nuevo este completamente cargado.
 async function navegar(ruta){const anterior=navegaciones;await cdpPagina.enviar('Page.navigate',{url:baseWeb+ruta});await hasta(async()=>navegaciones>anterior&&await evaluar("document.readyState==='complete'"),'documento '+ruta);}
 
-// Completa campos y dispara eventos reales del DOM, incluidos cambio y pérdida de foco.
+// Completa campos y dispara eventos reales del DOM, incluidos cambio y perdida de foco.
 async function completar(valores){return await evaluar('(()=>{const valores='+JSON.stringify(valores)+';for(const [nombre,valor] of Object.entries(valores)){const campo=document.querySelector(\'[name="\'+nombre+\'"]\');if(!campo)throw new Error("Campo ausente "+nombre);if(campo.type==="radio"){const radio=[...document.querySelectorAll(\'[name="\'+nombre+\'"]\')].find(opcion=>opcion.value===valor);radio.click();}else{campo.focus();campo.value=valor;campo.dispatchEvent(new Event("input",{bubbles:true}));campo.dispatchEvent(new Event("change",{bubbles:true}));campo.blur();}}return true;})()');}
 
-// Envía el formulario mediante su botón y espera la navegación de la respuesta.
+// Envia el formulario mediante su boton y espera la navegacion de la respuesta.
 async function enviar(){const anterior=navegaciones;confirmar('Formulario contiene token antifalsificacion',await evaluar("!!document.querySelector('input[name=__RequestVerificationToken]')?.value"));await evaluar("document.querySelector('button[type=submit]').click()");await hasta(async()=>navegaciones>anterior&&await evaluar("document.readyState==='complete'"),'respuesta del formulario');}
 
 // Obtiene los registros de la API para contrastar los valores enviados por el navegador.
 async function datos(recurso){const respuesta=await fetch(baseApi+'/api/'+recurso,{signal:AbortSignal.timeout(5000)});if(!respuesta.ok)throw new Error('Consulta API '+respuesta.status);return await respuesta.json();}
 
-// Captura el documento y una imagen de la página como evidencia del estado observado.
+// Captura el documento y una imagen de la pagina como evidencia del estado observado.
 async function capturar(nombre){await fs.writeFile(path.join(salida,nombre+'.html'),await evaluar('document.documentElement.outerHTML'));const imagen=await cdpPagina.enviar('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});await fs.writeFile(path.join(salida,nombre+'.png'),Buffer.from(imagen.data,'base64'));}
 
-// Verifica controles de fecha, catálogo de puestos, radios y datos enviados al servidor.
+// Verifica controles de fecha, catalogo de puestos, radios y datos enviados al servidor.
 async function probarEmpleado(){
  await navegar('/Empleados/Crear');
  confirmar('Fecha nacimiento usa control date',await evaluar("document.querySelector('#FechaNacimiento').type==='date'"));
@@ -99,7 +99,7 @@ async function probarEmpleado(){
  await navegar('/Empleados/Editar/'+registro.id);
  confirmar('Editar fecha ISO del control',await evaluar("document.querySelector('#FechaNacimiento').value==='1991-02-03'&&document.querySelector('#FechaIngreso').value==='2020-04-05'"));
  confirmar('Editar conserva area puesto y radio',await evaluar("document.querySelector('#AreaTrabajo').value==='2'&&document.querySelector('#Puesto').value==='Cajero'&&document.querySelector('input[name=Turno]:checked')?.value==='2'"));
- // Un duplicado validado por la API comprueba la restauración de controles tras error de servidor.
+ // Un duplicado validado por la API comprueba la restauracion de controles tras error de servidor.
  await navegar('/Empleados/Crear');await completar({...formulario,AreaTrabajo:'3',Puesto:'Carnicero',Turno:'3'});
  const antesRechazo=solicitudes.length;await enviar();
  confirmar('Duplicado permanece en formulario',await evaluar("location.pathname==='/Empleados/Crear'"));
@@ -110,7 +110,7 @@ async function probarEmpleado(){
  await capturar('empleado-error-servidor');
 }
 
-// Comprueba etiquetas dinámicas, decimales y alertas del inventario en tres vistas.
+// Comprueba etiquetas dinamicas, decimales y alertas del inventario en tres vistas.
 async function probarProducto(){
  const proveedor=(await datos('proveedores'))[0];
  const formulario={ProveedorId:proveedor.id,Codigo:'F4INTERFAZ',Nombre:'ProductoInterfaz',Categoria:'1',UnidadMedida:'1',PrecioUnidadMedida:'1250,50',ExistenciaActual:'1,25',ExistenciaMinima:'1,25'};
@@ -193,7 +193,7 @@ finally{
  erroresCierre.push(...await cerrarProcesos());
  if(proxy){try{proxy.closeAllConnections();await new Promise(resolver=>proxy.close(resolver));}catch(error){erroresCierre.push(error.message);}}
  const puertos=[];for(const puerto of [opciones['puerto-api'],opciones['puerto-web'],opciones['puerto-proxy'],opciones['puerto-depuracion']]){try{await puertoLibre(puerto);puertos.push({puerto:Number(puerto),libre:true});}catch{puertos.push({puerto:Number(puerto),libre:false});}}
- // El perfil temporal se conserva para diagnóstico y nunca se elimina recursivamente.
+ // El perfil temporal se conserva para diagnostico y nunca se elimina recursivamente.
  await fs.writeFile(path.join(salida,'consola.json'),JSON.stringify({excepciones,consola},null,2));
  await fs.writeFile(path.join(salida,'puertos.json'),JSON.stringify(puertos,null,2));
  await fs.writeFile(path.join(salida,'resumen.json'),JSON.stringify({grupo:'Interfaz',total:resultados.length,aprobadas:resultados.filter(r=>r.aprobado).length,fallo:fallo?.message??null,erroresCierre,perfilTemporalConservado:!!perfil,resultados},null,2));

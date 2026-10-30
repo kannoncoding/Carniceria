@@ -9,7 +9,7 @@ namespace Carniceria.Api.Datos;
 // Mantiene los registros en memoria y coordina su acceso concurrente.
 public partial class AlmacenCarniceria : IAlmacenCarniceria
 {
-    // Protege las colecciones y operaciones compuestas del almacén.
+    // Protege las colecciones y operaciones compuestas del almacen.
     private readonly object _sincronizacion = new();
 
     // Registros en memoria separados por tipo de entidad.
@@ -24,16 +24,16 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
     // Conserva las facturas completas registradas por la API.
     private readonly List<Factura> _facturas = new();
 
-    // Conserva la siguiente secuencia de número de factura.
+    // Conserva la siguiente secuencia de numero de factura.
     private int _siguienteNumeroFactura = 1;
 
-    // Carga los datos iniciales una vez al crear el almacén.
+    // Carga los datos iniciales una vez al crear el almacen.
     public AlmacenCarniceria()
     {
         SembrarDatosIniciales();
     }
 
-    // Ejecuta una operación compuesta bajo el mismo bloqueo de las colecciones.
+    // Ejecuta una operacion compuesta bajo el mismo bloqueo de las colecciones.
     public TResultado EjecutarConBloqueo<TResultado>(Func<TResultado> operacion)
     {
         ArgumentNullException.ThrowIfNull(operacion);
@@ -44,7 +44,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Devuelve una colección de solo lectura con copias independientes.
+    // Devuelve una coleccion de solo lectura con copias independientes.
     public IReadOnlyList<Cliente> ListarClientes()
     {
         lock (_sincronizacion)
@@ -67,7 +67,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Busca identificación exacta y omite consultas vacías.
+    // Busca identificacion exacta y omite consultas vacias.
     public IReadOnlyList<Cliente> BuscarClientesPorIdentificacion(
         string identificacion)
     {
@@ -91,7 +91,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Devuelve una colección de solo lectura con copias independientes.
+    // Devuelve una coleccion de solo lectura con copias independientes.
     public IReadOnlyList<Empleado> ListarEmpleados()
     {
         lock (_sincronizacion)
@@ -114,7 +114,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Busca identificación exacta y omite consultas vacías.
+    // Busca identificacion exacta y omite consultas vacias.
     public IReadOnlyList<Empleado> BuscarEmpleadosPorIdentificacion(
         string identificacion)
     {
@@ -138,7 +138,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Devuelve una colección de solo lectura con copias independientes.
+    // Devuelve una coleccion de solo lectura con copias independientes.
     public IReadOnlyList<Producto> ListarProductos()
     {
         lock (_sincronizacion)
@@ -161,7 +161,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Busca códigos exactos y omite consultas vacías.
+    // Busca codigos exactos y omite consultas vacias.
     public IReadOnlyList<Producto> BuscarProductosPorCodigo(
         string codigo)
     {
@@ -185,7 +185,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Busca nombres parciales y omite consultas vacías.
+    // Busca nombres parciales y omite consultas vacias.
     public IReadOnlyList<Producto> BuscarProductosPorNombre(
         string nombre)
     {
@@ -208,7 +208,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Devuelve una colección de solo lectura con copias independientes.
+    // Devuelve una coleccion de solo lectura con copias independientes.
     public IReadOnlyList<Proveedor> ListarProveedores()
     {
         lock (_sincronizacion)
@@ -231,7 +231,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Busca identificación exacta y omite consultas vacías.
+    // Busca identificacion exacta y omite consultas vacias.
     public IReadOnlyList<Proveedor> BuscarProveedoresPorIdentificacion(
         string identificacion)
     {
@@ -255,7 +255,7 @@ public partial class AlmacenCarniceria : IAlmacenCarniceria
         }
     }
 
-    // Busca razón social parcial y omite consultas vacías.
+    // Busca razon social parcial y omite consultas vacias.
     public IReadOnlyList<Proveedor> BuscarProveedoresPorRazonSocial(
         string razonSocial)
     {

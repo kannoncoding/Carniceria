@@ -1,5 +1,5 @@
 ﻿@model BusquedaViewModel<RespuestaEmpleado>
-@* Permite buscar empleados por identificación y revisar coincidencias. *@
+@* Permite buscar empleados por identificacion y revisar coincidencias. *@
 
 @{
     ViewData["Title"] = "Buscar empleados";
@@ -11,7 +11,7 @@
     Busque un empleado mediante su identificación completa.
 </p>
 
-@* Captura la identificación exacta que se enviará al controlador. *@
+@* Captura la identificacion exacta que se enviara al controlador. *@
 <form asp-area=""
       asp-controller="Empleados"
       asp-action="Buscar"
@@ -76,7 +76,7 @@
     </div>
 </form>
 
-@* Distingue instrucciones iniciales, lista vacía y resultados encontrados. *@
+@* Distingue instrucciones iniciales, lista vacia y resultados encontrados. *@
 @if (!Model.BusquedaRealizada && ViewData.ModelState.IsValid)
 {
     <p class="estado-vacio">

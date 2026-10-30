@@ -15,7 +15,7 @@ const base='http://127.0.0.1:'+opciones.puerto;
 const resultados=[],procesos=[],solicitudes=[];
 let fallo=null;
 
-// Registra una condición semántica de la semilla o del reinicio.
+// Registra una condicion semantica de la semilla o del reinicio.
 function verificar(caso,condicion,detalle={}){resultados.push({caso,aprobado:!!condicion,...detalle});if(!condicion)throw new Error(caso);}
 
 // Comprueba disponibilidad del puerto sin intervenir en procesos ajenos.
@@ -27,13 +27,13 @@ function iniciarApi(etapa){const carpeta=path.join(raiz,'Carniceria.Api');const 
 // Espera salud HTTP antes de leer las semillas.
 async function esperarApi(){const fin=Date.now()+15000;while(Date.now()<fin){try{if((await fetch(base+'/api/estado',{signal:AbortSignal.timeout(1000)})).ok)return;}catch{}await esperar(100);}throw new Error('La API propia no inicio.');}
 
-// Envía una solicitud y registra su resultado JSON.
+// Envia una solicitud y registra su resultado JSON.
 async function solicitar(metodo,ruta,cuerpo){const respuesta=await fetch(new URL(ruta,base),{method:metodo,headers:cuerpo?{'Content-Type':'application/json'}:{},body:cuerpo?JSON.stringify(cuerpo):undefined,signal:AbortSignal.timeout(5000)});const texto=await respuesta.text();let json;try{json=JSON.parse(texto);}catch{}const registro={metodo,ruta,codigo:respuesta.status,cuerpo:json??texto,cabeceras:Object.fromEntries(respuesta.headers)};solicitudes.push(registro);return registro;}
 
 // Obtiene las cinco colecciones de datos como una imagen verificable.
 async function imagen(){const datos={};for(const recurso of ['clientes','empleados','proveedores','productos','facturas']){const respuesta=await solicitar('GET','/api/'+recurso);if(respuesta.codigo!==200||!Array.isArray(respuesta.cuerpo))throw new Error('No se pudo leer '+recurso);datos[recurso]=respuesta.cuerpo;}return datos;}
 
-// Comprueba cabecera, relaciones, cálculo, dos detalles y ausencia de descuento de stock.
+// Comprueba cabecera, relaciones, calculo, dos detalles y ausencia de descuento de stock.
 async function comprobarSemilla(datos,etapa,inicio){
  verificar(etapa+' conteos1/1/1/2/1',JSON.stringify(Object.values(datos).map(lista=>lista.length))===JSON.stringify([1,1,1,2,1]));
  const factura=datos.facturas[0],res=datos.productos.find(p=>p.codigo==='RES001'),pol=datos.productos.find(p=>p.codigo==='POL001');
@@ -52,7 +52,7 @@ async function comprobarSemilla(datos,etapa,inicio){
  return factura;
 }
 
-// Detiene únicamente un proceso propio y confirma su salida.
+// Detiene unicamente un proceso propio y confirma su salida.
 async function detener(proceso){if(proceso.exitCode===null&&proceso.signalCode===null){const cierre=new Promise(resolver=>proceso.once('close',resolver));proceso.kill();await Promise.race([cierre,esperar(5000)]);}if(proceso.exitCode===null&&proceso.signalCode===null)throw new Error('No se confirmo cierre de API propia.');}
 
 try{
@@ -60,7 +60,7 @@ try{
  const inicio=Date.now();const primeraApi=iniciarApi('inicial');await esperarApi();
  const inicial=await imagen();const semilla=await comprobarSemilla(inicial,'Inicial',inicio);
  await fs.writeFile(path.join(salida,'datos-iniciales.json'),JSON.stringify(inicial,null,2));
- // Una alta real debe continuar después del número usado por la semilla.
+ // Una alta real debe continuar despues del numero usado por la semilla.
  const alta=await solicitar('POST','/api/facturas',{clienteId:inicial.clientes[0].id,empleadoId:inicial.empleados[0].id,metodoPago:4,porcentajeDescuento:0,detalles:[{productoId:inicial.productos[0].id,cantidad:1}]});
  verificar('Alta posterior201 con FAC2',alta.codigo===201&&alta.cuerpo.numero==='FAC000002'&&alta.cuerpo.estado===1);
  const trasAlta=await imagen();verificar('Alta posterior agrega una factura',trasAlta.facturas.length===2);

@@ -1,4 +1,4 @@
-﻿@* Define navegación, contenido principal y recursos comunes del sitio. *@
+﻿@* Define navegacion, contenido principal y recursos comunes del sitio. *@
 <!DOCTYPE html>
 <html lang="es-CR">
 @* Metadatos del documento y hojas de estilo compartidas. *@
@@ -27,7 +27,7 @@
                 Carnicería
             </a>
 
-            @* Enlaces principales a los módulos de la aplicación. *@
+            @* Enlaces principales a los modulos de la aplicacion. *@
             <nav class="navegacion-principal"
                  aria-label="Navegación principal">
                 <ul class="menu-principal">
@@ -71,7 +71,7 @@
         </div>
     </header>
 
-    @* Área central donde se renderiza cada página. *@
+    @* Area central donde se renderiza cada pagina. *@
     <main id="contenido-principal"
           class="contenedor contenido-principal"
           tabindex="-1">
@@ -80,14 +80,14 @@
         @RenderBody()
     </main>
 
-    @* Pie común con el año de presentación. *@
+    @* Pie comun con el año de presentacion. *@
     <footer class="pie-sitio">
         <div class="contenedor">
             <p>&copy; @DateTime.Now.Year Carnicería</p>
         </div>
     </footer>
 
-    @* Carga la inicialización compartida de las vistas. *@
+    @* Carga la inicializacion compartida de las vistas. *@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

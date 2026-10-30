@@ -1,5 +1,5 @@
 ﻿@model RespuestaProducto
-@* Muestra los datos del producto antes de confirmar su eliminación. *@
+@* Muestra los datos del producto antes de confirmar su eliminacion. *@
 
 @{
     ViewData["Title"] = "Eliminar producto";
@@ -9,7 +9,7 @@
 
 <partial name="_ResumenValidacion" />
 
-@* Resume la consecuencia antes de confirmar la operación. *@
+@* Resume la consecuencia antes de confirmar la operacion. *@
 <div class="mensaje mensaje-advertencia">
     <p>
         <strong>¿Desea eliminar este producto?</strong>
@@ -21,7 +21,7 @@
     </p>
 </div>
 
-@* Datos usados para identificar al producto que se eliminará. *@
+@* Datos usados para identificar al producto que se eliminara. *@
 <dl class="detalle-registro">
     <div>
         <dt>Código</dt>
@@ -72,7 +72,7 @@
     </div>
 </dl>
 
-@* Envía la confirmación mediante POST protegido contra falsificación. *@
+@* Envia la confirmacion mediante POST protegido contra falsificacion. *@
 <form asp-area=""
       asp-controller="Productos"
       asp-action="EliminarConfirmado"

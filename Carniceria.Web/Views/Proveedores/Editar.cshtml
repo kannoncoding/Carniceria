@@ -1,5 +1,5 @@
 ﻿@model ProveedorFormulario
-@* Envía los cambios del proveedor asociado al Id de la ruta. *@
+@* Envia los cambios del proveedor asociado al Id de la ruta. *@
 
 @{
     ViewData["Title"] = "Editar proveedor";
@@ -14,7 +14,7 @@
     Actualice los datos del proveedor. Todos los campos son obligatorios.
 </p>
 
-@* Envía los cambios junto con el Id de la ruta y protección antifalsificación. *@
+@* Envia los cambios junto con el Id de la ruta y proteccion antifalsificacion. *@
 <form asp-area=""
       asp-controller="Proveedores"
       asp-action="Editar"
@@ -30,7 +30,7 @@
     @* Reutiliza los campos comerciales y de contacto del proveedor. *@
     <partial name="_Formulario" model="@Model" />
 
-    @* Acciones para guardar o cancelar la edición. *@
+    @* Acciones para guardar o cancelar la edicion. *@
     <div class="acciones">
         <button type="submit" class="boton">
             Guardar cambios

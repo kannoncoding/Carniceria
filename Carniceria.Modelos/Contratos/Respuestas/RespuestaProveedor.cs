@@ -9,7 +9,7 @@ public sealed class RespuestaProveedor
     // Identificador del registro devuelto por la API.
     public Guid Id { get; init; }
 
-    // Información legal y de contacto para mostrar el proveedor.
+    // Informacion legal y de contacto para mostrar el proveedor.
     public TipoIdentificacion TipoIdentificacion { get; init; }
 
     public string Identificacion { get; init; } = string.Empty;

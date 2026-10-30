@@ -9,7 +9,7 @@ namespace Carniceria.Api.Datos;
 
 public partial class AlmacenCarniceria
 {
-    // Valida relaciones y líneas sin reservar identidad ni modificar el almacén.
+    // Valida relaciones y lineas sin reservar identidad ni modificar el almacen.
     private IReadOnlyList<ValidationResult> ValidarSolicitudFactura(
         SolicitudFactura? solicitud)
     {

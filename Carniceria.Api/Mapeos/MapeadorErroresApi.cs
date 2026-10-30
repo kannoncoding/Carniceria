@@ -6,10 +6,10 @@ using Carniceria.Modelos.Resultados;
 
 namespace Carniceria.Api.Mapeos;
 
-// Convierte resultados del almacén al contrato común de errores HTTP.
+// Convierte resultados del almacen al contrato comun de errores HTTP.
 public static class MapeadorErroresApi
 {
-    // Agrupa mensajes por campo y asigna un código estable al resultado.
+    // Agrupa mensajes por campo y asigna un codigo estable al resultado.
     public static ErrorApi Convertir(ResultadoOperacion resultado)
     {
         // Acumula mensajes para combinar errores que comparten campo.

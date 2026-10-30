@@ -1,6 +1,6 @@
 ﻿namespace Carniceria.Modelos.Enumeraciones;
 
-// Resultados posibles de una operación del almacén.
+// Resultados posibles de una operacion del almacen.
 public enum EstadoOperacion
 {
     Exito = 1,

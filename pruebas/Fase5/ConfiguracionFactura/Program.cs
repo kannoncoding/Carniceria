@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 var resultados = new List<(string Nombre, bool Aprobada)>();
 
-// Registra comprobaciones de la ruta y el contrato de configuración.
+// Registra comprobaciones de la ruta y el contrato de configuracion.
 void Verificar(string nombre, bool condicion)
 {
     resultados.Add((nombre, condicion));
@@ -36,7 +36,7 @@ Verificar("La respuesta comparte las reglas centrales",
     respuesta?.PorcentajeDescuentoMaximo == ReglasFacturacion.PorcentajeDescuentoMaximo &&
     respuesta?.PorcentajeIva == ReglasFacturacion.PorcentajeIva);
 
-// Confirma que ambos valores se serializan como números, no como texto.
+// Confirma que ambos valores se serializan como numeros, no como texto.
 var json = JsonSerializer.Serialize(
     respuesta,
     new JsonSerializerOptions(JsonSerializerDefaults.Web));
@@ -65,7 +65,7 @@ var solicitudBase = new SolicitudFactura
         }
     ]
 };
-// Obtiene errores de validación para un descuento específico.
+// Obtiene errores de validacion para un descuento especifico.
 IReadOnlyList<ValidationResult> ObtenerErrores(decimal descuento)
 {
     var solicitud = new SolicitudFactura

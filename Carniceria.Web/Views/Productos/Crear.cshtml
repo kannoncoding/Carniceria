@@ -1,5 +1,5 @@
 ﻿@model ProductoFormulario
-@* Envía los datos del nuevo producto al controlador. *@
+@* Envia los datos del nuevo producto al controlador. *@
 
 @{
     ViewData["Title"] = "Registrar producto";
@@ -11,7 +11,7 @@
     Complete los datos del producto. Todos los campos son obligatorios.
 </p>
 
-@* Envía el formulario con protección antifalsificación. *@
+@* Envia el formulario con proteccion antifalsificacion. *@
 <form asp-area=""
       asp-controller="Productos"
       asp-action="Crear"
@@ -24,7 +24,7 @@
     @* Muestra los errores antes de los campos editables. *@
     <partial name="_ResumenValidacion" />
 
-    @* Reutiliza los campos de producto para alta y edición. *@
+    @* Reutiliza los campos de producto para alta y edicion. *@
     <partial name="_Formulario" model="@Model" />
 
     @* Acciones para guardar o cancelar el alta. *@

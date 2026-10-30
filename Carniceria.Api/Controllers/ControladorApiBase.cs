@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Api.Controllers;
 
-// Comparte la conversión de resultados y errores entre los controladores API.
+// Comparte la conversion de resultados y errores entre los controladores API.
 public abstract class ControladorApiBase : ControllerBase
 {
-    // Traduce el estado del almacén al código HTTP correspondiente.
+    // Traduce el estado del almacen al codigo HTTP correspondiente.
     protected IActionResult ConvertirResultadoFallido(
         ResultadoOperacion resultado)
     {

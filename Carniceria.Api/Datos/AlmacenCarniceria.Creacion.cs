@@ -24,7 +24,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
-            // Rechaza una identificación ya asignada a otro cliente.
+            // Rechaza una identificacion ya asignada a otro cliente.
             bool identificacionDuplicada = _clientes.Any(cliente =>
                 string.Equals(
                     cliente.Identificacion,
@@ -38,7 +38,7 @@ public partial class AlmacenCarniceria
                     "Ya existe un cliente con esta identificación.");
             }
 
-            // Repite si el Id generado ya existe en la colección.
+            // Repite si el Id generado ya existe en la coleccion.
             Cliente nuevoCliente;
 
             do
@@ -58,7 +58,7 @@ public partial class AlmacenCarniceria
                 nuevoCliente.Id == Guid.Empty ||
                 _clientes.Any(cliente => cliente.Id == nuevoCliente.Id));
 
-            // Inserta el registro solo después de completar la validación.
+            // Inserta el registro solo despues de completar la validacion.
             _clientes.Add(nuevoCliente);
 
             return ResultadoOperacion.Correcto(
@@ -81,7 +81,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
-            // Rechaza una identificación ya asignada a otro empleado.
+            // Rechaza una identificacion ya asignada a otro empleado.
             bool identificacionDuplicada = _empleados.Any(empleado =>
                 string.Equals(
                     empleado.Identificacion,
@@ -95,7 +95,7 @@ public partial class AlmacenCarniceria
                     "Ya existe un empleado con esta identificación.");
             }
 
-            // Repite si el Id generado ya existe en la colección.
+            // Repite si el Id generado ya existe en la coleccion.
             Empleado nuevoEmpleado;
 
             do
@@ -120,7 +120,7 @@ public partial class AlmacenCarniceria
                 nuevoEmpleado.Id == Guid.Empty ||
                 _empleados.Any(empleado => empleado.Id == nuevoEmpleado.Id));
 
-            // Inserta el registro solo después de completar la validación.
+            // Inserta el registro solo despues de completar la validacion.
             _empleados.Add(nuevoEmpleado);
 
             return ResultadoOperacion.Correcto(
@@ -158,7 +158,7 @@ public partial class AlmacenCarniceria
                     });
             }
 
-            // Rechaza un código ya utilizado por otro producto.
+            // Rechaza un codigo ya utilizado por otro producto.
             bool codigoDuplicado = _productos.Any(producto =>
                 string.Equals(
                     producto.Codigo,
@@ -172,7 +172,7 @@ public partial class AlmacenCarniceria
                     "Ya existe un producto con este código.");
             }
 
-            // Repite si el Id generado ya existe en la colección.
+            // Repite si el Id generado ya existe en la coleccion.
             Producto nuevoProducto;
 
             do
@@ -194,7 +194,7 @@ public partial class AlmacenCarniceria
                 nuevoProducto.Id == Guid.Empty ||
                 _productos.Any(producto => producto.Id == nuevoProducto.Id));
 
-            // Inserta el registro solo después de validar proveedor y código.
+            // Inserta el registro solo despues de validar proveedor y codigo.
             _productos.Add(nuevoProducto);
 
             return ResultadoOperacion.Correcto(
@@ -217,7 +217,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
-            // Rechaza una identificación ya asignada a otro proveedor.
+            // Rechaza una identificacion ya asignada a otro proveedor.
             bool identificacionDuplicada = _proveedores.Any(proveedor =>
                 string.Equals(
                     proveedor.Identificacion,
@@ -231,7 +231,7 @@ public partial class AlmacenCarniceria
                     "Ya existe un proveedor con esta identificación.");
             }
 
-            // Repite si el Id generado ya existe en la colección.
+            // Repite si el Id generado ya existe en la coleccion.
             Proveedor nuevoProveedor;
 
             do
@@ -253,7 +253,7 @@ public partial class AlmacenCarniceria
                 nuevoProveedor.Id == Guid.Empty ||
                 _proveedores.Any(proveedor => proveedor.Id == nuevoProveedor.Id));
 
-            // Inserta el registro solo después de completar la validación.
+            // Inserta el registro solo despues de completar la validacion.
             _proveedores.Add(nuevoProveedor);
 
             return ResultadoOperacion.Correcto(

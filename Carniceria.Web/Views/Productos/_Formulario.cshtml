@@ -1,5 +1,5 @@
 ﻿@model ProductoFormulario
-@* Campos reutilizados en alta y edición de productos. *@
+@* Campos reutilizados en alta y edicion de productos. *@
 
 @* Proveedor principal que abastece el producto. *@
 <div class="campo">
@@ -16,7 +16,7 @@
     <span asp-validation-for="ProveedorId" id="error-proveedor"></span>
 </div>
 
-@* Código único y nombre descriptivo del producto. *@
+@* Codigo unico y nombre descriptivo del producto. *@
 <div class="campo">
     <label asp-for="Codigo"></label>
 
@@ -60,7 +60,7 @@
           id="error-nombre"></span>
 </div>
 
-@* Categoría comercial del producto. *@
+@* Categoria comercial del producto. *@
 <div class="campo">
     <label asp-for="Categoria"></label>
 
@@ -108,7 +108,7 @@
     a la nueva unidad. No se realiza una conversión automática.
 </p>
 
-@* Resume el formato numérico aceptado por el model binder. *@
+@* Resume el formato numerico aceptado por el model binder. *@
 <p id="ayuda-decimales" class="ayuda-campo">
     Use coma para los decimales, por ejemplo: 4500,50 o 0,125.
     No escriba el símbolo ₡ ni separadores de miles en los campos numéricos.
@@ -137,7 +137,7 @@
           id="error-precio"></span>
 </div>
 
-@* Existencia disponible y umbral mínimo de inventario. *@
+@* Existencia disponible y umbral minimo de inventario. *@
 <div class="campo">
     <label asp-for="ExistenciaActual" id="etiqueta-existencia-actual">
         Existencia actual

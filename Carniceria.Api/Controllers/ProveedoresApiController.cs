@@ -16,13 +16,13 @@ public class ProveedoresApiController : ControladorApiBase
     // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
-    // Recibe el almacén singleton registrado en la aplicación.
+    // Recibe el almacen singleton registrado en la aplicacion.
     public ProveedoresApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
-    // Devuelve la colección actual de proveedores.
+    // Devuelve la coleccion actual de proveedores.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -33,7 +33,7 @@ public class ProveedoresApiController : ControladorApiBase
         return Ok(proveedores);
     }
 
-    // Busca por identificación exacta o razón social parcial.
+    // Busca por identificacion exacta o razon social parcial.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery] string? criterio,

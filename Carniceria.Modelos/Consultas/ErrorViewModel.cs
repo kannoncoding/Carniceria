@@ -1,9 +1,9 @@
 namespace Carniceria.Models;
 
-// Datos de presentación para la página común de error.
+// Datos de presentacion para la pagina comun de error.
 public class ErrorViewModel
 {
-    // Texto y destino usados por la página de error común.
+    // Texto y destino usados por la pagina de error comun.
     public string Titulo { get; init; } =
         "No se pudo completar la solicitud";
 
@@ -15,7 +15,7 @@ public class ErrorViewModel
 
     public string TextoRegreso { get; init; } = "Volver al inicio";
 
-    // Identificador de diagnóstico opcional de la solicitud actual.
+    // Identificador de diagnostico opcional de la solicitud actual.
     public string? RequestId { get; set; }
 
     // Indica si existe un identificador que pueda mostrarse.

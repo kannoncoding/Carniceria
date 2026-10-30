@@ -12,10 +12,10 @@ public abstract class Persona
     // Identificador interno asignado al crear la entidad.
     public Guid Id { get; private set; } = Guid.NewGuid();
 
-    // Clasificación oficial de la identificación.
+    // Clasificacion oficial de la identificacion.
     public TipoIdentificacion TipoIdentificacion { get; set; }
 
-    // Número de identificación según el tipo seleccionado.
+    // Numero de identificacion segun el tipo seleccionado.
     public string Identificacion { get; set; } = string.Empty;
 
     // Nombre y apellidos de la persona.
@@ -25,7 +25,7 @@ public abstract class Persona
 
     public string SegundoApellido { get; set; } = string.Empty;
 
-    // La asignación descarta la hora para mantener una fecha civil.
+    // La asignacion descarta la hora para mantener una fecha civil.
     public DateTime FechaNacimiento
     {
         get => _fechaNacimiento;

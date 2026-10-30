@@ -7,7 +7,7 @@ namespace Carniceria.Modelos.Contratos.Respuestas;
 // Respuesta API con datos personales y laborales del empleado.
 public sealed class RespuestaEmpleado : RespuestaPersona
 {
-    // Información laboral adicional a los datos personales heredados.
+    // Informacion laboral adicional a los datos personales heredados.
     public decimal SalarioMensual { get; init; }
 
     // Fecha de ingreso requerida en las respuestas de empleados.

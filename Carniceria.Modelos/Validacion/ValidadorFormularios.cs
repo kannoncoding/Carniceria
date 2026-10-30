@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Carniceria.Modelos.Validacion;
 
-// Ejecuta la validación de formularios mediante DataAnnotations.
+// Ejecuta la validacion de formularios mediante DataAnnotations.
 public static class ValidadorFormularios
 {
     // Ejecuta atributos y validaciones propias del formulario.
@@ -12,10 +12,10 @@ public static class ValidadorFormularios
     {
         ArgumentNullException.ThrowIfNull(formulario);
 
-        // Recopila los errores detectados por la validación.
+        // Recopila los errores detectados por la validacion.
         var errores = new List<ValidationResult>();
 
-        // El contexto evalúa reglas que dependen del formulario completo.
+        // El contexto evalua reglas que dependen del formulario completo.
         var contexto = new ValidationContext(formulario);
 
         Validator.TryValidateObject(
@@ -24,7 +24,7 @@ public static class ValidadorFormularios
             errores,
             validateAllProperties: true);
 
-        // Impide que el consumidor modifique la colección devuelta.
+        // Impide que el consumidor modifique la coleccion devuelta.
         return errores.AsReadOnly();
     }
 }

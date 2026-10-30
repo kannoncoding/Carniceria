@@ -6,7 +6,7 @@ import {spawn} from 'node:child_process';
 import {parseArgs} from 'node:util';
 import {setTimeout as esperar} from 'node:timers/promises';
 
-// Aísla el proceso de API y conserva evidencia en una carpeta indicada.
+// Aisla el proceso de API y conserva evidencia en una carpeta indicada.
 const {values: opciones}=parseArgs({options:{raiz:{type:'string',default:process.cwd()},salida:{type:'string'},puerto:{type:'string',default:'5234'}}});
 const raiz=path.resolve(opciones.raiz);
 const salida=opciones.salida?path.resolve(opciones.salida):await fs.mkdtemp(path.join(os.tmpdir(),'carniceria-configuracion-'));
@@ -15,13 +15,13 @@ const base='http://127.0.0.1:'+opciones.puerto;
 const resultados=[];
 let proceso,fallo=null,errorCierre=null,registro='';
 
-// Registra una comprobación del contrato HTTP.
+// Registra una comprobacion del contrato HTTP.
 function verificar(caso,condicion){resultados.push({caso,aprobado:!!condicion});if(!condicion)throw new Error(caso);}
 
-// Comprueba que el puerto esté libre sin detener procesos externos.
+// Comprueba que el puerto este libre sin detener procesos externos.
 async function puertoLibre(){const servidor=net.createServer();await new Promise((resolver,rechazar)=>{servidor.once('error',rechazar);servidor.listen(Number(opciones.puerto),'127.0.0.1',resolver);});await new Promise(resolver=>servidor.close(resolver));}
 
-// Espera la ruta de salud antes de ejecutar la consulta de configuración.
+// Espera la ruta de salud antes de ejecutar la consulta de configuracion.
 async function esperarApi(){const fin=Date.now()+15000;while(Date.now()<fin){try{if((await fetch(base+'/api/estado',{signal:AbortSignal.timeout(1000)})).ok)return;}catch{}await esperar(100);}throw new Error('La API propia no inicio.');}
 
 try{

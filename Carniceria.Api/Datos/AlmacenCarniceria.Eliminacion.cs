@@ -81,7 +81,7 @@ public partial class AlmacenCarniceria
                     "El producto solicitado no existe.");
             }
 
-            // Conserva la referencia al producto capturada en cada línea.
+            // Conserva la referencia al producto capturada en cada linea.
             if (_facturas.Any(factura =>
                     factura.Detalles.Any(detalle => detalle.ProductoId == id)))
             {

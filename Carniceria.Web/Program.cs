@@ -3,17 +3,17 @@ using Carniceria.Web.ModelBinding;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 
-// Registra MVC, servicios compartidos y configuración de solicitudes.
+// Registra MVC, servicios compartidos y configuracion de solicitudes.
 var constructor = WebApplication.CreateBuilder(args);
 
-// Usar una cultura fija para todas las solicitudes de la aplicación.
+// Usar una cultura fija para todas las solicitudes de la aplicacion.
 constructor.Services.Configure<RequestLocalizationOptions>(opciones =>
 {
     var cultura = new CultureInfo(
         "es-CR",
         useUserOverride: false);
 
-    // Establecer explícitamente la coma como separador decimal.
+    // Establecer explicitamente la coma como separador decimal.
     cultura.NumberFormat.NumberDecimalSeparator = ",";
     cultura.NumberFormat.CurrencyDecimalSeparator = ",";
 
@@ -22,8 +22,8 @@ constructor.Services.Configure<RequestLocalizationOptions>(opciones =>
     opciones.SupportedCultures = new[] { cultura };
     opciones.SupportedUICultures = new[] { cultura };
 
-    // La cultura de la aplicación no cambia según el navegador,
-    // las cookies de idioma ni los parámetros de la dirección.
+    // La cultura de la aplicacion no cambia segun el navegador,
+    // las cookies de idioma ni los parametros de la direccion.
     opciones.RequestCultureProviders.Clear();
 
     // Incluir el idioma de la respuesta en sus encabezados HTTP.
@@ -35,12 +35,12 @@ constructor.Services.AddControllersWithViews(opciones =>
 {
     opciones.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
 
-    // Aplicar la configuración decimal antes del proveedor predeterminado.
+    // Aplicar la configuracion decimal antes del proveedor predeterminado.
     opciones.ModelBinderProviders.Insert(
         0,
         new DecimalModelBinderProvider());
 
-    // Mensajes para errores de conversión y enlace de los datos enviados.
+    // Mensajes para errores de conversion y enlace de los datos enviados.
     var mensajes = opciones.ModelBindingMessageProvider;
 
     mensajes.SetAttemptedValueIsInvalidAccessor(
@@ -96,7 +96,7 @@ constructor.Services.AddHttpClient("ApiCarniceria", cliente =>
     cliente.Timeout = TimeSpan.FromSeconds(3);
 });
 
-// Construye la aplicación web con los servicios registrados.
+// Construye la aplicacion web con los servicios registrados.
 var aplicacion = constructor.Build();
 
 // Configurar el manejo de errores fuera del entorno de desarrollo.
@@ -108,17 +108,17 @@ if (!aplicacion.Environment.IsDevelopment())
 // Establecer la cultura antes de procesar los controladores.
 aplicacion.UseRequestLocalization();
 
-// Mostrar los errores HTTP mediante una página de la aplicación.
+// Mostrar los errores HTTP mediante una pagina de la aplicacion.
 aplicacion.UseStatusCodePagesWithReExecute("/Inicio/EstadoHttp/{0}");
 
-// Resuelve rutas antes de aplicar autorización y controladores.
+// Resuelve rutas antes de aplicar autorizacion y controladores.
 aplicacion.UseRouting();
 
 aplicacion.UseAuthorization();
 
 aplicacion.MapStaticAssets();
 
-// Página inicial mediante la dirección raíz.
+// Pagina inicial mediante la direccion raiz.
 aplicacion.MapControllerRoute(
     name: "raiz",
     pattern: "",
@@ -129,7 +129,7 @@ aplicacion.MapControllerRoute(
     })
     .WithStaticAssets();
 
-// Página inicial mediante una dirección en español.
+// Pagina inicial mediante una direccion en español.
 aplicacion.MapControllerRoute(
     name: "inicio",
     pattern: "Inicio",
@@ -140,7 +140,7 @@ aplicacion.MapControllerRoute(
     })
     .WithStaticAssets();
 
-// Páginas de error de la aplicación.
+// Paginas de error de la aplicacion.
 aplicacion.MapControllerRoute(
     name: "errores",
     pattern: "Inicio/{action}/{id?}",
@@ -154,7 +154,7 @@ aplicacion.MapControllerRoute(
     })
     .WithStaticAssets();
 
-// Limitar las rutas de módulos a los cuatro controladores del proyecto.
+// Limitar las rutas de modulos a los cuatro controladores del proyecto.
 const string controladoresModulos =
     "^(Clientes|Empleados|Productos|Proveedores)$";
 
@@ -172,7 +172,7 @@ aplicacion.MapControllerRoute(
     })
     .WithStaticAssets();
 
-// Operaciones de los módulos mediante nombres en español.
+// Operaciones de los modulos mediante nombres en español.
 aplicacion.MapControllerRoute(
     name: "operaciones",
     pattern: "{controller}/{action}/{id?}",

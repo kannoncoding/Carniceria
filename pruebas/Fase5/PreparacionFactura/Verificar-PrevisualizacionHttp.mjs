@@ -15,7 +15,7 @@ const base='http://127.0.0.1:'+opciones.puerto;
 const resultados=[],solicitudes=[];
 let proceso,registro='',fallo=null,errorCierre=null;
 
-// Registra una condición observable del cálculo y sus efectos.
+// Registra una condicion observable del calculo y sus efectos.
 function verificar(caso,condicion,detalle={}){resultados.push({caso,aprobado:!!condicion,...detalle});if(!condicion)throw new Error(caso);}
 
 // Reserva temporalmente el puerto para comprobar que no pertenece a otro proceso.
@@ -24,7 +24,7 @@ async function puertoLibre(){const servidor=net.createServer();await new Promise
 // Conserva las respuestas HTTP para revisar los contratos reales.
 async function solicitar(metodo,ruta,cuerpo){const respuesta=await fetch(new URL(ruta,base),{method:metodo,headers:cuerpo===undefined?{}:{'Content-Type':'application/json'},body:cuerpo===undefined?undefined:JSON.stringify(cuerpo),redirect:'manual',signal:AbortSignal.timeout(10000)});const texto=await respuesta.text();let json;try{json=JSON.parse(texto);}catch{}const observacion={metodo,ruta,codigo:respuesta.status,cuerpo:json??texto,cabeceras:Object.fromEntries(respuesta.headers)};solicitudes.push(observacion);return observacion;}
 
-// Obtiene una imagen completa del almacén mediante sus colecciones públicas.
+// Obtiene una imagen completa del almacen mediante sus colecciones publicas.
 async function imagen(){const datos={};for(const recurso of ['clientes','empleados','proveedores','productos','facturas']){const respuesta=await solicitar('GET','/api/'+recurso);if(respuesta.codigo!==200||!Array.isArray(respuesta.cuerpo))throw new Error('No se pudo listar '+recurso);datos[recurso]=respuesta.cuerpo;}return datos;}
 
 // Espera la salud HTTP antes de comenzar el grupo.
@@ -52,11 +52,11 @@ try{
  let esperado;
  for(let indice=0;indice<3;indice++){const respuesta=await solicitar('POST','/api/facturas/calcular',solicitud);verificar('Preview repetido200 '+indice,respuesta.codigo===200);verificar('Preview sin Location '+indice,!respuesta.cabeceras.location);verificarSinIdentidad('Preview repetido '+indice,respuesta.cuerpo);verificar('Preview ejemplo11187 '+indice,respuesta.cuerpo.subtotal===11000&&respuesta.cuerpo.montoDescuento===1100&&respuesta.cuerpo.baseGravable===9900&&respuesta.cuerpo.montoIva===1287&&respuesta.cuerpo.total===11187);if(!esperado)esperado=respuesta.cuerpo;else verificar('Preview repetido determinista '+indice,JSON.stringify(respuesta.cuerpo)===JSON.stringify(esperado));}
  verificar('Preview repetido no cambia ningun recurso',JSON.stringify(await imagen())===JSON.stringify(inicial));
- // Todos los cálculos concurrentes deben ser completos y no persistentes.
+ // Todos los calculos concurrentes deben ser completos y no persistentes.
  const concurrentes=await Promise.all(Array.from({length:8},()=>solicitar('POST','/api/facturas/calcular',solicitud)));
  for(let indice=0;indice<concurrentes.length;indice++){verificar('Preview concurrente completo '+indice,concurrentes[indice].codigo===200&&JSON.stringify(concurrentes[indice].cuerpo)===JSON.stringify(esperado));verificarSinIdentidad('Preview concurrente '+indice,concurrentes[indice].cuerpo);}
  verificar('Preview concurrente no cambia recursos ni stock',JSON.stringify(await imagen())===JSON.stringify(inicial));
- // Un cálculo inválido debe compartir los rechazos del alta sin dejar efectos.
+ // Un calculo invalido debe compartir los rechazos del alta sin dejar efectos.
  const casos=[
  {nombre:'Solicitud nula',cuerpo:null,codigo:400},
  {nombre:'Metodo ausente',cuerpo:Object.fromEntries(Object.entries(solicitud).filter(([campo])=>campo!=='metodoPago')),codigo:400,campo:'MetodoPago'},
@@ -67,12 +67,12 @@ try{
  {nombre:'Demanda duplicada excedida',cuerpo:{...solicitud,detalles:[{productoId:res.id,cantidad:6},{productoId:res.id,cantidad:5}]},codigo:409,campo:'Detalles[0].Cantidad'}
  ];
  for(const caso of casos){const respuesta=await solicitar('POST','/api/facturas/calcular',caso.cuerpo);verificarError(caso.nombre,respuesta,caso.codigo,caso.campo);verificar(caso.nombre+' no cambia estado',JSON.stringify(await imagen())===JSON.stringify(inicial));}
- // Los campos de servidor inventados nunca deben reemplazar el cálculo real.
+ // Los campos de servidor inventados nunca deben reemplazar el calculo real.
  const manipulada=await solicitar('POST','/api/facturas/calcular',{...solicitud,id:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',numero:'SUPLANTADO',fechaEmision:'2000-01-01T00:00:00Z',estado:3,total:0.01,detalles:solicitud.detalles.map(d=>({...d,id:'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',precioUnitario:0.01,unidadMedida:999,subtotalLinea:0.01}))});
  verificar('Preview extras ignorados o rechazados',manipulada.codigo===200||manipulada.codigo===400);
  if(manipulada.codigo===200){verificar('Preview extras no alteran calculo',JSON.stringify(manipulada.cuerpo)===JSON.stringify(esperado));verificarSinIdentidad('Preview con extras',manipulada.cuerpo);}
  verificar('Extras no alteran recursos',JSON.stringify(await imagen())===JSON.stringify(inicial));
- // La siguiente alta confirma que los cálculos no consumieron número definitivo.
+ // La siguiente alta confirma que los calculos no consumieron numero definitivo.
  const alta=await solicitar('POST','/api/facturas',solicitud);verificar('Alta posterior sigueFAC2',alta.codigo===201&&alta.cuerpo.numero==='FAC000002');
  verificar('Preview y alta comparten importes y snapshots',JSON.stringify(proyectarCalculo(alta.cuerpo))===JSON.stringify(esperado));
  const trasAlta=await imagen();verificar('Solo el alta agrega una factura',trasAlta.facturas.length===2);

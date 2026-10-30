@@ -6,7 +6,7 @@ using TipoDocumento = Carniceria.Modelos.Enumeraciones.TipoIdentificacion;
 
 namespace Carniceria.Modelos.Formularios;
 
-// Valida identificación, contacto y condiciones de suministro.
+// Valida identificacion, contacto y condiciones de suministro.
 public class ProveedorFormulario : IValidatableObject
 {
     // Campos de texto normalizados antes de validar o almacenar.
@@ -16,7 +16,7 @@ public class ProveedorFormulario : IValidatableObject
     private string _telefono = string.Empty;
     private string _correoElectronico = string.Empty;
 
-    // Identificación legal y nombre comercial del proveedor.
+    // Identificacion legal y nombre comercial del proveedor.
     [Display(Name = "Tipo de identificación")]
     [Required(ErrorMessage = "Seleccione un tipo de identificación.")]
     [EnumDataType(
@@ -80,7 +80,7 @@ public class ProveedorFormulario : IValidatableObject
         set => _correoElectronico = ReglasTexto.Normalizar(value);
     }
 
-    // Catálogos de suministro y frecuencia de entrega.
+    // Catalogos de suministro y frecuencia de entrega.
     [Display(Name = "Tipo de suministro")]
     [Required(ErrorMessage = "Seleccione un tipo de suministro.")]
     [EnumDataType(
@@ -98,7 +98,7 @@ public class ProveedorFormulario : IValidatableObject
     public IEnumerable<ValidationResult> Validate(
         ValidationContext validationContext)
     {
-        // Verifica el formato según los tipos admitidos para proveedores.
+        // Verifica el formato segun los tipos admitidos para proveedores.
         return ReglasIdentificacion.Validar(
             TipoIdentificacion,
             Identificacion,

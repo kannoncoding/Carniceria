@@ -8,7 +8,7 @@ import {spawn} from 'node:child_process';
 import {setTimeout as esperar} from 'node:timers/promises';
 import {parseArgs} from 'node:util';
 
-// Opciones de ejecución para aislar puertos y conservar evidencia fuera de la aplicación.
+// Opciones de ejecucion para aislar puertos y conservar evidencia fuera de la aplicacion.
 const {values: opciones} = parseArgs({options:{grupo:{type:'string',default:'Migracion'},raiz:{type:'string',default:process.cwd()},salida:{type:'string'},'puerto-api':{type:'string',default:'5234'},'puerto-web':{type:'string',default:'5235'},'solo-cierre':{type:'boolean',default:false}}});
 const raiz = path.resolve(opciones.raiz);
 const carpetaSalida = opciones.salida ? path.resolve(opciones.salida) : await fs.mkdtemp(path.join(os.tmpdir(),'carniceria-qa-f4-'));
@@ -19,7 +19,7 @@ const procesos=[];let servidorStub=null;const temporizadoresStub=new Set();
 const resultados=[];
 const cookies=new Map();
 
-// Registra una condición comprobable y detiene el grupo al primer fallo.
+// Registra una condicion comprobable y detiene el grupo al primer fallo.
 function confirmar(caso,condicion,detalle={}) {resultados.push({caso,aprobado:!!condicion,...detalle});if(!condicion)throw new Error(caso);}
 
 // Conserva los valores de texto y los caracteres escapados del formulario HTML.
@@ -28,31 +28,31 @@ function decodificar(texto) {return texto.replace(/&#x([0-9a-f]+);/gi,(_,valor)=
 // Extrae el token del campo oculto sin depender del orden de sus atributos.
 function tokenAntifalsificacion(html) {for(const coincidencia of html.matchAll(/<input\b[^>]*>/gi)){const atributos=Object.fromEntries([...coincidencia[0].matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)].map(par=>[par[1].toLowerCase(),decodificar(par[2]??par[3])]));if(atributos.name==='__RequestVerificationToken')return atributos.value;}throw new Error('El formulario no contiene token antifalsificacion.');}
 
-// Envía cookies y sigue redirecciones con las mismas reglas de cambio de método del navegador.
+// Envia cookies y sigue redirecciones con las mismas reglas de cambio de metodo del navegador.
 async function solicitarWeb(ruta,{metodo='GET',formulario,seguir=true}={}) {let url=new URL(ruta,baseWeb);let cuerpo=formulario?new URLSearchParams(formulario).toString():undefined;let metodoActual=metodo;for(let vuelta=0;vuelta<8;vuelta++){const cabeceras={};if(cookies.size)cabeceras.Cookie=[...cookies].map(([nombre,valor])=>`${nombre}=${valor}`).join('; ');if(cuerpo!==undefined)cabeceras['Content-Type']='application/x-www-form-urlencoded';const respuesta=await fetch(url,{method:metodoActual,headers:cabeceras,body:cuerpo,redirect:'manual',signal:AbortSignal.timeout(15000)});for(const cookie of respuesta.headers.getSetCookie()){const par=cookie.split(';',1)[0];const separador=par.indexOf('=');cookies.set(par.slice(0,separador),par.slice(separador+1));}const html=await respuesta.text();const ubicacion=respuesta.headers.get('location');if(seguir&&ubicacion&&[301,302,303,307,308].includes(respuesta.status)){url=new URL(ubicacion,url);if(respuesta.status===303||([301,302].includes(respuesta.status)&&metodoActual==='POST')){metodoActual='GET';cuerpo=undefined;}continue;}return {codigo:respuesta.status,html,url:url.href,ubicacion};}throw new Error('Se excedio el limite de redirecciones.');}
 
 // Obtiene JSON de la API para contrastar el resultado de las acciones MVC.
 async function consultarApi(ruta) {const respuesta=await fetch(baseApi+ruta,{signal:AbortSignal.timeout(10000)});if(!respuesta.ok)throw new Error(`API ${ruta} devolvio ${respuesta.status}`);return await respuesta.json();}
 
-// Envía el formulario con el token y la cookie obtenidos desde su página GET.
+// Envia el formulario con el token y la cookie obtenidos desde su pagina GET.
 async function enviarFormulario(ruta,formulario) {const pagina=await solicitarWeb(ruta);confirmar(`GET formulario ${ruta}`,pagina.codigo===200);return await solicitarWeb(ruta,{metodo:'POST',formulario:{...formulario,__RequestVerificationToken:tokenAntifalsificacion(pagina.html)},seguir:false});}
 
-// Comprueba que los puertos reservados estén libres antes de crear procesos propios.
+// Comprueba que los puertos reservados esten libres antes de crear procesos propios.
 async function comprobarPuerto(puerto) {const servidor=net.createServer();await new Promise((resolver,rechazar)=>{servidor.once('error',rechazar);servidor.listen(Number(puerto),'127.0.0.1',resolver);});await new Promise(resolver=>servidor.close(resolver));}
 
-// Inicia una DLL previamente compilada sin ejecutar restauración ni compilación.
+// Inicia una DLL previamente compilada sin ejecutar restauracion ni compilacion.
 async function iniciarProyecto(nombre,puerto,entorno={}) {const ejecutable=path.join(raiz,nombre,'bin','Debug','net10.0',`${nombre}.dll`);await fs.access(ejecutable);const proceso=spawn('dotnet',[ejecutable,'--urls',`http://127.0.0.1:${puerto}`],{cwd:path.join(raiz,nombre),env:{...process.env,ASPNETCORE_ENVIRONMENT:'Development',...entorno},windowsHide:true,stdio:['ignore','pipe','pipe']});procesos.push(proceso);let salida='',error='';proceso.stdout.on('data',datos=>salida+=datos);proceso.stderr.on('data',datos=>error+=datos);proceso.on('error',fallo=>error+=fallo.message);proceso.on('close',()=>{void fs.writeFile(path.join(carpetaSalida,`${nombre}.log`),salida+'\n'+error);});return proceso;}
 
 // Espera una respuesta HTTP de salud antes de iniciar el recorrido.
 async function esperarServicio(url) {for(let intento=0;intento<60;intento++){try{const respuesta=await fetch(url,{signal:AbortSignal.timeout(1000)});if(respuesta.ok)return;}catch{}await esperar(100);}throw new Error(`No inicio ${new URL(url).pathname}`);}
 
-// Cierra solamente los procesos creados por esta ejecución.
+// Cierra solamente los procesos creados por esta ejecucion.
 async function cerrarProcesos() {const pendientes=[];for(const proceso of procesos.reverse()){try{if(proceso.exitCode===null&&proceso.signalCode===null){const cierre=new Promise(resolver=>proceso.once('close',resolver));proceso.kill();await Promise.race([cierre,esperar(5000)]);}if(proceso.exitCode===null&&proceso.signalCode===null)pendientes.push(proceso.pid);}catch(error){pendientes.push(proceso.pid);}}if(pendientes.length)throw new Error('No se confirmo el cierre de un proceso propio.');}
 
-// Obtiene una imagen completa de los cuatro módulos para detectar escrituras inesperadas.
+// Obtiene una imagen completa de los cuatro modulos para detectar escrituras inesperadas.
 async function imagenDatos() {const datos={};for(const recurso of ['clientes','empleados','proveedores','productos'])datos[recurso]=await consultarApi(`/api/${recurso}`);return datos;}
 
-// Distingue fechas mínimas válidas de propiedades omitidas en el JSON de respuesta.
+// Distingue fechas minimas validas de propiedades omitidas en el JSON de respuesta.
 let fallo=null;
 const observaciones=[];
 try{
@@ -74,7 +74,7 @@ try{
    const pagina=await solicitarWeb(ruta);observaciones.push({etapa:'fecha-presente',campo:caso.campo,ruta,codigo:pagina.codigo});confirmar('MVC lee fecha minima '+caso.campo+' '+ruta,pagina.codigo===200);
    if(ruta.includes('/Editar/')){const nombre=caso.campo[0].toUpperCase()+caso.campo.slice(1);const entrada=[...pagina.html.matchAll(/<input\b[^>]*>/gi)].find(par=>par[0].includes('name="'+nombre+'"'));confirmar('Control date conserva 0001 '+caso.campo,!!entrada&&entrada[0].includes('type="date"')&&entrada[0].includes('value="0001-01-01"'));await fs.writeFile(path.join(carpetaSalida,caso.recurso+'-'+caso.campo+'-editar.html'),pagina.html);}
   }
-  // Los formularios MVC usan coma decimal y envían el token obtenido del formulario real.
+  // Los formularios MVC usan coma decimal y envian el token obtenido del formulario real.
   const formulario=Object.fromEntries(Object.entries(caso.formulario).map(([clave,valor])=>[clave[0].toUpperCase()+clave.slice(1),typeof valor==='number'?String(valor).replace('.',','):valor]));
   formulario.Identificacion=caso.formulario.identificacion.replace('-00','-01');
   const creacion=await enviarFormulario('/'+caso.modulo+'/Crear',formulario);confirmar('MVC POST permite fecha minima '+caso.campo,creacion.codigo===302);

@@ -18,10 +18,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Carniceria.Controllers;
 
-// Atiende las páginas MVC de consulta y mantenimiento de productos.
+// Atiende las paginas MVC de consulta y mantenimiento de productos.
 public class ProductosController : ControladorApiMvcBase
 {
-    // Recibe la fábrica del cliente HTTP usado por las acciones.
+    // Recibe la fabrica del cliente HTTP usado por las acciones.
     public ProductosController(IHttpClientFactory fabricaClientesHttp)
         : base(fabricaClientesHttp)
     {
@@ -40,7 +40,7 @@ public class ProductosController : ControladorApiMvcBase
             {
                 return ServicioNoDisponible("No se pudo cargar el inventario de productos.");
             }
-            // Validar el cuerpo y la relación del proveedor antes de mostrar filas.
+            // Validar el cuerpo y la relacion del proveedor antes de mostrar filas.
             var productos = await LeerRespuestaAsync<RespuestaProducto[]>(respuesta, cancelacion);
             if (productos is null || productos.Any(registro => registro is null || !RespuestaValida(registro)))
                 return ServicioNoDisponible("La API respondió con datos de productos inesperados.");
@@ -117,7 +117,7 @@ public class ProductosController : ControladorApiMvcBase
             var proveedores = await LeerRespuestaAsync<RespuestaProveedor[]>(respuesta, cancelacion);
             if (proveedores is null || proveedores.Any(registro => registro is null || !ProveedorValido(registro)))
                 return ServicioNoDisponible("La API respondió con proveedores inesperados.");
-            // Presentar opciones recibidas desde API junto al formulario vacío.
+            // Presentar opciones recibidas desde API junto al formulario vacio.
             PrepararOpcionesProveedor(proveedores, null);
             return View(new ProductoFormulario());
         }
@@ -136,7 +136,7 @@ public class ProductosController : ControladorApiMvcBase
     }
 
     [HttpPost]
-    // Valida el formulario, conserva sus valores y envía el alta a la API.
+    // Valida el formulario, conserva sus valores y envia el alta a la API.
     public async Task<IActionResult> Crear([FromForm] ProductoFormulario formulario)
     {
         var cancelacion = HttpContext.RequestAborted;
@@ -167,7 +167,7 @@ public class ProductosController : ControladorApiMvcBase
                 return View(formulario);
             }
 
-            // Iniciar el alta después de validar el formulario y cargar proveedores.
+            // Iniciar el alta despues de validar el formulario y cargar proveedores.
             solicitudDeMutacionIniciada = true;
             using var respuesta = await clienteHttp.PostAsJsonAsync("api/productos", formulario, cancelacion);
             if (respuesta.StatusCode == HttpStatusCode.Created)
@@ -227,10 +227,10 @@ public class ProductosController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Busca productos por código exacto o nombre parcial en la API.
+    // Busca productos por codigo exacto o nombre parcial en la API.
     public async Task<IActionResult> Buscar([FromQuery] string? criterio, [FromQuery] string? consulta)
     {
-        // Conservar el criterio seleccionado y el texto de búsqueda.
+        // Conservar el criterio seleccionado y el texto de busqueda.
         var modelo = new BusquedaViewModel<RespuestaProducto>
         {
             Criterio = ReglasTexto.Normalizar(criterio),
@@ -453,7 +453,7 @@ public class ProductosController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Carga los datos antes de presentar la confirmación de eliminación.
+    // Carga los datos antes de presentar la confirmacion de eliminacion.
     public async Task<IActionResult> Eliminar([FromRoute] Guid id)
     {
         if (!IdentificadorValido(id))
@@ -493,7 +493,7 @@ public class ProductosController : ControladorApiMvcBase
     }
 
     [HttpPost]
-    // Solicita la baja y mantiene la confirmación ante un conflicto de relación.
+    // Solicita la baja y mantiene la confirmacion ante un conflicto de relacion.
     public async Task<IActionResult> EliminarConfirmado([FromRoute] Guid id)
     {
         if (!IdentificadorValido(id))
@@ -518,7 +518,7 @@ public class ProductosController : ControladorApiMvcBase
             {
                 var error = await LeerErrorApiAsync(respuesta, cancelacion);
                 AgregarErroresApi(error, typeof(RespuestaProducto));
-                // Recuperar el snapshot actual para conservar la confirmación visible.
+                // Recuperar el snapshot actual para conservar la confirmacion visible.
                 using var consulta = await clienteHttp.GetAsync($"api/productos/{id:D}", HttpCompletionOption.ResponseContentRead, cancelacion);
                 if (consulta.StatusCode == HttpStatusCode.NotFound)
                 {
@@ -570,7 +570,7 @@ public class ProductosController : ControladorApiMvcBase
         ViewBag.Proveedores = opciones;
     }
 
-    // Rechaza identificadores vacíos o rutas que no pudieron enlazarse.
+    // Rechaza identificadores vacios o rutas que no pudieron enlazarse.
     private bool IdentificadorValido(Guid id)
     {
         return id != Guid.Empty &&

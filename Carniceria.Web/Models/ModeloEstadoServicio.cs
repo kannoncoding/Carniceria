@@ -6,6 +6,6 @@ public class ModeloEstadoServicio
     // Mensaje asociado al estado consultado.
     public string Mensaje { get; set; } = string.Empty;
 
-    // Indica si la API respondió con el estado disponible.
+    // Indica si la API respondio con el estado disponible.
     public bool Disponible { get; set; }
 }

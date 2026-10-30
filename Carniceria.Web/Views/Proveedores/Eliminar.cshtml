@@ -1,5 +1,5 @@
 ﻿@model RespuestaProveedor
-@* Muestra los datos del proveedor antes de confirmar su eliminación. *@
+@* Muestra los datos del proveedor antes de confirmar su eliminacion. *@
 
 @{
     ViewData["Title"] = "Eliminar proveedor";
@@ -9,7 +9,7 @@
 
 <partial name="_ResumenValidacion" />
 
-@* Resume la consecuencia antes de confirmar la operación. *@
+@* Resume la consecuencia antes de confirmar la operacion. *@
 <div class="mensaje mensaje-advertencia">
     <p>
         <strong>¿Desea eliminar este proveedor?</strong>
@@ -21,7 +21,7 @@
     </p>
 </div>
 
-@* Datos usados para identificar al proveedor que se eliminará. *@
+@* Datos usados para identificar al proveedor que se eliminara. *@
 <dl class="detalle-registro">
     <div>
         <dt>Tipo de identificación</dt>
@@ -70,7 +70,7 @@
     </div>
 </dl>
 
-@* Envía la confirmación mediante POST protegido contra falsificación. *@
+@* Envia la confirmacion mediante POST protegido contra falsificacion. *@
 <form asp-area=""
       asp-controller="Proveedores"
       asp-action="EliminarConfirmado"

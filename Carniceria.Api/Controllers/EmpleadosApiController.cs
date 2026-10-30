@@ -16,13 +16,13 @@ public class EmpleadosApiController : ControladorApiBase
     // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
-    // Recibe el almacén singleton registrado en la aplicación.
+    // Recibe el almacen singleton registrado en la aplicacion.
     public EmpleadosApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
-    // Devuelve la colección actual de empleados.
+    // Devuelve la coleccion actual de empleados.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -33,7 +33,7 @@ public class EmpleadosApiController : ControladorApiBase
         return Ok(empleados);
     }
 
-    // Busca empleados por identificación exacta.
+    // Busca empleados por identificacion exacta.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery(Name = "identificacion")] string? identificacion)

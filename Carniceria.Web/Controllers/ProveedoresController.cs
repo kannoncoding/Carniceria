@@ -16,17 +16,17 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Carniceria.Controllers;
 
-// Atiende las páginas MVC de consulta y mantenimiento de proveedores.
+// Atiende las paginas MVC de consulta y mantenimiento de proveedores.
 public class ProveedoresController : ControladorApiMvcBase
 {
-    // Recibe la fábrica del proveedor HTTP usado por las acciones.
+    // Recibe la fabrica del proveedor HTTP usado por las acciones.
     public ProveedoresController(IHttpClientFactory fabricaProveedoresHttp)
         : base(fabricaProveedoresHttp)
     {
     }
 
     [HttpGet]
-    // Consulta la colección de proveedores en la API.
+    // Consulta la coleccion de proveedores en la API.
     public async Task<IActionResult> Index()
     {
         var cancelacion = HttpContext.RequestAborted;
@@ -38,7 +38,7 @@ public class ProveedoresController : ControladorApiMvcBase
             if (!respuesta.IsSuccessStatusCode)
                 return ServicioNoDisponible("No se pudo cargar el listado de proveedores.");
 
-            // Convertir solo un cuerpo JSON con la colección esperada.
+            // Convertir solo un cuerpo JSON con la coleccion esperada.
             var proveedores = await LeerRespuestaAsync<RespuestaProveedor[]>(respuesta, cancelacion);
             if (proveedores is null || proveedores.Any(registro => registro is null || !RespuestaValida(registro)))
                 return ServicioNoDisponible("La API respondió con datos de proveedores inesperados.");
@@ -95,11 +95,11 @@ public class ProveedoresController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Presenta el formulario vacío para registrar un proveedor.
+    // Presenta el formulario vacio para registrar un proveedor.
     public IActionResult Crear() => View(new ProveedorFormulario());
 
     [HttpPost]
-    // Valida el formulario y envía el alta a la API.
+    // Valida el formulario y envia el alta a la API.
     public async Task<IActionResult> Crear([FromForm] ProveedorFormulario formulario)
     {
         if (!ModelState.IsValid)
@@ -113,7 +113,7 @@ public class ProveedoresController : ControladorApiMvcBase
             using var respuesta = await clienteHttp.PostAsJsonAsync("api/proveedores", formulario, cancelacion);
             if (respuesta.StatusCode == HttpStatusCode.Created)
             {
-                // Verificar el DTO antes de anunciar que el alta se completó.
+                // Verificar el DTO antes de anunciar que el alta se completo.
                 var registro = await LeerRespuestaAsync<RespuestaProveedor>(respuesta, cancelacion);
                 if (registro is null || !RespuestaValida(registro))
                 {
@@ -153,7 +153,7 @@ public class ProveedoresController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Busca proveedores por identificación y conserva el criterio ingresado.
+    // Busca proveedores por identificacion y conserva el criterio ingresado.
     public async Task<IActionResult> Buscar(
         [FromQuery] string? criterio,
         [FromQuery] string? consulta)
@@ -328,7 +328,7 @@ public class ProveedoresController : ControladorApiMvcBase
     }
 
     [HttpGet]
-    // Presenta los datos antes de confirmar la eliminación.
+    // Presenta los datos antes de confirmar la eliminacion.
     public async Task<IActionResult> Eliminar([FromRoute] Guid id)
     {
         if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
@@ -366,7 +366,7 @@ public class ProveedoresController : ControladorApiMvcBase
     }
 
     [HttpPost]
-    // Solicita la eliminación confirmada y conserva la confirmación si falla.
+    // Solicita la eliminacion confirmada y conserva la confirmacion si falla.
     public async Task<IActionResult> EliminarConfirmado([FromRoute] Guid id)
     {
         if (id == Guid.Empty || ModelState.GetFieldValidationState(nameof(id)) == ModelValidationState.Invalid)
@@ -375,7 +375,7 @@ public class ProveedoresController : ControladorApiMvcBase
         try
         {
             using var clienteHttp = CrearClienteHttpApi();
-            // Solicitar una única baja y esperar el resultado del servicio.
+            // Solicitar una unica baja y esperar el resultado del servicio.
             using var respuesta = await clienteHttp.DeleteAsync($"api/proveedores/{id:D}", cancelacion);
             if (respuesta.StatusCode == HttpStatusCode.NoContent)
             {
@@ -418,7 +418,7 @@ public class ProveedoresController : ControladorApiMvcBase
         }
     }
 
-    // Comprueba que el DTO incluya identificación y datos de contacto.
+    // Comprueba que el DTO incluya identificacion y datos de contacto.
     private static bool RespuestaValida(RespuestaProveedor registro)
     {
         return registro.Id != Guid.Empty &&

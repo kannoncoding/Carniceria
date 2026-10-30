@@ -23,7 +23,7 @@ var metodoPreparacion = typeof(AlmacenCarniceria).GetMethod(
 var pares = new ConcurrentBag<(Factura Candidata, Factura Preparada)>();
 var inicioEmision = DateTimeOffset.UtcNow.AddSeconds(-1);
 
-// Genera candidatos simultáneos con datos de servidor suplantados.
+// Genera candidatos simultaneos con datos de servidor suplantados.
 Parallel.For(0, cantidadFacturas, indice =>
 {
     var candidata = new Factura

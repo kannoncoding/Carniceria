@@ -6,19 +6,19 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Resultados;
 
-// Resume el estado, identificador y errores de una operación.
+// Resume el estado, identificador y errores de una operacion.
 public sealed class ResultadoOperacion
 {
-    // Estado uniforme devuelto por las operaciones del almacén.
+    // Estado uniforme devuelto por las operaciones del almacen.
     public EstadoOperacion Estado { get; }
 
-    // Resume si la operación terminó correctamente.
+    // Resume si la operacion termino correctamente.
     public bool EsExitoso => Estado == EstadoOperacion.Exito;
 
-    // Identificador de la entidad cuando la operación lo produce.
+    // Identificador de la entidad cuando la operacion lo produce.
     public Guid? Id { get; }
 
-    // Mensaje general y errores de validación asociados al resultado.
+    // Mensaje general y errores de validacion asociados al resultado.
     public string Mensaje { get; }
 
     public IReadOnlyList<ValidationResult> Errores { get; }
@@ -29,7 +29,7 @@ public sealed class ResultadoOperacion
         string mensaje,
         IEnumerable<ValidationResult> errores)
     {
-        // Copia la colección para impedir cambios desde el origen.
+        // Copia la coleccion para impedir cambios desde el origen.
         Estado = estado;
         Id = id;
         Mensaje = mensaje;
@@ -79,7 +79,7 @@ public sealed class ResultadoOperacion
     public static ResultadoOperacion NoEncontrado(
         string mensaje)
     {
-        // Representa una consulta o modificación sobre un Id ausente.
+        // Representa una consulta o modificacion sobre un Id ausente.
         return new ResultadoOperacion(
             EstadoOperacion.NoEncontrado,
             null,

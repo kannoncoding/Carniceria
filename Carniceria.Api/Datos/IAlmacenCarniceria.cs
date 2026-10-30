@@ -10,7 +10,7 @@ namespace Carniceria.Api.Datos;
 // Define las consultas y modificaciones disponibles para la API.
 public interface IAlmacenCarniceria
 {
-    // Agrupa una lectura o modificación compuesta bajo el bloqueo común.
+    // Agrupa una lectura o modificacion compuesta bajo el bloqueo comun.
     TResultado EjecutarConBloqueo<TResultado>(Func<TResultado> operacion);
 
     // Operaciones de consulta y mantenimiento de clientes.
@@ -21,11 +21,11 @@ public interface IAlmacenCarniceria
     // Devuelve una copia del cliente indicado o null si no existe.
     Cliente? ObtenerCliente(Guid id);
 
-    // Busca clientes por identificación exacta.
+    // Busca clientes por identificacion exacta.
     IReadOnlyList<Cliente> BuscarClientesPorIdentificacion(
         string identificacion);
 
-    // Valida y agrega un cliente al almacén.
+    // Valida y agrega un cliente al almacen.
     ResultadoOperacion CrearCliente(
         ClienteFormulario formulario);
 
@@ -45,11 +45,11 @@ public interface IAlmacenCarniceria
     // Devuelve una copia del empleado indicado o null si no existe.
     Empleado? ObtenerEmpleado(Guid id);
 
-    // Busca empleados por identificación exacta.
+    // Busca empleados por identificacion exacta.
     IReadOnlyList<Empleado> BuscarEmpleadosPorIdentificacion(
         string identificacion);
 
-    // Valida y agrega un empleado al almacén.
+    // Valida y agrega un empleado al almacen.
     ResultadoOperacion CrearEmpleado(
         EmpleadoFormulario formulario);
 
@@ -69,7 +69,7 @@ public interface IAlmacenCarniceria
     // Devuelve una copia del producto indicado o null si no existe.
     Producto? ObtenerProducto(Guid id);
 
-    // Busca productos por código exacto.
+    // Busca productos por codigo exacto.
     IReadOnlyList<Producto> BuscarProductosPorCodigo(
         string codigo);
 
@@ -77,7 +77,7 @@ public interface IAlmacenCarniceria
     IReadOnlyList<Producto> BuscarProductosPorNombre(
         string nombre);
 
-    // Valida la referencia y agrega un producto al almacén.
+    // Valida la referencia y agrega un producto al almacen.
     ResultadoOperacion CrearProducto(
         ProductoFormulario formulario);
 
@@ -97,15 +97,15 @@ public interface IAlmacenCarniceria
     // Devuelve una copia del proveedor indicado o null si no existe.
     Proveedor? ObtenerProveedor(Guid id);
 
-    // Busca proveedores por identificación exacta.
+    // Busca proveedores por identificacion exacta.
     IReadOnlyList<Proveedor> BuscarProveedoresPorIdentificacion(
         string identificacion);
 
-    // Busca proveedores por coincidencia parcial de razón social.
+    // Busca proveedores por coincidencia parcial de razon social.
     IReadOnlyList<Proveedor> BuscarProveedoresPorRazonSocial(
         string razonSocial);
 
-    // Valida y agrega un proveedor al almacén.
+    // Valida y agrega un proveedor al almacen.
     ResultadoOperacion CrearProveedor(
         ProveedorFormulario formulario);
 
@@ -114,7 +114,7 @@ public interface IAlmacenCarniceria
         Guid id,
         ProveedorFormulario formulario);
 
-    // Rechaza la eliminación si hay productos relacionados.
+    // Rechaza la eliminacion si hay productos relacionados.
     ResultadoOperacion EliminarProveedor(Guid id);
 
     // Operaciones de consulta y registro de facturas.
@@ -125,13 +125,13 @@ public interface IAlmacenCarniceria
     // Obtiene una copia de la factura indicada por su Id.
     Factura? ObtenerFactura(Guid id);
 
-    // Obtiene una copia por número exacto, sin distinguir mayúsculas.
+    // Obtiene una copia por numero exacto, sin distinguir mayusculas.
     Factura? ObtenerFacturaPorNumero(string numero);
 
-    // Busca números exactos de factura.
+    // Busca numeros exactos de factura.
     IReadOnlyList<Factura> BuscarFacturasPorNumero(string numero);
 
-    // Busca facturas asociadas a la identificación exacta del cliente.
+    // Busca facturas asociadas a la identificacion exacta del cliente.
     IReadOnlyList<Factura> BuscarFacturasPorIdentificacionCliente(
         string identificacion);
 

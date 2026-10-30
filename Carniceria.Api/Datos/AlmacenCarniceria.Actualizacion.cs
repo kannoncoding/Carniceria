@@ -33,7 +33,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
-            // Excluye el registro actual al buscar identificación duplicada.
+            // Excluye el registro actual al buscar identificacion duplicada.
             bool identificacionDuplicada = _clientes.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -48,7 +48,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro cliente con esta identificación.");
             }
 
-            // Sustituye los campos editables después de validar el formulario.
+            // Sustituye los campos editables despues de validar el formulario.
             cliente.TipoIdentificacion = formulario.TipoIdentificacion!.Value;
             cliente.Identificacion = formulario.Identificacion;
             cliente.Nombre = formulario.Nombre;
@@ -86,7 +86,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
-            // Excluye el registro actual al buscar identificación duplicada.
+            // Excluye el registro actual al buscar identificacion duplicada.
             bool identificacionDuplicada = _empleados.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -159,7 +159,7 @@ public partial class AlmacenCarniceria
                     });
             }
 
-            // Excluye el registro actual al buscar código duplicado.
+            // Excluye el registro actual al buscar codigo duplicado.
             bool codigoDuplicado = _productos.Any(otro =>
                 otro.Id != id &&
                 string.Equals(
@@ -174,7 +174,7 @@ public partial class AlmacenCarniceria
                     "Ya existe otro producto con este código.");
             }
 
-            // Actualiza referencia, descripción y valores de inventario validados.
+            // Actualiza referencia, descripcion y valores de inventario validados.
             producto.ProveedorId = formulario.ProveedorId.Value;
             producto.Codigo = formulario.Codigo;
             producto.Nombre = formulario.Nombre;
@@ -214,7 +214,7 @@ public partial class AlmacenCarniceria
                 return ResultadoOperacion.ValidacionFallida(errores);
             }
 
-            // Excluye el registro actual al buscar identificación duplicada.
+            // Excluye el registro actual al buscar identificacion duplicada.
             bool identificacionDuplicada = _proveedores.Any(otro =>
                 otro.Id != id &&
                 string.Equals(

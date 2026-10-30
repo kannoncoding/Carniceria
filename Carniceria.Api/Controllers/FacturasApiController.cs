@@ -18,7 +18,7 @@ public class FacturasApiController : ControladorApiBase
     // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
-    // Recibe el almacén singleton registrado en la aplicación.
+    // Recibe el almacen singleton registrado en la aplicacion.
     public FacturasApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
@@ -47,7 +47,7 @@ public class FacturasApiController : ControladorApiBase
         return Ok(facturas);
     }
 
-    // Busca por número exacto o identificación exacta del cliente.
+    // Busca por numero exacto o identificacion exacta del cliente.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery] string? criterio,
@@ -105,7 +105,7 @@ public class FacturasApiController : ControladorApiBase
         return Ok(calculo.Respuesta);
     }
 
-    // Obtiene una factura por su número exacto.
+    // Obtiene una factura por su numero exacto.
     [HttpGet("{numero}")]
     public IActionResult ObtenerPorNumero(string numero)
     {
@@ -216,7 +216,7 @@ public class FacturasApiController : ControladorApiBase
         };
     }
 
-    // Proyecta el cálculo sin exponer número, fecha ni identificadores internos.
+    // Proyecta el calculo sin exponer numero, fecha ni identificadores internos.
     private RespuestaCalculoFactura MapearCalculo(Factura factura)
     {
         var detalles = factura.Detalles

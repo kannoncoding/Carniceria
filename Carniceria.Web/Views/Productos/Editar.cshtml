@@ -1,5 +1,5 @@
 ﻿@model ProductoFormulario
-@* Envía los cambios del producto asociado al Id de la ruta. *@
+@* Envia los cambios del producto asociado al Id de la ruta. *@
 
 @{
     ViewData["Title"] = "Editar producto";
@@ -14,7 +14,7 @@
     Actualice los datos del producto. Todos los campos son obligatorios.
 </p>
 
-@* Envía los cambios junto con el Id de la ruta y protección antifalsificación. *@
+@* Envia los cambios junto con el Id de la ruta y proteccion antifalsificacion. *@
 <form asp-area=""
       asp-controller="Productos"
       asp-action="Editar"
@@ -27,10 +27,10 @@
     @* Muestra los errores antes de los campos editables. *@
     <partial name="_ResumenValidacion" />
 
-    @* Reutiliza los campos de producto para alta y edición. *@
+    @* Reutiliza los campos de producto para alta y edicion. *@
     <partial name="_Formulario" model="@Model" />
 
-    @* Acciones para guardar o cancelar la edición. *@
+    @* Acciones para guardar o cancelar la edicion. *@
     <div class="acciones">
         <button type="submit" class="boton">
             Guardar cambios

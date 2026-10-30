@@ -1,7 +1,7 @@
 ﻿(() => {
     "use strict";
 
-    // Mantiene los puestos disponibles sincronizados con el área seleccionada.
+    // Mantiene los puestos disponibles sincronizados con el area seleccionada.
     function inicializarPuestosEmpleado() {
         const campoArea = document.getElementById("AreaTrabajo");
         const campoPuesto = document.getElementById("Puesto");
@@ -13,7 +13,7 @@
             return;
         }
 
-        // Catálogo serializado por la vista para filtrar puestos por área.
+        // Catalogo serializado por la vista para filtrar puestos por area.
         let puestosPorArea;
 
         try {
@@ -28,7 +28,7 @@
         }
 
         function actualizarPuestos() {
-            // Conserva el puesto solo si sigue disponible para el área actual.
+            // Conserva el puesto solo si sigue disponible para el area actual.
             const puestoAnterior = campoPuesto.value;
             const puestosDelArea = puestosPorArea[campoArea.value];
 
@@ -70,7 +70,7 @@
         // El evento pageshow sincroniza el formulario restaurado.
         window.addEventListener("pageshow", actualizarPuestos);
 
-        // La selección inicial conserva el valor renderizado por el servidor.
+        // La seleccion inicial conserva el valor renderizado por el servidor.
         actualizarPuestos();
     }
 

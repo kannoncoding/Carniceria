@@ -17,13 +17,13 @@ public class ClientesApiController : ControladorApiBase
     // Servicio de datos compartido por las solicitudes del controlador.
     private readonly IAlmacenCarniceria _almacen;
 
-    // Recibe el almacén singleton registrado en la aplicación.
+    // Recibe el almacen singleton registrado en la aplicacion.
     public ClientesApiController(IAlmacenCarniceria almacen)
     {
         _almacen = almacen;
     }
 
-    // Devuelve la colección actual de clientes.
+    // Devuelve la coleccion actual de clientes.
     [HttpGet]
     public IActionResult Listar()
     {
@@ -34,7 +34,7 @@ public class ClientesApiController : ControladorApiBase
         return Ok(clientes);
     }
 
-    // Busca clientes por identificación exacta.
+    // Busca clientes por identificacion exacta.
     [HttpGet("buscar")]
     public IActionResult Buscar(
         [FromQuery(Name = "identificacion")] string? identificacion)

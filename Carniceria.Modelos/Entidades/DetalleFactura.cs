@@ -3,10 +3,10 @@ using Carniceria.Modelos.Enumeraciones;
 
 namespace Carniceria.Modelos.Entidades;
 
-// Representa una línea con producto e importes capturados.
+// Representa una linea con producto e importes capturados.
 public class DetalleFactura
 {
-    // Identificador asignado al crear la línea.
+    // Identificador asignado al crear la linea.
     public Guid Id { get; private set; } = Guid.NewGuid();
 
     // Producto y unidad usados en la factura.
@@ -14,14 +14,14 @@ public class DetalleFactura
 
     public UnidadMedida UnidadMedida { get; set; }
 
-    // Cantidad y valores monetarios de la línea.
+    // Cantidad y valores monetarios de la linea.
     public decimal Cantidad { get; set; }
 
     public decimal PrecioUnitario { get; set; }
 
     public decimal SubtotalLinea { get; set; }
 
-    // Copia la línea con su identidad y datos de valor.
+    // Copia la linea con su identidad y datos de valor.
     public DetalleFactura Copiar()
     {
         return (DetalleFactura)MemberwiseClone();

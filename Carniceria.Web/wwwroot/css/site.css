@@ -14,7 +14,7 @@
     --color-advertencia: #704600;
 }
 
-/* Normalización de caja, tipografía y elementos generales. */
+/* Normalizacion de caja, tipografia y elementos generales. */
 
 *,
 *::before,
@@ -78,7 +78,7 @@ textarea {
     outline-offset: 3px;
 }
 
-/* Distribución del encabezado, contenido central y pie. */
+/* Distribucion del encabezado, contenido central y pie. */
 
 .contenedor {
     width: min(72rem, calc(100% - 2rem));
@@ -129,7 +129,7 @@ textarea {
         margin: 0;
     }
 
-/* Menú principal y enlaces de navegación. */
+/* Menu principal y enlaces de navegacion. */
 
 .navegacion-principal {
     min-width: 0;
@@ -187,7 +187,7 @@ textarea {
         transform: translateY(0);
     }
 
-/* Presentación inicial y tarjetas de módulos. */
+/* Presentacion inicial y tarjetas de modulos. */
 
 .presentacion {
     margin-bottom: 1.5rem;
@@ -351,7 +351,7 @@ tbody tr:hover {
     color: var(--color-exito);
 }
 
-/* Campos, ayudas, validación y controles de formulario. */
+/* Campos, ayudas, validacion y controles de formulario. */
 
 .formulario {
     max-width: 48rem;
@@ -501,7 +501,7 @@ input[type="checkbox"] {
     padding-left: 1.25rem;
 }
 
-/* Ajustes de distribución para pantallas estrechas. */
+/* Ajustes de distribucion para pantallas estrechas. */
 
 @media (max-width: 48rem) {
     .encabezado-sitio > .contenedor {
@@ -546,7 +546,7 @@ input[type="checkbox"] {
     }
 }
 
-/* Presentación de pares de datos en las fichas. */
+/* Presentacion de pares de datos en las fichas. */
 
 .detalle-registro {
     display: grid;

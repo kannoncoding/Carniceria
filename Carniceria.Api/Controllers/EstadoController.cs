@@ -7,7 +7,7 @@ namespace Carniceria.Api.Controllers;
 [Route("api/estado")]
 public class EstadoController : ControllerBase
 {
-    // Informa que la instancia está atendiendo solicitudes.
+    // Informa que la instancia esta atendiendo solicitudes.
     [HttpGet]
     public IActionResult ObtenerEstado()
     {

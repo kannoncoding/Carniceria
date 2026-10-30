@@ -49,7 +49,7 @@ SolicitudFactura CrearSolicitud(params SolicitudDetalleFactura[] detalles)
     };
 }
 
-// Crea una línea de solicitud con producto y cantidad.
+// Crea una linea de solicitud con producto y cantidad.
 SolicitudDetalleFactura Linea(Guid productoId, decimal cantidad)
 {
     return new SolicitudDetalleFactura
@@ -59,7 +59,7 @@ SolicitudDetalleFactura Linea(Guid productoId, decimal cantidad)
     };
 }
 
-// Verifica datos comerciales copiados desde el almacén y no desde la solicitud.
+// Verifica datos comerciales copiados desde el almacen y no desde la solicitud.
 var resultadoLineas = Preparar(CrearSolicitud(Linea(res.Id, 2m), Linea(pol.Id, 1m)));
 Verificar("La preparación válida no devuelve error", resultadoLineas.Error is null);
 Verificar("Precio y unidad se copian de ambos productos",
@@ -71,7 +71,7 @@ Verificar("Precio y unidad se copian de ambos productos",
 Verificar("Las cantidades fraccionarias se conservan",
     Preparar(CrearSolicitud(Linea(res.Id, 0.125m))).Detalles.Single().Cantidad == 0.125m);
 
-// Suma líneas repetidas antes de comparar contra las existencias.
+// Suma lineas repetidas antes de comparar contra las existencias.
 var justoEnExistencia = Preparar(CrearSolicitud(Linea(res.Id, 6m), Linea(res.Id, 4m)));
 var sobreExistencia = Preparar(CrearSolicitud(Linea(res.Id, 6m), Linea(res.Id, 5m)));
 Verificar("Demanda duplicada que iguala existencias se acepta",
@@ -82,7 +82,7 @@ Verificar("Demanda duplicada superior a existencias devuelve conflicto",
 Verificar("Conflicto de existencias no devuelve líneas parciales",
     sobreExistencia.Detalles.Count == 0);
 
-// Rechaza la suma decimal desbordada como error de validación controlado.
+// Rechaza la suma decimal desbordada como error de validacion controlado.
 var demandaDesbordada = Preparar(CrearSolicitud(
     Linea(res.Id, decimal.MaxValue),
     Linea(res.Id, 1m)));
@@ -94,7 +94,7 @@ var productoInexistente = Preparar(CrearSolicitud(Linea(Guid.NewGuid(), 1m)));
 Verificar("Producto inexistente conserva error de datos 400",
     productoInexistente.Error?.Estado == EstadoOperacion.ValidacionFallida);
 
-// Cambiar un snapshot no altera el producto ni la siguiente preparación.
+// Cambiar un snapshot no altera el producto ni la siguiente preparacion.
 resultadoLineas.Detalles[0].PrecioUnitario = 1m;
 var nuevaPreparacion = Preparar(CrearSolicitud(Linea(res.Id, 1m)));
 Verificar("Los snapshots son independientes del almacén",

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Carniceria.Web.Helpers;
 
-// Genera una página 404 con retorno al módulo asociado a la ruta.
+// Genera una pagina 404 con retorno al modulo asociado a la ruta.
 public static class ErroresControllerExtensions
 {
     // Prepara el modelo y la vista de recurso no encontrado.
