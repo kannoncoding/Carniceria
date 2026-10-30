@@ -55,7 +55,7 @@ var numeros = facturas
     .OrderBy(numero => numero, StringComparer.Ordinal)
     .ToArray();
 var numerosEsperados = Enumerable.Range(1, cantidadFacturas)
-    .Select(secuencia => "FAC" + secuencia.ToString("D6", CultureInfo.InvariantCulture))
+    .Select(secuencia => "FAC" + (secuencia + 1).ToString("D6", CultureInfo.InvariantCulture))
     .ToArray();
 Verificar("Números FAC únicos y secuenciales bajo concurrencia", numeros.SequenceEqual(numerosEsperados));
 Verificar("Estado Pendiente impuesto por API", facturas.All(factura => factura.Estado == EstadoFactura.Pendiente));

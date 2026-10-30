@@ -1,4 +1,5 @@
 using System;
+using Carniceria.Modelos.Contratos.Solicitudes;
 using Carniceria.Modelos.Entidades;
 using Carniceria.Modelos.Enumeraciones;
 using Carniceria.Modelos.Formularios;
@@ -20,7 +21,7 @@ public partial class AlmacenCarniceria
             SegundoApellido = "Rojas",
             FechaNacimiento = new DateTime(1990, 1, 15)
         });
-        ObtenerIdentificadorSemilla(resultadoCliente, "el cliente Ana");
+        var clienteId = ObtenerIdentificadorSemilla(resultadoCliente, "el cliente Ana");
 
         var resultadoEmpleado = CrearEmpleado(new EmpleadoFormulario
         {
@@ -36,7 +37,7 @@ public partial class AlmacenCarniceria
             Puesto = "Cajero",
             Turno = Turno.Manana
         });
-        ObtenerIdentificadorSemilla(resultadoEmpleado, "el empleado Luis");
+        var empleadoId = ObtenerIdentificadorSemilla(resultadoEmpleado, "el empleado Luis");
 
         var resultadoProveedor = CrearProveedor(new ProveedorFormulario
         {
@@ -64,7 +65,7 @@ public partial class AlmacenCarniceria
             ExistenciaActual = 10m,
             ExistenciaMinima = 2m
         });
-        ObtenerIdentificadorSemilla(resultadoCarne, "el producto RES001");
+        var carneId = ObtenerIdentificadorSemilla(resultadoCarne, "el producto RES001");
 
         var resultadoPollo = CrearProducto(new ProductoFormulario
         {
@@ -77,7 +78,22 @@ public partial class AlmacenCarniceria
             ExistenciaActual = 10m,
             ExistenciaMinima = 2m
         });
-        ObtenerIdentificadorSemilla(resultadoPollo, "el producto POL001");
+        var polloId = ObtenerIdentificadorSemilla(resultadoPollo, "el producto POL001");
+
+        // Crea la factura semilla con precios actuales y sin descontar existencias.
+        var resultadoFactura = CrearFactura(new SolicitudFactura
+        {
+            ClienteId = clienteId,
+            EmpleadoId = empleadoId,
+            MetodoPago = MetodoPago.Efectivo,
+            PorcentajeDescuento = 10m,
+            Detalles =
+            [
+                new SolicitudDetalleFactura { ProductoId = carneId, Cantidad = 2m },
+                new SolicitudDetalleFactura { ProductoId = polloId, Cantidad = 1m }
+            ]
+        });
+        ObtenerIdentificadorSemilla(resultadoFactura, "la factura inicial");
     }
 
     // Falla el inicio si una semilla no se creó con un Id válido.

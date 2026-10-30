@@ -47,11 +47,13 @@ try{
  await esperarApi();
  const clientes=await listar('clientes'),empleados=await listar('empleados'),productos=await listar('productos');
  const cliente=clientes[0],empleado=empleados[0],res=productos.find(p=>p.codigo==='RES001'),pol=productos.find(p=>p.codigo==='POL001');
- const inicial=await listar('facturas');verificar('Sin semilla de factura antes de F5.8',inicial.length===0);
+ const inicial=await listar('facturas');verificar('Factura semilla única FAC000001',inicial.length===1&&inicial[0].numero==='FAC000001');
+ verificar('Factura semilla pendiente con datos calculados',inicial[0]?.estado===1&&inicial[0]?.clienteId===cliente.id&&inicial[0]?.empleadoId===empleado.id&&inicial[0]?.metodoPago===1&&inicial[0]?.porcentajeDescuento===10&&inicial[0]?.subtotal===11000&&inicial[0]?.montoDescuento===1100&&inicial[0]?.baseGravable===9900&&inicial[0]?.montoIva===1287&&inicial[0]?.total===11187);
+ verificar('Factura semilla conserva cantidades y referencias',inicial[0]?.detalles?.length===2&&inicial[0].detalles[0].productoId===res.id&&inicial[0].detalles[0].cantidad===2&&inicial[0].detalles[1].productoId===pol.id&&inicial[0].detalles[1].cantidad===1);
  const configuracion=await solicitar('GET','/api/facturas/configuracion');verificar('Ruta configuracion sigue estatica',configuracion.codigo===200&&configuracion.cuerpo.porcentajeDescuentoMaximo===25&&configuracion.cuerpo.porcentajeIva===13);
  // Solicitud base con productos y cantidades; precios e importes pertenecen al servidor.
  const solicitud={clienteId:cliente.id,empleadoId:empleado.id,metodoPago:1,porcentajeDescuento:10,detalles:[{productoId:res.id,cantidad:2},{productoId:pol.id,cantidad:1}]};
- const inicio=Date.now();const primera=await verificarAlta(await solicitar('POST','/api/facturas',solicitud),'Factura inicial');
+ const inicio=Date.now();const primera=await verificarAlta(await solicitar('POST','/api/facturas',solicitud),'Factura posterior a semilla');
  verificar('Ejemplo academico11187 calculado por API',primera.subtotal===11000&&primera.montoDescuento===1100&&primera.baseGravable===9900&&primera.montoIva===1287&&primera.total===11187);
  verificar('Emision actual con offset Costa Rica',/-06:00$/.test(primera.fechaEmision)&&Date.parse(primera.fechaEmision)>=inicio-1000&&Date.parse(primera.fechaEmision)<=Date.now()+1000);
  verificar('Detalle usa precios y unidades del producto',primera.detalles[0].precioUnitario===res.precioUnidadMedida&&primera.detalles[0].unidadMedida===res.unidadMedida&&primera.detalles[1].precioUnitario===pol.precioUnidadMedida);
@@ -89,11 +91,11 @@ try{
  // Altas paralelas deben conservar identidades únicas y no reservar stock pendiente.
  const paralelas=await Promise.all(Array.from({length:8},()=>solicitar('POST','/api/facturas',{...solicitud,porcentajeDescuento:0,detalles:[{productoId:res.id,cantidad:1}]})));
  for(let indice=0;indice<paralelas.length;indice++)await verificarAlta(paralelas[indice],'Alta paralela '+indice);
- const todas=await listar('facturas');verificar('Listado contiene todas las altas',todas.length===creadas.length);
- const numeros=todas.map(f=>f.numero).sort();verificar('Rechazos no consumen numero y concurrencia no duplica',JSON.stringify(numeros)===JSON.stringify(Array.from({length:creadas.length},(_,indice)=>'FAC'+String(indice+1).padStart(6,'0'))));
+ const todas=await listar('facturas');verificar('Listado contiene semilla y todas las altas',todas.length===creadas.length+1);
+ const numeros=todas.map(f=>f.numero).sort();verificar('Rechazos no consumen numero y concurrencia no duplica',JSON.stringify(numeros)===JSON.stringify(Array.from({length:creadas.length+1},(_,indice)=>'FAC'+String(indice+1).padStart(6,'0'))));
  verificar('Todos los Id de factura son unicos',new Set(todas.map(f=>f.id)).size===todas.length);
  const idsDetalles=todas.flatMap(f=>f.detalles.map(d=>d.id));verificar('Todos los Id de detalle son unicos',new Set(idsDetalles).size===idsDetalles.length);
- const buscarCliente=await solicitar('GET','/api/facturas/buscar?'+new URLSearchParams({criterio:'IdentificacionCliente',consulta:' '+cliente.identificacion+' '}));verificar('Busqueda cliente devuelve varias y todas sus facturas',buscarCliente.codigo===200&&buscarCliente.cuerpo.length===creadas.length&&buscarCliente.cuerpo.every(f=>f.clienteId===cliente.id));
+ const buscarCliente=await solicitar('GET','/api/facturas/buscar?'+new URLSearchParams({criterio:'IdentificacionCliente',consulta:' '+cliente.identificacion+' '}));verificar('Busqueda cliente devuelve semilla y altas',buscarCliente.codigo===200&&buscarCliente.cuerpo.length===creadas.length+1&&buscarCliente.cuerpo.every(f=>f.clienteId===cliente.id));
  const buscarNumero=await solicitar('GET','/api/facturas/buscar?'+new URLSearchParams({criterio:'numero',consulta:' '+primera.numero.toLowerCase()+' '}));verificar('Busqueda numero exacto normalizado',buscarNumero.codigo===200&&buscarNumero.cuerpo.length===1&&buscarNumero.cuerpo[0].id===primera.id);
  const parcial=await solicitar('GET','/api/facturas/buscar?criterio=Numero&consulta=FAC');verificar('Numero parcial no coincide',parcial.codigo===200&&parcial.cuerpo.length===0);
  const sinCoincidencias=await solicitar('GET','/api/facturas/buscar?criterio=IdentificacionCliente&consulta=9-9999-9999');verificar('Busqueda cliente sin coincidencias lista vacia',sinCoincidencias.codigo===200&&sinCoincidencias.cuerpo.length===0);

@@ -17,7 +17,8 @@ void Verificar(string nombre, bool condicion)
     resultados.Add((nombre, condicion));
 }
 
-var accion = new FacturasApiController().ObtenerConfiguracion();
+var almacen = new AlmacenCarniceria();
+var accion = new FacturasApiController(almacen).ObtenerConfiguracion();
 var respuesta = (accion as OkObjectResult)?.Value as RespuestaConfiguracionFacturas;
 var rutaControlador = typeof(FacturasApiController)
     .GetCustomAttribute<RouteAttribute>()?.Template;
@@ -50,7 +51,6 @@ Verificar("El JSON conserva ambos porcentajes como números",
 var validador = typeof(AlmacenCarniceria).GetMethod(
     "ValidarSolicitudFactura",
     BindingFlags.Instance | BindingFlags.NonPublic);
-var almacen = new AlmacenCarniceria();
 var solicitudBase = new SolicitudFactura
 {
     ClienteId = almacen.ListarClientes().First().Id,
