@@ -159,6 +159,40 @@ public class FacturasApiController : ControladorApiBase
             alta.Respuesta);
     }
 
+    // Paga una factura pendiente y devuelve el estado actualizado.
+    [HttpPost("{numero}/pagar")]
+    public IActionResult Pagar(string numero)
+    {
+        var pago = _almacen.EjecutarConBloqueo(() =>
+        {
+            var resultado = _almacen.PagarFactura(numero);
+            var factura = resultado.EsExitoso
+                ? _almacen.ObtenerFactura(resultado.Id!.Value)
+                : null;
+            var respuesta = factura is null
+                ? null
+                : MapearFactura(factura);
+
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!pago.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(pago.Resultado);
+        }
+
+        if (pago.Respuesta is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorApi
+            {
+                Codigo = "ErrorInterno",
+                Mensaje = "No se pudo completar la solicitud."
+            });
+        }
+
+        return Ok(pago.Respuesta);
+    }
+
     // Proyecta una copia de factura y sus relaciones mientras se mantiene el bloqueo.
     private RespuestaFactura MapearFactura(Factura factura)
     {

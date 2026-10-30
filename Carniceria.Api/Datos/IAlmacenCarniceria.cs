@@ -141,4 +141,7 @@ public interface IAlmacenCarniceria
     // Valida y calcula una factura sin asignar identidad ni almacenarla.
     (ResultadoOperacion? Error, Factura? Factura) PrevisualizarFactura(
         SolicitudFactura solicitud);
+
+    // Descuenta las existencias y cambia una factura pendiente a pagada.
+    ResultadoOperacion PagarFactura(string numero);
 }
