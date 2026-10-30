@@ -83,6 +83,28 @@ public class FacturasApiController : ControladorApiBase
         return Ok(facturas);
     }
 
+    // Calcula una solicitud sin almacenar la factura ni asignarle identidad.
+    [HttpPost("calcular")]
+    public IActionResult Calcular([FromBody] SolicitudFactura solicitud)
+    {
+        var calculo = _almacen.EjecutarConBloqueo(() =>
+        {
+            var resultado = _almacen.PrevisualizarFactura(solicitud);
+            var respuesta = resultado.Factura is null
+                ? null
+                : MapearCalculo(resultado.Factura);
+
+            return (resultado.Error, Respuesta: respuesta);
+        });
+
+        if (calculo.Error is not null)
+        {
+            return ConvertirResultadoFallido(calculo.Error);
+        }
+
+        return Ok(calculo.Respuesta);
+    }
+
     // Obtiene una factura por su número exacto.
     [HttpGet("{numero}")]
     public IActionResult ObtenerPorNumero(string numero)
@@ -185,6 +207,40 @@ public class FacturasApiController : ControladorApiBase
             MetodoPago = factura.MetodoPago,
             PorcentajeDescuento = factura.PorcentajeDescuento,
             Estado = factura.Estado,
+            Subtotal = factura.Subtotal,
+            MontoDescuento = factura.MontoDescuento,
+            BaseGravable = factura.BaseGravable,
+            MontoIva = factura.MontoIva,
+            Total = factura.Total,
+            Detalles = Array.AsReadOnly(detalles)
+        };
+    }
+
+    // Proyecta el cálculo sin exponer número, fecha ni identificadores internos.
+    private RespuestaCalculoFactura MapearCalculo(Factura factura)
+    {
+        var detalles = factura.Detalles
+            .Select(detalle =>
+            {
+                var producto = _almacen.ObtenerProducto(detalle.ProductoId)
+                    ?? throw new InvalidOperationException("El producto calculado ya no está disponible.");
+
+                return new RespuestaDetalleCalculoFactura
+                {
+                    ProductoId = detalle.ProductoId,
+                    ProductoCodigo = producto.Codigo,
+                    ProductoNombre = producto.Nombre,
+                    UnidadMedida = detalle.UnidadMedida,
+                    Cantidad = detalle.Cantidad,
+                    PrecioUnitario = detalle.PrecioUnitario,
+                    SubtotalLinea = detalle.SubtotalLinea
+                };
+            })
+            .ToArray();
+
+        return new RespuestaCalculoFactura
+        {
+            PorcentajeDescuento = factura.PorcentajeDescuento,
             Subtotal = factura.Subtotal,
             MontoDescuento = factura.MontoDescuento,
             BaseGravable = factura.BaseGravable,

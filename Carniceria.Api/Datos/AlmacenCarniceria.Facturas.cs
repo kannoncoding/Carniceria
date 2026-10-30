@@ -111,24 +111,7 @@ public partial class AlmacenCarniceria
 
         lock (_sincronizacion)
         {
-            var preparacion = PrepararDetallesFactura(solicitud);
-            if (preparacion.Error is not null)
-            {
-                return preparacion.Error;
-            }
-
-            var candidata = new Factura
-            {
-                ClienteId = solicitud.ClienteId,
-                EmpleadoId = solicitud.EmpleadoId,
-                MetodoPago = solicitud.MetodoPago,
-                PorcentajeDescuento = solicitud.PorcentajeDescuento,
-                Detalles = preparacion.Detalles
-                    .Select(detalle => detalle.Copiar())
-                    .ToList()
-            };
-
-            var calculo = CalcularImportesFactura(candidata);
+            var calculo = PrepararFacturaCalculada(solicitud);
             if (calculo.Error is not null)
             {
                 return calculo.Error;
@@ -141,6 +124,39 @@ public partial class AlmacenCarniceria
                 registrada.Id,
                 "Factura registrada correctamente.");
         }
+    }
+
+    // Calcula una copia para presentación sin reservar identidad ni persistirla.
+    public (ResultadoOperacion? Error, Factura? Factura) PrevisualizarFactura(
+        SolicitudFactura solicitud)
+    {
+        ArgumentNullException.ThrowIfNull(solicitud);
+
+        return EjecutarConBloqueo(() => PrepararFacturaCalculada(solicitud));
+    }
+
+    // Reutiliza validación, snapshots de productos y cálculo para ambos flujos.
+    private (ResultadoOperacion? Error, Factura? Factura) PrepararFacturaCalculada(
+        SolicitudFactura solicitud)
+    {
+        var preparacion = PrepararDetallesFactura(solicitud);
+        if (preparacion.Error is not null)
+        {
+            return (preparacion.Error, null);
+        }
+
+        var candidata = new Factura
+        {
+            ClienteId = solicitud.ClienteId,
+            EmpleadoId = solicitud.EmpleadoId,
+            MetodoPago = solicitud.MetodoPago,
+            PorcentajeDescuento = solicitud.PorcentajeDescuento,
+            Detalles = preparacion.Detalles
+                .Select(detalle => detalle.Copiar())
+                .ToList()
+        };
+
+        return CalcularImportesFactura(candidata);
     }
 
     // Calcula los importes en una copia y controla desbordamientos decimales.

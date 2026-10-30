@@ -137,4 +137,8 @@ public interface IAlmacenCarniceria
 
     // Valida, calcula, asigna identidad y registra una factura completa.
     ResultadoOperacion CrearFactura(SolicitudFactura solicitud);
+
+    // Valida y calcula una factura sin asignar identidad ni almacenarla.
+    (ResultadoOperacion? Error, Factura? Factura) PrevisualizarFactura(
+        SolicitudFactura solicitud);
 }
