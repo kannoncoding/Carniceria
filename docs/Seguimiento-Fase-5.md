@@ -1,6 +1,6 @@
 # Seguimiento de la fase 5
 
-Registro incremental del modelo y los flujos de facturas. La fase sigue abierta; F5.1 solo define entidades y contratos compartidos.
+Fase 5 completa a nivel de API: modelos, validación, captura de precios y unidades, cálculo, configuración de porcentajes, registro y consultas de facturas, semilla inicial y previsualización sin persistencia. La API conserva datos en memoria y reconstruye la factura semilla al reiniciar. La verificación MVC cubre las tres guardas de integridad al eliminar registros relacionados; la interfaz MVC de facturas queda para F7. F6 (pago, anulación, ajustes e histórico de precio/unidad) y la demostración aislada de descuento al 15 % en F9 quedan fuera de esta fase.
 
 | Paso | Estado | Evidencia o límite |
 | --- | --- | --- |
@@ -13,7 +13,22 @@ Registro incremental del modelo y los flujos de facturas. La fase sigue abierta;
 | F5.7 | Completado | El almacén registra una factura solo después de validar, capturar precio/unidad, comprobar demanda total, calcular e identificarla, todo bajo `_sincronizacion`; las lecturas devuelven copias profundas y los mapeos descriptivos se completan bajo el mismo bloqueo. El controlador expone POST y GET de colección, GET por número exacto y búsquedas `Numero`/`IdentificacionCliente`; el POST devuelve 201 con `Location`. QA aprobó 171/171 comprobaciones HTTP: 11 facturas creadas, 13 rechazos 400/409 sin consumo de identidad, ubicación, búsquedas múltiples, concurrencia y campos calculados suplantados ignorados. Guardas mínimas 409 impiden borrar cliente, empleado o producto relacionado con facturas, solo para mantener integridad referencial. Sin pago, anulación, edición de factura ni semillas. |
 | F5.8 | Completado | Al iniciar el almacén se crea la factura semilla mediante `CrearFactura`, después de los registros de cliente, empleado y productos. Usa Efectivo, descuento 10 %, RES001×2 y POL001×1; el cálculo es subtotal 11 000, descuento 1 100, base 9 900, IVA 1 287 y total 11 187. QA aprobó 36/36 comprobaciones de semilla y reinicio: una sola FAC000001 por instancia, relaciones y detalles con Id, existencias 10/10, alta FAC000002 desaparece al reiniciar y la semilla se reconstruye con identificadores nuevos. El build de solución terminó con 0 errores y 0 advertencias. |
 | F5.9 | Completado | Se añadió `POST /api/facturas/calcular` con DTO sin Id de factura/línea, número ni fecha. Reutiliza `PrepararFacturaCalculada`, el mismo pipeline de validación, snapshots de producto, disponibilidad y cálculo que el registro. La acción corre bajo el bloqueo del almacén y no persiste, asigna secuencia ni modifica existencias. QA aprobó 87/87 comprobaciones HTTP: 3 repeticiones, 8 cálculos concurrentes y 7 rechazos sin efectos; las altas posteriores FAC000002/FAC000003 coinciden con sus cálculos previos. El build de solución terminó con 0 errores y 0 advertencias. |
-| F5.10 | Pendiente | Verificar el ejemplo CRC 11 187, descuentos 0/25, valores negativos y manipulación de campos calculados. |
+| F5.10 | Completado | QA aprobó la pasada final de 368/368 verificaciones: 327 HTTP de API (Facturas 173, Semillas/reinicio 36, Previsualización 87 y Límites 31) y 41 MVC sobre las guardas de eliminación. La API se compiló previamente con 0 errores y 0 advertencias; F5.10 no cambió la aplicación. El grupo de 173 corresponde al fixture F5.7 adaptado a la factura semilla y ejecutado ahora; los 171 originales siguen como evidencia histórica anterior a F5.8 y no se suman. Los 63 casos semánticos de los pasos previos tampoco forman parte del conteo final. |
+
+## Trazabilidad de requisitos
+
+| Requisito | Evidencia final |
+| --- | --- |
+| T02 | `Verificar-SemillasHttp.mjs`: 36 verificaciones de FAC000001, datos y referencias de la semilla, inventario 10/10, identidad nueva por reinicio y descarte de altas de prueba. |
+| T11 | `Verificar-FacturasHttp.mjs` (173) y `Verificar-SemillasHttp.mjs` (36): número, fecha, Id de factura/líneas, estado Pendiente y stock sin descuento. |
+| T12 | `Verificar-FacturasHttp.mjs` (173) y `Verificar-LimitesFacturaHttp.mjs` (31): relaciones requeridas, campos inválidos y segunda línea inválida sin registro parcial. |
+| T13 | `Verificar-FacturasHttp.mjs` (173) y `Verificar-LimitesFacturaHttp.mjs` (31): descuentos negativo, 0, 25 y sobre 25. |
+| T14 | `Verificar-FacturasHttp.mjs` y `Verificar-SemillasHttp.mjs`: ejemplo CRC subtotal 11 000, descuento 1 100, base 9 900, IVA 1 287, total 11 187. |
+| T15 | `Verificar-FacturasHttp.mjs` (173) y `Verificar-LimitesFacturaHttp.mjs` (31): cantidades fraccionarias, demanda justo en stock y exceso de existencias. |
+| T16 | `Verificar-FacturasHttp.mjs` (173): demanda duplicada 6+5 frente a stock 10. El grupo de límites (31) cubre 6+4 como demanda exacta. |
+| T17 | `Verificar-LimitesFacturaHttp.mjs` (31): una segunda línea inválida no persiste una factura ni consume número. |
+| T18 | `Verificar-FacturasHttp.mjs` (173): campos de servidor adicionales no sustituyen identidad, fecha, estado, precios, unidad ni totales. |
+| Integridad de bajas | `Verificar-FacturasHttp.mjs` (173): la API responde 409 ante referencias de factura. `Verificar-IntegridadMvc.mjs` (41): MVC conserva la página de confirmación para tres bajas relacionadas y completa PRG en tres bajas libres; después, la API responde 404. |
 
 ## Decisiones de implementación
 
@@ -25,4 +40,4 @@ Registro incremental del modelo y los flujos de facturas. La fase sigue abierta;
 
 ## Alcance actual
 
-F5.1 no añade endpoints, almacenes, cálculo, persistencia de facturas, validación de negocio ni cambios a Web. Las pruebas de F5.1 comprueban aislamiento de copias, identidad de detalles y separación entre campos editables y campos asignados/calculados por el servidor.
+La API registra, busca y calcula facturas en un almacén en memoria; al reiniciar conserva solo la factura semilla reconstruida con identificadores nuevos. La factura semilla y las facturas registradas no descuentan ni reservan inventario. F5 no incluye la interfaz MVC de facturas (F7), pago, anulación ni ajustes de inventario (F6), ni la demostración aislada de descuento al 15 % (F9).
