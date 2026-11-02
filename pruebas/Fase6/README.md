@@ -25,3 +25,15 @@ node .\pruebas\Fase6\PagoFactura\Verificar-PagoHttp.mjs --raiz . --salida (Join-
 ```
 
 QA aprobó 86/86 verificaciones HTTP. El pago mantiene los datos capturados en la factura y rechaza con 409 si la unidad actual de un producto difiere de la unidad guardada. Esa comprobación no resuelve la política global para cambiar la unidad de un producto facturado.
+
+## Edición de una factura pendiente
+
+El verificador HTTP cubre la conservación de precios y unidades por defecto, su actualización optativa, la pertenencia de los Id de detalle, líneas nuevas o sustituidas, campos de cabecera inmutables y rechazos sin cambios parciales. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\EdicionPendiente\Verificar-EdicionPendienteHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'edicion-pendiente')
+```
+
+QA aprobó 150/150 verificaciones HTTP. Una edición de factura Pagada aún se rechaza con 409 en este paso; esa política se revisará en F6.4. Se acordo bloquear el cambio global de unidad mientras existan facturas vinculadas; la guarda se incorporara en F6.4.

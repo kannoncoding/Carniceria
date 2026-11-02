@@ -193,6 +193,42 @@ public class FacturasApiController : ControladorApiBase
         return Ok(pago.Respuesta);
     }
 
+    // Edita una factura pendiente y conserva su identidad y estado.
+    [HttpPut("{numero}")]
+    public IActionResult ActualizarPendiente(
+        string numero,
+        [FromBody] SolicitudEdicionFactura solicitud)
+    {
+        var actualizacion = _almacen.EjecutarConBloqueo(() =>
+        {
+            var resultado = _almacen.ActualizarFacturaPendiente(numero, solicitud);
+            var factura = resultado.EsExitoso
+                ? _almacen.ObtenerFactura(resultado.Id!.Value)
+                : null;
+            var respuesta = factura is null
+                ? null
+                : MapearFactura(factura);
+
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!actualizacion.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(actualizacion.Resultado);
+        }
+
+        if (actualizacion.Respuesta is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorApi
+            {
+                Codigo = "ErrorInterno",
+                Mensaje = "No se pudo completar la solicitud."
+            });
+        }
+
+        return Ok(actualizacion.Respuesta);
+    }
+
     // Proyecta una copia de factura y sus relaciones mientras se mantiene el bloqueo.
     private RespuestaFactura MapearFactura(Factura factura)
     {

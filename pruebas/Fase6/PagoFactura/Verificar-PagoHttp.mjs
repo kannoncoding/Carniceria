@@ -123,4 +123,3 @@ finally{
  await fs.writeFile(path.join(salida,'resumen.json'),JSON.stringify(resumen,null,2));console.log(JSON.stringify({total:resumen.total,aprobadas:resumen.aprobadas,fallo:resumen.fallo,errorCierre,puertoLibre:libre}));
  if(fallo||errorCierre||!libre)process.exitCode=1;
 }
-
