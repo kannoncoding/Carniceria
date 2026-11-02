@@ -24,7 +24,7 @@ New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
 node .\pruebas\Fase6\PagoFactura\Verificar-PagoHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'pago-factura')
 ```
 
-QA aprobó 86/86 verificaciones HTTP. El pago mantiene los datos capturados en la factura y rechaza con 409 si la unidad actual de un producto difiere de la unidad guardada. Esa comprobación no resuelve la política global para cambiar la unidad de un producto facturado.
+QA aprobó 86/86 verificaciones HTTP antes de establecer la guarda global de unidad. El pago conserva los datos capturados y mantiene su rechazo defensivo con 409 si la unidad difiere. El fixture actual comprueba que la unidad de un producto facturado se rechace con 409 y luego realiza el pago con la unidad conservada.
 
 ## Edición de una factura pendiente
 
@@ -36,4 +36,16 @@ New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
 node .\pruebas\Fase6\EdicionPendiente\Verificar-EdicionPendienteHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'edicion-pendiente')
 ```
 
-QA aprobó 150/150 verificaciones HTTP. Una edición de factura Pagada aún se rechaza con 409 en este paso; esa política se revisará en F6.4. Se acordo bloquear el cambio global de unidad mientras existan facturas vinculadas; la guarda se incorporara en F6.4.
+El resultado QA 150/150 corresponde a F6.3 antes de los cambios de F6.4. El fixture actual también comprueba que una edición sin cambios de una factura Pagada sea aceptada sin modificar existencias. Se acordo bloquear el cambio global de unidad mientras existan facturas vinculadas; la guarda se incorporo en F6.4.
+
+## Edicion de una factura pagada
+
+El grupo comprueba ediciones Pagadas con cantidades anteriores y nuevas agrupadas por producto, cambios de lineas y unidades, ajuste de existencias por diferencia, calculo, atomicidad y rechazo del cambio global de unidad para productos vinculados a facturas. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\EdicionPagada\Verificar-EdicionPagadaHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'edicion-pagada')
+```
+
+La pasada actual de regresion obtuvo 340/340 verificaciones: 115 de edicion Pagada, 81 de pago y 144 de edicion Pendiente. Los resultados historicos 86/86 y 150/150 son ejecuciones previas a la guarda global y no se suman a esta pasada. La prueba HTTP de la guarda cubrio facturas Pendientes y Pagadas; el estado Anulada se comprobara cuando F6.5 habilite esa transicion.

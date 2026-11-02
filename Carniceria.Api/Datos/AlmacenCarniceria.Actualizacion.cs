@@ -174,6 +174,16 @@ public partial class AlmacenCarniceria
                     "Ya existe otro producto con este código.");
             }
 
+            // Impide reinterpretar cantidades ya vinculadas a facturas.
+            if (producto.UnidadMedida != formulario.UnidadMedida!.Value &&
+                _facturas.Any(factura => factura.Detalles.Any(detalle =>
+                    detalle.ProductoId == producto.Id)))
+            {
+                return ResultadoOperacion.ConflictoIntegridad(
+                    nameof(ProductoFormulario.UnidadMedida),
+                    "No se puede cambiar la unidad de un producto vinculado a facturas.");
+            }
+
             // Actualiza referencia, descripcion y valores de inventario validados.
             producto.ProveedorId = formulario.ProveedorId.Value;
             producto.Codigo = formulario.Codigo;

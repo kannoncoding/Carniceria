@@ -46,7 +46,8 @@ async function obtenerFactura(numero){const respuesta=await solicitar('GET','/ap
 async function crearProducto(codigo){return await crearAuxiliar('productos',{proveedorId:(await listar('proveedores'))[0].id,codigo,nombre:codigo,categoria:1,unidadMedida:1,precioUnidadMedida:1000,existenciaActual:10,existenciaMinima:1});}
 
 // Ajusta solo los campos editables del producto mediante el contrato publico.
-async function actualizarProducto(id,cambios){const actual=(await solicitar('GET','/api/productos/'+id)).cuerpo;const formulario=Object.fromEntries(['proveedorId','codigo','nombre','categoria','unidadMedida','precioUnidadMedida','existenciaActual','existenciaMinima'].map(campo=>[campo,Object.hasOwn(cambios,campo)?cambios[campo]:actual[campo]]));const respuesta=await solicitar('PUT','/api/productos/'+id,formulario);verificar('Ajuste de fixture producto '+actual.codigo,respuesta.codigo===200);return respuesta.cuerpo;}
+async function enviarActualizacionProducto(id,cambios){const actual=(await solicitar('GET','/api/productos/'+id)).cuerpo;const formulario=Object.fromEntries(['proveedorId','codigo','nombre','categoria','unidadMedida','precioUnidadMedida','existenciaActual','existenciaMinima'].map(campo=>[campo,Object.hasOwn(cambios,campo)?cambios[campo]:actual[campo]]));return await solicitar('PUT','/api/productos/'+id,formulario);}
+async function actualizarProducto(id,cambios){const respuesta=await enviarActualizacionProducto(id,cambios);verificar('Ajuste de fixture producto',respuesta.codigo===200);return respuesta.cuerpo;}
 
 // Registra una factura pendiente para la demanda indicada.
 async function crearFactura(clienteId,empleadoId,detalles){return await verificarAlta(await solicitar('POST','/api/facturas',{clienteId,empleadoId,metodoPago:1,porcentajeDescuento:0,detalles}),'Alta fixture de pago');}
@@ -106,13 +107,14 @@ try{
  await actualizarProducto(duplicado.id,{existenciaActual:10});
  await comprobarPago(facturaDuplicada.numero,{[duplicado.id]:10},'Pago demanda duplicada exacta');
  await comprobarRechazo(facturaDuplicada.numero,409,'Estado','Duplicado pago repetido');
- // Una unidad incompatible se rechaza sin convertir cantidades ni alterar estado.
+ // Una unidad vinculada a factura se conserva y permite continuar el pago.
  const unidad=await crearProducto('PAGOUNIDAD');
  const facturaUnidad=await crearFactura(clienteId,empleadoId,[{productoId:unidad.id,cantidad:1}]);
- await actualizarProducto(unidad.id,{unidadMedida:2});
- await comprobarRechazo(facturaUnidad.numero,409,'Detalles[0].UnidadMedida','Unidad actual incompatible');
- await actualizarProducto(unidad.id,{unidadMedida:1});
- await comprobarPago(facturaUnidad.numero,{[unidad.id]:1},'Pago tras restaurar unidad compatible');
+ const cambioUnidad=await enviarActualizacionProducto(unidad.id,{unidadMedida:2});
+ verificar('Cambio de unidad de producto facturado devuelve 409',cambioUnidad.codigo===409&&cambioUnidad.cuerpo?.erroresPorCampo?.UnidadMedida?.length>0);
+ const unidadVigente=(await solicitar('GET','/api/productos/'+unidad.id)).cuerpo;
+ verificar('El rechazo conserva unidad y existencias',unidadVigente.unidadMedida===1&&unidadVigente.existenciaActual===10);
+ await comprobarPago(facturaUnidad.numero,{[unidad.id]:1},'Pago con unidad vinculada conservada');
  verificar('Ninguna respuesta produce500',solicitudes.every(s=>s.codigo<500));
 }catch(error){fallo=error;console.error(error.stack);}
 finally{

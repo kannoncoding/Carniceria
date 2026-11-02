@@ -201,7 +201,7 @@ public class FacturasApiController : ControladorApiBase
     {
         var actualizacion = _almacen.EjecutarConBloqueo(() =>
         {
-            var resultado = _almacen.ActualizarFacturaPendiente(numero, solicitud);
+            var resultado = _almacen.ActualizarFactura(numero, solicitud);
             var factura = resultado.EsExitoso
                 ? _almacen.ObtenerFactura(resultado.Id!.Value)
                 : null;

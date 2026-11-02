@@ -49,7 +49,8 @@ function solicitudEdicion(factura,cambios={}){return {clienteId:factura.clienteI
 async function crearProducto(codigo,precio){return await crearAuxiliar('productos',{proveedorId:(await listar('proveedores'))[0].id,codigo,nombre:codigo,categoria:1,unidadMedida:1,precioUnidadMedida:precio,existenciaActual:10,existenciaMinima:1});}
 
 // Ajusta precios o unidades actuales mediante el contrato publico de productos.
-async function actualizarProducto(id,cambios){const actual=(await solicitar('GET','/api/productos/'+id)).cuerpo;const formulario=Object.fromEntries(['proveedorId','codigo','nombre','categoria','unidadMedida','precioUnidadMedida','existenciaActual','existenciaMinima'].map(campo=>[campo,Object.hasOwn(cambios,campo)?cambios[campo]:actual[campo]]));const respuesta=await solicitar('PUT','/api/productos/'+id,formulario);verificar('Ajuste de fixture '+actual.codigo,respuesta.codigo===200);return respuesta.cuerpo;}
+async function enviarActualizacionProducto(id,cambios){const actual=(await solicitar('GET','/api/productos/'+id)).cuerpo;const formulario=Object.fromEntries(['proveedorId','codigo','nombre','categoria','unidadMedida','precioUnidadMedida','existenciaActual','existenciaMinima'].map(campo=>[campo,Object.hasOwn(cambios,campo)?cambios[campo]:actual[campo]]));return await solicitar('PUT','/api/productos/'+id,formulario);}
+async function actualizarProducto(id,cambios){const respuesta=await enviarActualizacionProducto(id,cambios);verificar('Ajuste de fixture producto',respuesta.codigo===200);return respuesta.cuerpo;}
 
 // Una edicion aceptada conserva cabecera inmutable y no altera productos.
 async function editar(factura,solicitud,caso){const productos=await listar('productos');const respuesta=await solicitar('PUT','/api/facturas/'+factura.numero,solicitud);verificar(caso+' HTTP200',respuesta.codigo===200,{actual:respuesta.codigo});const actual=respuesta.cuerpo;verificar(caso+' Id numero emision estado inmutables',actual.id===factura.id&&actual.numero===factura.numero&&actual.fechaEmision===factura.fechaEmision&&actual.estado===factura.estado);verificar(caso+' stock y productos sin cambios',JSON.stringify(await listar('productos'))===JSON.stringify(productos));verificar(caso+' lectura coincide con respuesta',JSON.stringify(await obtenerFactura(factura.numero))===JSON.stringify(actual));return actual;}
@@ -67,7 +68,7 @@ try{
  let factura=await verificarAlta(await solicitar('POST','/api/facturas',{clienteId:cliente.id,empleadoId:empleado.id,metodoPago:1,porcentajeDescuento:0,detalles:[{productoId:a.id,cantidad:2},{productoId:b.id,cantidad:1}]}),'Factura editable');
  const idA=factura.detalles[0].id,idB=factura.detalles[1].id;
  await actualizarProducto(a.id,{precioUnidadMedida:1500});await actualizarProducto(b.id,{precioUnidadMedida:2500});
- // Omitir el flag conserva snapshots de las lineas retenidas.
+ // Omitir el flag conserva los valores capturados de las lineas retenidas.
  const omitida=solicitudEdicion(factura,{metodoPago:3,porcentajeDescuento:25,detalles:[{id:idA,productoId:a.id,cantidad:3},{id:idB,productoId:b.id,cantidad:2}]});
  factura=await editar(factura,omitida,'Flag omitido historico');
  verificar('Flag omitido conserva ambos precios y unidades',factura.detalles[0].precioUnitario===1000&&factura.detalles[1].precioUnitario===2000&&factura.detalles.every(d=>d.unidadMedida===1));
@@ -82,9 +83,9 @@ try{
  // Una sustitucion y lineas nuevas usan datos actuales aunque no se pida actualizar retenidas.
  factura=await editar(factura,solicitudEdicion(factura,{porcentajeDescuento:0,detalles:[{id:idA,productoId:c.id,cantidad:2},{id:idB,productoId:b.id,cantidad:1},{productoId:a.id,cantidad:1},{id:null,productoId:c.id,cantidad:0.5}]}),'Sustitucion y lineas nuevas');
  verificar('Sustitucion toma precio actual y conserva Id propio',factura.detalles[0].id===idA&&factura.detalles[0].productoId===c.id&&factura.detalles[0].precioUnitario===3500);
- verificar('Retenida conserva ultimo snapshot',factura.detalles[1].id===idB&&factura.detalles[1].precioUnitario===2500);
+ verificar('Retenida conserva el ultimo valor capturado',factura.detalles[1].id===idB&&factura.detalles[1].precioUnitario===2500);
  verificar('Id omitido y null crean lineas independientes actuales',factura.detalles[2].precioUnitario===1800&&factura.detalles[3].precioUnitario===3500&&factura.detalles[2].id!==idA&&factura.detalles[2].id!==idB&&factura.detalles[3].id!==idA&&factura.detalles[3].id!==idB&&new Set(factura.detalles.map(d=>d.id)).size===4);
- verificar('Mezcla de snapshots calcula14746.5',factura.subtotal===13050&&factura.total===14746.5);
+ verificar('Mezcla de valores capturados calcula14746.5',factura.subtotal===13050&&factura.total===14746.5);
  const idNuevoA=factura.detalles[2].id;
  factura=await editar(factura,solicitudEdicion(factura,{detalles:[{id:idA,productoId:c.id,cantidad:2},{id:idNuevoA,productoId:a.id,cantidad:1}]}),'Quitar lineas');
  verificar('Quitar lineas conserva solo las indicadas',factura.detalles.length===2&&factura.detalles[0].id===idA&&factura.detalles[1].id===idNuevoA&&factura.total===9944);
@@ -113,16 +114,21 @@ try{
  ];
  for(const caso of casos)await rechazar(factura.numero,caso.cuerpo,caso.codigo,caso.campo,caso.nombre);
  await rechazar('FAC999999',baseEdicion,404,null,'Factura inexistente');
- // La compatibilidad de unidad protege el default historico, sin decidir la politica global.
- await actualizarProducto(c.id,{unidadMedida:2,precioUnidadMedida:4000});
- await rechazar(factura.numero,solicitudEdicion(factura),409,'Detalles[0].UnidadMedida','Unidad historica incompatible');
+ // La unidad vinculada queda fija mientras los valores de precio pueden cambiar.
+ const cambioUnidad=await enviarActualizacionProducto(c.id,{unidadMedida:2,precioUnidadMedida:4000});
+ verificar('El cambio de unidad vinculada devuelve 409',cambioUnidad.codigo===409&&cambioUnidad.cuerpo?.erroresPorCampo?.UnidadMedida?.length>0);
+ verificar('El rechazo conserva la unidad del producto',(await solicitar('GET','/api/productos/'+c.id)).cuerpo.unidadMedida===1);
+ await actualizarProducto(c.id,{precioUnidadMedida:4000});
  factura=await editar(factura,solicitudEdicion(factura,{actualizarPreciosYUnidades:true}),'Opt-in de unidad actual');
- verificar('Opt-in captura unidad y precio actuales juntos',factura.detalles[0].unidadMedida===2&&factura.detalles[0].precioUnitario===4000&&factura.detalles[1].precioUnitario===1800&&factura.total===11074);
+ verificar('Opt-in captura precio actual y mantiene unidad',factura.detalles[0].unidadMedida===1&&factura.detalles[0].precioUnitario===4000&&factura.detalles[1].precioUnitario===1800&&factura.total===11074);
  // Las ediciones y rechazos no consumen la siguiente numeracion de alta.
  const pagada=await verificarAlta(await solicitar('POST','/api/facturas',{clienteId:cliente.id,empleadoId:empleado.id,metodoPago:1,porcentajeDescuento:0,detalles:[{productoId:semilla.detalles[0].productoId,cantidad:0.25}]}),'Fixture pagada');
  verificar('Ediciones no consumen numero definitivo',pagada.numero==='FAC000003');
  const pago=await solicitar('POST','/api/facturas/'+pagada.numero+'/pagar');verificar('Fixture cambia aPagada',pago.codigo===200&&pago.cuerpo.estado===2);
- await rechazar(pagada.numero,solicitudEdicion(pago.cuerpo),409,'Estado','Edicion pagada fuera de este paso');
+ const productosAntesEdicionPagada=await listar('productos');
+ const edicionPagada=await solicitar('PUT','/api/facturas/'+pagada.numero,solicitudEdicion(pago.cuerpo));
+ verificar('La factura Pagada permite una edicion sin cambios',edicionPagada.codigo===200&&edicionPagada.cuerpo.estado===2);
+ verificar('La edicion Pagada sin cambios conserva existencias',JSON.stringify(await listar('productos'))===JSON.stringify(productosAntesEdicionPagada));
  verificar('Ninguna respuesta produce500',solicitudes.every(s=>s.codigo<500));
 }catch(error){fallo=error;console.error(error.stack);}
 finally{

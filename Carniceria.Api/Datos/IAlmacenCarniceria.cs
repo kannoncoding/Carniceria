@@ -145,8 +145,8 @@ public interface IAlmacenCarniceria
     // Descuenta las existencias y cambia una factura pendiente a pagada.
     ResultadoOperacion PagarFactura(string numero);
 
-    // Recalcula y actualiza una factura pendiente sin cambiar existencias.
-    ResultadoOperacion ActualizarFacturaPendiente(
+    // Actualiza una factura permitida y ajusta existencias cuando ya se pago.
+    ResultadoOperacion ActualizarFactura(
         string numero,
         SolicitudEdicionFactura solicitud);
 }
