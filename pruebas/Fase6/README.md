@@ -109,3 +109,23 @@ node .\pruebas\Fase6\Concurrencia\Verificar-ConcurrenciaHttp.mjs --raiz . --sali
 ```
 
 QA aprobo 45/45 verificaciones. Las carreras probaron cuatro situaciones y observaron resultados coherentes sin sobreventa ni doble ajuste; la muestra no garantiza todos los ordenes posibles de ejecucion.
+
+## Recuperacion ante una respuesta de pago perdida
+
+El proxy aplica el pago y retiene su respuesta hasta que el cliente agota el tiempo. El cliente consulta la factura y las existencias antes de considerar una repeticion; no envia otro POST automatico. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\RespuestaPerdida\Verificar-RespuestaPerdidaHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'respuesta-perdida')
+```
+
+La verificacion dirigida inicial aprobo 22/22. En la pasada integrada final, este grupo aporto 22 verificaciones dentro del total vigente de 739 HTTP: el pago se aplico una vez, la consulta confirmo el estado y un reintento manual recibio 409 sin segundo descuento.
+
+## Pasada integrada final de F6
+
+QA ejecuto una vez cada uno de los nueve grupos HTTP vigentes: Pago 81, Edicion Pendiente 144, Edicion Pagada 115, Anulacion 75, Eliminacion 55, Integridad 174, Atomicidad 28, Concurrencia 45 y Respuesta Perdida 22. Total: **739/739 verificaciones HTTP**. La politica semantica se verifico aparte: **26/26 aserciones**. Los resultados historicos de 86 verificaciones de pago y 150 de edicion Pendiente, asi como la verificacion dirigida inicial de Respuesta Perdida, no se suman a esta pasada.
+
+Con esta pasada se cierra H3, «factura e inventario correctos»: T10 y T19–T26 estan cubiertos por los grupos indicados y la politica de transiciones.
+
+La interfaz MVC para facturas, la casilla visible de actualizacion de precios/unidades y los mensajes de recuperacion ante una respuesta perdida corresponden a F7; esta pasada comprobo el contrato de recuperacion con un cliente HTTP y un proxy.

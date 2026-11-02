@@ -13,14 +13,30 @@ Fase 6 centraliza y prueba las transiciones de estado de factura y su efecto ato
 | F6.7 | Completado | Se verificaron las guardas de bajas de cliente/empleado con facturas, producto con detalles de factura y proveedor con productos; el cambio de unidad de producto vinculado tambien se rechaza en los estados Pendiente, Pagada y Anulada. Las bajas libres se completan. QA aprobo 174/174 verificaciones, incluidas 12 carreras acotadas; en las 12 se observo la baja primero y el alta o edicion relacionada fue rechazada, sin referencias huerfanas ni cambios parciales. Es una muestra, no una demostracion formal de ambos ordenes. No se requirio cambio de API; se conserva la build valida de F6.6. |
 | F6.8 | Completado | La auditoria confirmo que `ActualizarFactura` prepara las existencias y calcula la factura candidata antes de escribir; `PagarFactura` y `AnularFactura` tambien preparan todos los stocks antes de aplicar cambios. QA aprobo 28/28 verificaciones HTTP: un opt-in en factura Pagada con precio `decimal.MaxValue` produjo error 400 despues de preparar un delta valido, y la factura, productos, existencias y secuencia quedaron intactos. La siguiente factura recibio FAC000003. No se requirio cambiar la API ni repetir los grupos anteriores. |
 | F6.9 | Completado | QA aprobo 45/45 verificaciones en cuatro pares de concurrencia: doble pago (200/409, un descuento), doble anulacion (200/409, un reintegro), dos ediciones Pagadas sin cambios y dos facturas Pendientes de 6 unidades compitiendo por stock 10 (un pago 200 y otro 409, stock final 4). Las repeticiones no cambiaron existencias; la factura perdedora permanecio Pendiente y pudo pagarse tras anular la ganadora. Son resultados de una muestra acotada, no una garantia formal de todos los ordenes del planificador. No se requirieron cambios de API ni build nuevo. |
-| F6.10 | Pendiente | Verificar con un proxy que el cliente consulte el estado tras perder la respuesta de un pago aplicado, sin reintento mutador automatico y con el estado confirmado antes de una repeticion manual. |
+| F6.10 | Completado | Un proxy aplico el pago y oculto la respuesta. El cliente no reintento automaticamente; consulto la factura Pagada y las existencias antes de una repeticion manual, que recibio 409 sin segundo descuento. QA aprobo 22/22 verificaciones dirigidas. La pasada integrada final incluyo este grupo una vez. |
 
 ## Decisiones y limites
 
-- F6.1 se puede implementar sin resolver el historico de precios/unidades ni el cambio de unidad de productos facturados.
-- La politica de F6.1 vive en API y no acepta un estado destino arbitrario. Los endpoints y operaciones de pago, edicion y anulacion se incorporan en sus pasos posteriores.
-- El pago conserva el precio, unidad e importes registrados; una unidad actual distinta causa 409 sin convertir. Esta salvaguarda no define si se permite cambiar la unidad global de un producto con facturas.
-- Para futuras ediciones, se eligio conservar por defecto los precios/unidades capturados. La solicitud de edicion tendra la opcion `ActualizarPreciosYUnidades`, falsa por defecto; al activarla, las lineas existentes toman ambos valores actuales de API. La casilla visible se implementara en F7.
-- La ejecucion historica de F6.3 rechazaba la edicion de facturas Pagadas con 409; F6.4 habilita esa operacion con ajuste atomico de existencias. La edicion rechaza con 409 si una unidad capturada no coincide con la unidad actual del producto, sin convertir ni mutar.
+- La politica unica de transiciones se aplica en API. El pago conserva precio, unidad e importes capturados; el pago, la edicion y la anulacion rechazan con 409 cualquier unidad incompatible, sin conversion.
+- Las solicitudes de edicion conservan por defecto los precios y unidades capturados. `ActualizarPreciosYUnidades` es falso por defecto; al activarlo, las lineas retenidas toman ambos valores actuales de API. La casilla visible y los flujos MVC para facturas corresponden a F7.
+- Se bloquea el cambio de unidad de un producto mientras tenga detalles de cualquier factura, sin filtrar por estado. Esta guarda global se verifica para Pendiente, Pagada y Anulada; se mantienen tambien las validaciones locales de compatibilidad.
+- La ejecucion historica de F6.3 rechazaba la edicion de facturas Pagadas con 409. F6.4 habilito esa operacion con ajuste atomico de existencias; el resultado historico se conserva como evidencia de la version anterior.
 - Comentarios de codigo nuevos usan espanol sin tildes; los textos visibles conservan su ortografia normal.
-- Se acordo bloquear el cambio de unidad de un producto mientras tenga facturas vinculadas, en cualquier estado. F6.4 implementa la guarda global; F6.5 verifico tambien el caso Anulada. Se conservan las salvaguardas locales de pago, edicion y anulacion.
+
+## Cierre y trazabilidad
+
+La pasada integrada final aprobo **739/739 verificaciones HTTP**: Pago 81, Edicion Pendiente 144, Edicion Pagada 115, Anulacion 75, Eliminacion 55, Integridad 174, Atomicidad 28, Concurrencia 45 y Respuesta Perdida 22. La politica semantica obtuvo **26/26** aserciones en una verificacion separada. Los resultados historicos de F6.2 (86) y F6.3 (150), y la corrida dirigida previa de F6.10 (22), no se suman a esta pasada.
+
+| Requisito | Evidencia vigente |
+| --- | --- |
+| T10 | `pruebas/Fase6/Integridad/Verificar-IntegridadHttp.mjs`: relaciones cliente/empleado/factura, producto/detalle, proveedor/producto, cambio de unidad y carreras acotadas. |
+| T19 | `pruebas/Fase6/Concurrencia/Verificar-ConcurrenciaHttp.mjs`: doble pago y un solo descuento. |
+| T20 | `pruebas/Fase6/Concurrencia/Verificar-ConcurrenciaHttp.mjs`: dos facturas Pendientes compiten por existencias insuficientes para ambas. |
+| T21–T22 | `pruebas/Fase6/EdicionPagada/Verificar-EdicionPagadaHttp.mjs`: ajuste por diferencia, opt-in de valores actuales, lineas retenidas, sustituidas, nuevas y quitadas. |
+| T23 | `pruebas/Fase6/AnulacionFactura/Verificar-AnulacionHttp.mjs` y `pruebas/Fase6/EliminacionFactura/Verificar-EliminacionHttp.mjs`: reintegro del detalle vigente, repeticion y transicion desde Anulada. |
+| T24 | `pruebas/Fase6/EliminacionFactura/Verificar-EliminacionHttp.mjs` y `pruebas/Fase6/PoliticaFactura/Verificar-PoliticaFactura.csproj`: baja solo Pendiente y transiciones no permitidas. |
+| T25 | `pruebas/Fase6/EdicionPagada/Verificar-EdicionPagadaHttp.mjs` y `pruebas/Fase6/Atomicidad/Verificar-AtomicidadHttp.mjs`: rechazo sin mutacion parcial por existencias o desbordamiento de calculo. |
+| T26 | `pruebas/Fase6/Concurrencia/Verificar-ConcurrenciaHttp.mjs`: pagos, anulaciones, ediciones y competencia por existencias con resultados coherentes en las muestras ejecutadas. |
+| H3: factura e inventario correctos | Completado. T10 y T19–T26 estan aprobados; la politica y los nueve grupos HTTP vigentes suman 765 aserciones. La evidencia cubre existencias, transiciones, reintegros, atomicidad y referencias sin cambios parciales en los casos ejecutados. |
+
+F6 cubre las operaciones y reglas de facturas a nivel API. La interfaz MVC, incluida la casilla de actualizacion de precios/unidades y la recuperacion visible ante una respuesta perdida, permanece en F7.
