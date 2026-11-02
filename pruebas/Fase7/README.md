@@ -35,4 +35,8 @@ Los grupos actuales suman **172/172 verificaciones HTTP** (89 + 83). La compilac
 
 Las pruebas inician y cierran sus propios procesos. Los puertos predeterminados son API 5234, MVC 5235 y proxy 5236; cada script admite opciones para cambiarlos. Guarda cada ejecución en su propia subcarpeta para conservar sus resúmenes.
 
-Los pasos F7.1–F7.5 están completados en el alcance comprobado. F7.6–F7.10 siguen pendientes; la revisión visual en navegador también queda fuera de esta verificación HTTP.
+## Correspondencia con la lista F7 del plan
+
+Los diez pasos de la lista F7 están completados en el alcance HTTP probado. F7.6 muestra los importes y conserva decimales; F7.7 cubre búsqueda independiente y resultados vacíos; F7.8 verifica confirmaciones y cantidades afectadas; F7.9 verifica la conservación del formulario ante errores; y F7.10 verifica antifalsificación y ausencia de cambios mediante GET. Las evidencias corresponden a los grupos actuales de 89 formularios y 83 consultas/transiciones; el grupo API de 363 verificaciones es independiente y no se agrega al total MVC.
+
+La revisión visual en navegador sigue pendiente de ejecución manual. La regresión global F8 cubre módulos y escenarios adicionales fuera de esta verificación de F7.

@@ -159,7 +159,7 @@ else
 
                 @if (fila.PrecioUnitario.HasValue && fila.UnidadMedida.HasValue)
                 {
-                    <p class="valores-linea">Precio unitario capturado: @fila.PrecioUnitario.Value.ToString("G") por @Html.DisplayFor(_ => fila.UnidadMedida)</p>
+                    <p class="valores-linea">Precio unitario capturado: @fila.PrecioUnitario.Value.ToString("C2") por @Html.DisplayFor(_ => fila.UnidadMedida)</p>
                 }
                 @if (fila.SubtotalLinea.HasValue)
                 {
