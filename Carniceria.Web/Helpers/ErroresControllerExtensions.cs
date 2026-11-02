@@ -32,6 +32,9 @@ public static class ErroresControllerExtensions
             "productos" =>
                 ("Productos", "Volver al Inventario de Productos"),
 
+            "facturas" =>
+                ("Facturas", "Volver a Facturas"),
+
             "proveedores" =>
                 ("Proveedores", "Volver a Proveedores"),
 

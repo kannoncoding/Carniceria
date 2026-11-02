@@ -1,0 +1,28 @@
+@model RespuestaFactura
+@* Confirma la baja de una factura pendiente. *@
+
+@{
+    ViewData["Title"] = "Confirmar eliminación";
+}
+
+<h1>Confirmar eliminación</h1>
+<div asp-validation-summary="All" role="alert"></div>
+
+@* Resume el registro que se eliminaria sin modificar existencias. *@
+<dl class="detalle-registro">
+    <div><dt>Factura</dt><dd>@Model.Numero</dd></div>
+    <div><dt>Cliente</dt><dd>@Model.ClienteIdentificacion — @Model.ClienteNombreCompleto</dd></div>
+    <div><dt>Total registrado</dt><dd>@Model.Total.ToString("C2")</dd></div>
+    <div><dt>Estado actual</dt><dd>@Html.DisplayFor(modelo => modelo.Estado)</dd></div>
+</dl>
+
+@* El POST protegido solicita la baja al servicio de datos. *@
+<div class="acciones">
+    @if (Model.Estado == EstadoFactura.Pendiente)
+    {
+        <form asp-controller="Facturas" asp-action="EliminarConfirmado" asp-route-numero="@Model.Numero" method="post" asp-antiforgery="true">
+            <button type="submit" class="boton boton-peligro">Confirmar eliminación</button>
+        </form>
+    }
+    <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Detalles" asp-route-numero="@Model.Numero">Cancelar</a>
+</div>

@@ -1,0 +1,73 @@
+@model BusquedaViewModel<RespuestaFactura>
+@* Permite buscar facturas por numero o cliente. *@
+
+@{
+    ViewData["Title"] = "Buscar facturas";
+}
+
+<h1>Buscar facturas</h1>
+<p>Busque por número de factura o por identificación completa del cliente.</p>
+
+@* Captura el criterio y texto de busqueda. *@
+<form asp-controller="Facturas" asp-action="Buscar" method="get" asp-antiforgery="false" class="formulario" novalidate>
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="All" role="alert">
+    <p>No se pudo completar la búsqueda.</p>
+        </div>
+    }
+
+    <div class="campo">
+        <label asp-for="Criterio">Criterio</label>
+        <select asp-for="Criterio" name="criterio" class="control" required>
+            <option value="">Seleccione un criterio</option>
+            <option value="Numero">Número de factura</option>
+            <option value="IdentificacionCliente">Identificación del cliente</option>
+        </select>
+        <span asp-validation-for="Criterio"></span>
+    </div>
+
+    <div class="campo">
+        <label asp-for="Consulta">Número o identificación</label>
+        <input asp-for="Consulta" name="consulta" type="search" class="control" autocomplete="off" />
+        <span asp-validation-for="Consulta"></span>
+    </div>
+
+    <div class="acciones">
+        <button type="submit" class="boton">Buscar</button>
+        <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Buscar">Limpiar</a>
+        <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Index">Volver a Facturas</a>
+    </div>
+</form>
+
+@* Presenta los resultados solo despues de una consulta valida. *@
+@if (Model.BusquedaRealizada && Model.Resultados.Count == 0)
+{
+    <p class="estado-vacio" role="status">No se encontraron facturas para el criterio ingresado.</p>
+}
+else if (Model.BusquedaRealizada)
+{
+    <h2>Resultados</h2>
+    <div class="tabla-contenedor" role="region" aria-label="Resultados de facturas" tabindex="0">
+        <table>
+            <thead>
+                <tr><th scope="col">Número</th><th scope="col">Emisión</th><th scope="col">Cliente</th><th scope="col">Estado</th><th scope="col">Total</th><th scope="col">Acción</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var factura in Model.Resultados)
+                {
+                    <tr>
+                        <td>@factura.Numero</td>
+                        <td>@factura.FechaEmision.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                        <td>@factura.ClienteIdentificacion — @factura.ClienteNombreCompleto</td>
+                        <td>@Html.DisplayFor(_ => factura.Estado)</td>
+                        <td>@factura.Total.ToString("C2")</td>
+                        <td>
+                            <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Detalles" asp-route-numero="@factura.Numero">Ver detalles</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

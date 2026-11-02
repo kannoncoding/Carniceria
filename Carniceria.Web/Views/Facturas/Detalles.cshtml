@@ -1,0 +1,71 @@
+@model RespuestaFactura
+@* Presenta los datos emitidos por la API para una factura. *@
+
+@{
+    ViewData["Title"] = $"Factura {Model.Numero}";
+}
+
+<h1>Factura @Model.Numero</h1>
+
+@* Muestra la cabecera y sus relaciones descriptivas. *@
+<dl class="detalle-registro">
+    <div><dt>Fecha de emisión</dt><dd>@Model.FechaEmision.ToString("dd/MM/yyyy HH:mm:ss")</dd></div>
+    <div><dt>Estado</dt><dd>@Html.DisplayFor(modelo => modelo.Estado)</dd></div>
+    <div><dt>Cliente</dt><dd>@Model.ClienteIdentificacion — @Model.ClienteNombreCompleto</dd></div>
+    <div><dt>Empleado</dt><dd>@Model.EmpleadoIdentificacion — @Model.EmpleadoNombreCompleto</dd></div>
+    <div><dt>Método de pago</dt><dd>@Html.DisplayFor(modelo => modelo.MetodoPago)</dd></div>
+    <div><dt>Descuento</dt><dd>@Model.PorcentajeDescuento.ToString("G")%</dd></div>
+</dl>
+
+@* Muestra las lineas y los importes ya calculados. *@
+<h2>Detalle</h2>
+<div class="tabla-contenedor" role="region" aria-label="Detalle de factura" tabindex="0">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">Código</th>
+                <th scope="col">Producto</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Unidad</th>
+                <th scope="col">Precio unitario</th>
+                <th scope="col">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var detalle in Model.Detalles)
+            {
+                <tr>
+                    <td>@detalle.ProductoCodigo</td>
+                    <td>@detalle.ProductoNombre</td>
+                    <td>@detalle.Cantidad.ToString("G")</td>
+                    <td>@Html.DisplayFor(_ => detalle.UnidadMedida)</td>
+                    <td>@detalle.PrecioUnitario.ToString("C2")</td>
+                    <td>@detalle.SubtotalLinea.ToString("C2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* Presenta los totales calculados sin recomputarlos en MVC. *@
+<dl class="detalle-registro">
+    <div><dt>Subtotal</dt><dd>@Model.Subtotal.ToString("C2")</dd></div>
+    <div><dt>Monto de descuento</dt><dd>@Model.MontoDescuento.ToString("C2")</dd></div>
+    <div><dt>Base gravable</dt><dd>@Model.BaseGravable.ToString("C2")</dd></div>
+    <div><dt>IVA</dt><dd>@Model.MontoIva.ToString("C2")</dd></div>
+    <div><dt>Total</dt><dd><strong>@Model.Total.ToString("C2")</strong></dd></div>
+</dl>
+
+@* Enlaza a transiciones permitidas por el estado actual. *@
+<div class="acciones">
+    @if (Model.Estado == EstadoFactura.Pendiente)
+    {
+        <a class="boton" asp-controller="Facturas" asp-action="Pagar" asp-route-numero="@Model.Numero">Pagar</a>
+        <a class="boton boton-peligro" asp-controller="Facturas" asp-action="Eliminar" asp-route-numero="@Model.Numero">Eliminar</a>
+    }
+    else if (Model.Estado == EstadoFactura.Pagada)
+    {
+        <a class="boton boton-peligro" asp-controller="Facturas" asp-action="Anular" asp-route-numero="@Model.Numero">Anular</a>
+    }
+    <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Index">Volver a Facturas</a>
+</div>

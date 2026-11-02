@@ -1,0 +1,85 @@
+@model IReadOnlyList<RespuestaFactura>
+@* Presenta el listado de facturas y sus acciones disponibles. *@
+
+@{
+    ViewData["Title"] = "Facturas";
+}
+
+<h1>Facturas</h1>
+
+@* Enlace a la busqueda de facturas existentes. *@
+<div class="acciones">
+    <a class="boton boton-secundario"
+       asp-controller="Facturas"
+       asp-action="Buscar">
+        Buscar facturas
+    </a>
+</div>
+
+@* Alterna entre el estado vacio y la tabla de facturas. *@
+@if (Model.Count == 0)
+{
+    <p class="estado-vacio">Todavia no hay facturas registradas.</p>
+}
+else
+{
+    <p>Total de facturas: <strong>@Model.Count</strong></p>
+
+    @* Muestra resumen y consultas por factura. *@
+    <div class="tabla-contenedor" role="region" aria-label="Listado de facturas" tabindex="0">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Número</th>
+                    <th scope="col">Emisión</th>
+                    <th scope="col">Cliente</th>
+                    <th scope="col">Empleado</th>
+                    <th scope="col">Estado</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var factura in Model)
+                {
+                    <tr>
+                        <td>@factura.Numero</td>
+                        <td>@factura.FechaEmision.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                        <td>@factura.ClienteIdentificacion — @factura.ClienteNombreCompleto</td>
+                        <td>@factura.EmpleadoIdentificacion — @factura.EmpleadoNombreCompleto</td>
+                        <td>@Html.DisplayFor(_ => factura.Estado)</td>
+                        <td>@factura.Total.ToString("C2")</td>
+                        <td>
+                            <div class="acciones">
+                                <a class="boton boton-secundario"
+                                   asp-controller="Facturas"
+                                   asp-action="Detalles"
+                                   asp-route-numero="@factura.Numero">
+                                    Ver detalles
+                                </a>
+                                @if (factura.Estado == EstadoFactura.Pendiente)
+                                {
+                                    <a class="boton"
+                                       asp-controller="Facturas"
+                                       asp-action="Pagar"
+                                       asp-route-numero="@factura.Numero">Pagar</a>
+                                    <a class="boton boton-peligro"
+                                       asp-controller="Facturas"
+                                       asp-action="Eliminar"
+                                       asp-route-numero="@factura.Numero">Eliminar</a>
+                                }
+                                else if (factura.Estado == EstadoFactura.Pagada)
+                                {
+                                    <a class="boton boton-peligro"
+                                       asp-controller="Facturas"
+                                       asp-action="Anular"
+                                       asp-route-numero="@factura.Numero">Anular</a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

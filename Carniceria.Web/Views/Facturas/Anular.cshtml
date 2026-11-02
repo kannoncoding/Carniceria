@@ -1,0 +1,47 @@
+@model RespuestaFactura
+@* Confirma la anulacion de una factura pagada. *@
+
+@{
+    ViewData["Title"] = "Confirmar anulación";
+}
+
+<h1>Confirmar anulación</h1>
+<div asp-validation-summary="All" role="alert"></div>
+
+@* Resume el registro consultado antes de solicitar la anulacion. *@
+<dl class="detalle-registro">
+    <div><dt>Factura</dt><dd>@Model.Numero</dd></div>
+    <div><dt>Cliente</dt><dd>@Model.ClienteIdentificacion — @Model.ClienteNombreCompleto</dd></div>
+    <div><dt>Total registrado</dt><dd>@Model.Total.ToString("C2")</dd></div>
+    <div><dt>Estado actual</dt><dd>@Html.DisplayFor(modelo => modelo.Estado)</dd></div>
+</dl>
+
+@* Identifica los productos y cantidades que se reintegraran. *@
+<h2>Existencias que se reintegrarán</h2>
+<div class="tabla-contenedor" role="region" aria-label="Cantidades que se reintegraran" tabindex="0">
+    <table>
+        <thead><tr><th scope="col">Código</th><th scope="col">Producto</th><th scope="col">Cantidad</th><th scope="col">Unidad</th></tr></thead>
+        <tbody>
+            @foreach (var detalle in Model.Detalles)
+            {
+                <tr>
+                    <td>@detalle.ProductoCodigo</td>
+                    <td>@detalle.ProductoNombre</td>
+                    <td>@detalle.Cantidad.ToString("G")</td>
+                    <td>@Html.DisplayFor(_ => detalle.UnidadMedida)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@* El POST protegido solicita la transicion al servicio de datos. *@
+<div class="acciones">
+    @if (Model.Estado == EstadoFactura.Pagada)
+    {
+        <form asp-controller="Facturas" asp-action="AnularConfirmado" asp-route-numero="@Model.Numero" method="post" asp-antiforgery="true">
+            <button type="submit" class="boton boton-peligro">Confirmar anulación</button>
+        </form>
+    }
+    <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Detalles" asp-route-numero="@Model.Numero">Cancelar</a>
+</div>

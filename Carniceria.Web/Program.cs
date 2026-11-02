@@ -154,11 +154,13 @@ aplicacion.MapControllerRoute(
     })
     .WithStaticAssets();
 
-// Limitar las rutas de modulos a los cuatro controladores del proyecto.
+// Limitar las rutas de modulos a los controladores del proyecto.
 const string controladoresModulos =
+    "^(Clientes|Empleados|Productos|Proveedores|Facturas)$";
+const string controladoresRegistros =
     "^(Clientes|Empleados|Productos|Proveedores)$";
 
-// Listados: /Clientes, /Empleados, /Productos y /Proveedores.
+// Listados: /Clientes, /Empleados, /Productos, /Proveedores y /Facturas.
 aplicacion.MapControllerRoute(
     name: "listados",
     pattern: "{controller}",
@@ -172,14 +174,29 @@ aplicacion.MapControllerRoute(
     })
     .WithStaticAssets();
 
-// Operaciones de los modulos mediante nombres en español.
+// Operaciones de los modulos de registros mediante nombres en espanol.
 aplicacion.MapControllerRoute(
     name: "operaciones",
     pattern: "{controller}/{action}/{id?}",
     constraints: new
     {
-        controller = controladoresModulos,
+        controller = controladoresRegistros,
         action = "^(Detalles|Crear|Buscar|Editar|Eliminar|EliminarConfirmado)$"
+    })
+    .WithStaticAssets();
+
+// Operaciones de facturas usan su numero como parametro de ruta.
+aplicacion.MapControllerRoute(
+    name: "facturas-operaciones",
+    pattern: "Facturas/{action}/{numero?}",
+    defaults: new
+    {
+        controller = "Facturas"
+    },
+    constraints: new
+    {
+        controller = "^Facturas$",
+        action = "^(Detalles|Buscar|Pagar|PagarConfirmado|Anular|AnularConfirmado|Eliminar|EliminarConfirmado)$"
     })
     .WithStaticAssets();
 
