@@ -308,6 +308,16 @@ button:disabled,
         border-collapse: collapse;
     }
 
+    .tabla-contenedor .tabla-facturas th:nth-child(1),
+    .tabla-contenedor .tabla-facturas td:nth-child(1),
+    .tabla-contenedor .tabla-facturas th:nth-child(5),
+    .tabla-contenedor .tabla-facturas td:nth-child(5),
+    .tabla-contenedor .tabla-facturas th:nth-child(6),
+    .tabla-contenedor .tabla-facturas td:nth-child(6) {
+        white-space: nowrap;
+        overflow-wrap: normal;
+    }
+
 th,
 td {
     padding: 0.85rem 1rem;

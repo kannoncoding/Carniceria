@@ -8,6 +8,21 @@ F8 registra la ejecución actual de las suites T01–T32 disponibles, añade esc
 | F8.2 | Completado | La automatización existente se concentra en validadores/modelos, contratos y operaciones críticas de factura, existencias, transiciones, atomicidad, concurrencia y MVC. No se añadieron paquetes de prueba externos. Las ejecuciones de F1–F7 se identifican como evidencia de sus fases. |
 | F8.3 | Completado | La cobertura directa de API y los recorridos MVC se identifican por caso en la matriz. Las verificaciones de campos de servidor manipulados, referencias, límites e integridad se mantienen en API; la UI se verifica mediante sus controladores MVC. |
 | F8.4 | Completado | `pruebas/Fase8/Verificar-FallosReinicioMvc.mjs` aprobó 13/13 casos dirigidos sobre fallo real de API, formulario obsoleto y reinicio. Incluye colección vacía, pérdida de respuesta de alta, IDs de catálogo vencidos y edición de una factura desaparecida. Todos los procesos y puertos propios terminaron cerrados. |
+| F8.5 | Completado por inspección estática | Las vistas y scripts del navegador no realizan llamadas REST directas. La aplicación Web envía solicitudes desde controladores MVC; las escrituras y transiciones de inventario se centralizan en la API. Los proyectos no incluyen acceso a base de datos, almacenamiento persistente ni paquetes externos inesperados. |
+| F8.6 | Completado | QA aprobó 19/19 comprobaciones en Edge emulado después de corregir la tabla: escritorio 1440 px muestra número, estado y total en una línea; móvil 390 px conserva el desplazamiento horizontal sin ampliar la ventana y el formulario sigue legible. La revisión no se hizo en un dispositivo físico. |
+
+## Auditoría arquitectónica F8.5
+
+- Las vistas Razor y los scripts de `Carniceria.Web` no contienen `fetch`, `XMLHttpRequest`, Axios ni rutas `/api/`; las solicitudes HTTP se realizan desde controladores MVC mediante el cliente configurado en `Program.cs` y `ControladorApiMvcBase`.
+- En Web, las asignaciones a `ExistenciaActual` y `ExistenciaMinima` solo trasladan datos del formulario. Los cambios de stock por pagos, anulaciones y ediciones se ejecutan en `Carniceria.Api/Datos/AlmacenCarniceria.Transiciones.cs`, `AlmacenCarniceria.Facturas.cs` y `AlmacenCarniceria.EdicionPendiente.cs`.
+- Los tres archivos de proyecto solo declaran referencias a `Carniceria.Modelos`; no hay `PackageReference`, Entity Framework, conexiones SQL ni escrituras de archivos de datos en los proyectos inspeccionados. La API mantiene el almacén en memoria y reconstruye las semillas al reiniciar, según el alcance establecido en F2 y F5.
+- Alcance: inspección estática de los archivos fuente y proyectos Web, API y Modelos. Esta revisión no reemplaza las comprobaciones funcionales ni visuales.
+
+## Revisión visual F8.6
+
+La primera pasada de navegador detectó que el número, el estado y el total se partían en varias líneas a 1440 px. `Carniceria.Web/Views/Facturas/Index.cshtml` identifica la tabla con una clase propia y `site.css` evita esos cortes solo en esas tres columnas; el contenedor conserva el desplazamiento horizontal.
+
+Después del ajuste, QA aprobó **19/19 comprobaciones** en Edge emulado: a 1440 px las columnas clave se muestran en una línea; a 390 px la tabla se desplaza horizontalmente sin ampliar la ventana y el formulario se mantiene legible. Este resultado cubre escritorio y emulación móvil, no un dispositivo físico. Las capturas de verificación se conservaron fuera del repositorio.
 
 ## Matriz de pruebas T01–T32
 
