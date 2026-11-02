@@ -97,3 +97,15 @@ node .\pruebas\Fase6\Atomicidad\Verificar-AtomicidadHttp.mjs --raiz . --salida (
 ```
 
 QA aprobo 28/28 verificaciones; el desbordamiento controlado devolvio 400, preservo los datos y la siguiente factura recibio FAC000003. No se repitieron los grupos anteriores.
+
+## Concurrencia y repeticion
+
+El grupo observa pagos y anulaciones repetidos o concurrentes, ediciones Pagadas sin cambios y dos facturas Pendientes que compiten por las mismas existencias. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\Concurrencia\Verificar-ConcurrenciaHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'concurrencia')
+```
+
+QA aprobo 45/45 verificaciones. Las carreras probaron cuatro situaciones y observaron resultados coherentes sin sobreventa ni doble ajuste; la muestra no garantiza todos los ordenes posibles de ejecucion.
