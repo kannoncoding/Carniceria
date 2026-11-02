@@ -61,3 +61,15 @@ node .\pruebas\Fase6\AnulacionFactura\Verificar-AnulacionHttp.mjs --raiz . --sal
 ```
 
 QA aprobo 75/75 verificaciones HTTP; el grupo no repite las regresiones de F6.4.
+
+## Baja de una factura pendiente
+
+El verificador confirma la baja 204 solo para facturas Pendientes, la ausencia posterior en consultas, la conservacion de existencias y secuencia, la liberacion de referencias y los rechazos de facturas Pagadas o Anuladas. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\EliminacionFactura\Verificar-EliminacionHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'eliminacion-factura')
+```
+
+QA aprobo 55/55 verificaciones HTTP; las bajas Pagadas y Anuladas devolvieron 409.

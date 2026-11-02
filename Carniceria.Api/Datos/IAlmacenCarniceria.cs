@@ -148,6 +148,9 @@ public interface IAlmacenCarniceria
     // Reintegra una factura pagada y conserva sus datos capturados.
     ResultadoOperacion AnularFactura(string numero);
 
+    // Elimina una factura pendiente sin ajustar existencias.
+    ResultadoOperacion EliminarFactura(string numero);
+
     // Actualiza una factura permitida y ajusta existencias cuando ya se pago.
     ResultadoOperacion ActualizarFactura(
         string numero,

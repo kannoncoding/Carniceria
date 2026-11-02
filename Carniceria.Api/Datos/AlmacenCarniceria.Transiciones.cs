@@ -237,4 +237,43 @@ public partial class AlmacenCarniceria
                 "La factura se anulo correctamente.");
         }
     }
+
+    // Elimina una factura pendiente sin reutilizar su numero ni tocar stock.
+    public ResultadoOperacion EliminarFactura(string numero)
+    {
+        var numeroNormalizado = numero?.Trim() ?? string.Empty;
+        if (numeroNormalizado.Length == 0)
+        {
+            return ResultadoOperacion.NoEncontrado(
+                "La factura solicitada no existe.");
+        }
+
+        lock (_sincronizacion)
+        {
+            var indiceFactura = _facturas.FindIndex(registro =>
+                string.Equals(
+                    registro.Numero,
+                    numeroNormalizado,
+                    StringComparison.OrdinalIgnoreCase));
+            if (indiceFactura < 0)
+            {
+                return ResultadoOperacion.NoEncontrado(
+                    "La factura solicitada no existe.");
+            }
+
+            var factura = _facturas[indiceFactura];
+            var conflictoTransicion = ReglasTransicionFactura.ValidarTransicion(
+                factura.Estado,
+                OperacionFactura.Eliminar);
+            if (conflictoTransicion is not null)
+            {
+                return conflictoTransicion;
+            }
+
+            _facturas.RemoveAt(indiceFactura);
+            return ResultadoOperacion.Correcto(
+                factura.Id,
+                "La factura pendiente se elimino correctamente.");
+        }
+    }
 }

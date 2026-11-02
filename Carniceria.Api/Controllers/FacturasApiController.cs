@@ -227,9 +227,23 @@ public class FacturasApiController : ControladorApiBase
         return Ok(anulacion.Respuesta);
     }
 
-    // Edita una factura pendiente y conserva su identidad y estado.
+    // Elimina una factura Pendiente sin cambiar las existencias.
+    [HttpDelete("{numero}")]
+    public IActionResult Eliminar(string numero)
+    {
+        var resultado = _almacen.EjecutarConBloqueo(
+            () => _almacen.EliminarFactura(numero));
+        if (!resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(resultado);
+        }
+
+        return NoContent();
+    }
+
+    // Edita facturas Pendientes o Pagadas y conserva su estado.
     [HttpPut("{numero}")]
-    public IActionResult ActualizarPendiente(
+    public IActionResult Actualizar(
         string numero,
         [FromBody] SolicitudEdicionFactura solicitud)
     {
