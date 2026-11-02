@@ -193,6 +193,40 @@ public class FacturasApiController : ControladorApiBase
         return Ok(pago.Respuesta);
     }
 
+    // Anula una factura pagada y devuelve el estado actualizado.
+    [HttpPost("{numero}/anular")]
+    public IActionResult Anular(string numero)
+    {
+        var anulacion = _almacen.EjecutarConBloqueo(() =>
+        {
+            var resultado = _almacen.AnularFactura(numero);
+            var factura = resultado.EsExitoso
+                ? _almacen.ObtenerFactura(resultado.Id!.Value)
+                : null;
+            var respuesta = factura is null
+                ? null
+                : MapearFactura(factura);
+
+            return (Resultado: resultado, Respuesta: respuesta);
+        });
+
+        if (!anulacion.Resultado.EsExitoso)
+        {
+            return ConvertirResultadoFallido(anulacion.Resultado);
+        }
+
+        if (anulacion.Respuesta is null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new ErrorApi
+            {
+                Codigo = "ErrorInterno",
+                Mensaje = "No se pudo completar la solicitud."
+            });
+        }
+
+        return Ok(anulacion.Respuesta);
+    }
+
     // Edita una factura pendiente y conserva su identidad y estado.
     [HttpPut("{numero}")]
     public IActionResult ActualizarPendiente(

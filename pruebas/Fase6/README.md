@@ -48,4 +48,16 @@ New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
 node .\pruebas\Fase6\EdicionPagada\Verificar-EdicionPagadaHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'edicion-pagada')
 ```
 
-La pasada actual de regresion obtuvo 340/340 verificaciones: 115 de edicion Pagada, 81 de pago y 144 de edicion Pendiente. Los resultados historicos 86/86 y 150/150 son ejecuciones previas a la guarda global y no se suman a esta pasada. La prueba HTTP de la guarda cubrio facturas Pendientes y Pagadas; el estado Anulada se comprobara cuando F6.5 habilite esa transicion.
+La pasada de F6.4 obtuvo 340/340 verificaciones: 115 de edicion Pagada, 81 de pago y 144 de edicion Pendiente. Los resultados historicos 86/86 y 150/150 son ejecuciones previas a la guarda global y no se suman a esa pasada. F6.5 verifico la guarda tambien con una factura Anulada.
+
+## Anulacion de una factura pagada
+
+El grupo HTTP cubre el reintegro del detalle vigente, lineas repetidas o modificadas, preservacion de datos e identidad, transiciones no permitidas, unidad global vinculada y rechazo atomico ante overflow. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\AnulacionFactura\Verificar-AnulacionHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'anulacion-factura')
+```
+
+QA aprobo 75/75 verificaciones HTTP; el grupo no repite las regresiones de F6.4.

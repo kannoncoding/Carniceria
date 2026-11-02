@@ -126,4 +126,115 @@ public partial class AlmacenCarniceria
                 "La factura se pagó correctamente.");
         }
     }
+
+    // Anula una factura pagada tras preparar todos los reintegros.
+    public ResultadoOperacion AnularFactura(string numero)
+    {
+        var numeroNormalizado = numero?.Trim() ?? string.Empty;
+        if (numeroNormalizado.Length == 0)
+        {
+            return ResultadoOperacion.NoEncontrado(
+                "La factura solicitada no existe.");
+        }
+
+        lock (_sincronizacion)
+        {
+            var indiceFactura = _facturas.FindIndex(registro =>
+                string.Equals(
+                    registro.Numero,
+                    numeroNormalizado,
+                    StringComparison.OrdinalIgnoreCase));
+            if (indiceFactura < 0)
+            {
+                return ResultadoOperacion.NoEncontrado(
+                    "La factura solicitada no existe.");
+            }
+
+            var factura = _facturas[indiceFactura];
+            var conflictoTransicion = ReglasTransicionFactura.ValidarTransicion(
+                factura.Estado,
+                OperacionFactura.Anular);
+            if (conflictoTransicion is not null)
+            {
+                return conflictoTransicion;
+            }
+
+            // Agrupa cantidades vigentes de las lineas repetidas.
+            var demandaPorProducto = new Dictionary<Guid, decimal>();
+            for (var indice = 0; indice < factura.Detalles.Count; indice++)
+            {
+                var detalle = factura.Detalles[indice];
+                try
+                {
+                    demandaPorProducto[detalle.ProductoId] =
+                        demandaPorProducto.GetValueOrDefault(detalle.ProductoId) +
+                        detalle.Cantidad;
+                }
+                catch (OverflowException)
+                {
+                    return ResultadoOperacion.ConflictoIntegridad(
+                        $"Detalles[{indice}].{nameof(DetalleFactura.Cantidad)}",
+                        "La cantidad que se debe reintegrar excede el rango permitido.");
+                }
+            }
+
+            // Prepara cada existencia final antes de modificar el almacen.
+            var existenciasPreparadas = new List<(Producto Producto, decimal Existencia)>();
+            foreach (var demanda in demandaPorProducto)
+            {
+                var producto = _productos.FirstOrDefault(registro =>
+                    registro.Id == demanda.Key);
+                var indiceDetalle = factura.Detalles.FindIndex(detalle =>
+                    detalle.ProductoId == demanda.Key);
+                if (producto is null)
+                {
+                    return ResultadoOperacion.ConflictoIntegridad(
+                        $"Detalles[{indiceDetalle}].{nameof(DetalleFactura.ProductoId)}",
+                        "Un producto de la factura ya no está disponible.");
+                }
+
+                if (factura.Detalles.Any(detalle =>
+                        detalle.ProductoId == producto.Id &&
+                        detalle.UnidadMedida != producto.UnidadMedida))
+                {
+                    return ResultadoOperacion.ConflictoIntegridad(
+                        $"Detalles[{indiceDetalle}].{nameof(DetalleFactura.UnidadMedida)}",
+                        "La unidad actual del producto no coincide con la unidad capturada en la factura.");
+                }
+
+                if (producto.ExistenciaActual < 0m || demanda.Value < 0m)
+                {
+                    return ResultadoOperacion.ConflictoIntegridad(
+                        nameof(Producto.ExistenciaActual),
+                        "La factura o el producto tiene existencias invalidas.");
+                }
+
+                try
+                {
+                    var existenciaFinal = producto.ExistenciaActual + demanda.Value;
+                    existenciasPreparadas.Add((producto, existenciaFinal));
+                }
+                catch (OverflowException)
+                {
+                    return ResultadoOperacion.ConflictoIntegridad(
+                        $"Detalles[{indiceDetalle}].{nameof(DetalleFactura.Cantidad)}",
+                        "La existencia final del producto excede el rango permitido.");
+                }
+            }
+
+            // Conserva identidad, importes y detalles al cambiar el estado.
+            var facturaAnulada = factura.Copiar();
+            facturaAnulada.Estado = EstadoFactura.Anulada;
+
+            foreach (var (producto, existencia) in existenciasPreparadas)
+            {
+                producto.ExistenciaActual = existencia;
+            }
+
+            _facturas[indiceFactura] = facturaAnulada;
+            return ResultadoOperacion.Correcto(
+                factura.Id,
+                "La factura se anulo correctamente.");
+        }
+    }
 }
