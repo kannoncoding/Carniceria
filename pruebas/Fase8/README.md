@@ -23,6 +23,8 @@ La corrida F8 aprobó 2 249 verificaciones en grupos separados: F3 API 857, F5 A
 
 F8.5 quedó revisado estáticamente: las vistas y JavaScript no llaman la API directamente, las transiciones de inventario pertenecen a API y los proyectos no agregan dependencias de persistencia. F8.6 aprobó 19/19 comprobaciones en Edge emulado para escritorio a 1440 px y móvil a 390 px; no se probó un dispositivo físico. Consulta el [seguimiento de F8](../../docs/Seguimiento-Fase-8.md).
 
+F8.7 registra el cierre del defecto concreto de salto de línea en las columnas número, estado y total, con evidencia QA 19/19 de F8.6. No representa una afirmación de que no haya otros defectos abiertos. F8.8 agrega en el seguimiento la matriz R01–R24, la candidata de código identificada por commit y los estados pendientes: R02/R23 requieren revalidación F10, y R24 requiere preparar evidencia en F9 y validar en F10.
+
 ## Revisión visual de facturas
 
 `Verificar-InterfazFacturas.mjs` inicia API, Web, proxy y Edge headless propios. Desde la raíz, compila Web y ejecuta la revisión:
@@ -37,3 +39,5 @@ node .\pruebas\Fase8\Verificar-InterfazFacturas.mjs --raiz . --salida $carpetaEv
 La pasada QA aprobó **19/19** en escritorio 1440 × 1000, móvil emulado 390 × 844 y zoom CSS 200 %. Verificó que la tabla se desplace dentro de su contenedor sin ampliar la ventana móvil, además de etiquetas, teclado, cálculos, validación, confirmación y ausencia de llamadas API directas desde el navegador. Se requiere Node.js y Edge o Chrome instalados. La emulación no sustituye una revisión en dispositivo físico.
 
 T31–T32 se comprobaron en F8 sobre un ZIP candidato técnico, no final. La compilación y el smoke del candidato se describen en el seguimiento. F10 debe validar de nuevo el paquete definitivo.
+
+La compilación reproducible disponible para esta revisión se ejecutó por CLI con `dotnet build .\Carniceria.slnx --no-restore --disable-build-servers -m:1 -v:minimal`: build correcto, 0 advertencias y 0 errores. No se reporta una compilación dentro de Visual Studio GUI.

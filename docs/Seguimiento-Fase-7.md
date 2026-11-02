@@ -1,6 +1,6 @@
 # Seguimiento de la fase 7
 
-La interfaz MVC de facturas permite consultar, crear, editar, calcular y guardar facturas, además de confirmar y ejecutar las transiciones disponibles. Los cálculos y las reglas de negocio permanecen en la API. Los diez pasos de F7 están completos en el alcance HTTP verificado; la revisión visual en navegador queda pendiente.
+La interfaz MVC de facturas permite consultar, crear, editar, calcular y guardar facturas, además de confirmar y ejecutar las transiciones disponibles. Los cálculos y las reglas de negocio permanecen en la API. Los diez pasos de F7 están completos en el alcance HTTP verificado. La revisión visual posterior de F8.6 aprobó 19/19 comprobaciones en Edge emulado; es evidencia de F8 y no una nueva prueba de F7.
 
 | Paso | Estado | Evidencia y alcance |
 | --- | --- | --- |
@@ -27,5 +27,5 @@ La compilación de la solución terminó con 0 errores y 0 advertencias. La regr
 
 - La API conserva la autoridad sobre estados, referencias, precios, unidades, importes e inventario.
 - El resultado de cálculo es informativo hasta que la API confirma el guardado.
-- La revisión visual en navegador sigue pendiente de comprobación manual.
+- La revisión visual de F8.6 cubre Edge emulado a 1440 px y 390 px; no incluye dispositivo físico ni cambia la evidencia de pruebas HTTP de F7.
 - La regresión global F8 cubre más módulos y queda fuera del alcance de esta fase.

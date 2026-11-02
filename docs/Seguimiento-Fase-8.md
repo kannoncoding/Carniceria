@@ -10,6 +10,8 @@ F8 registra la ejecución actual de las suites T01–T32 disponibles, añade esc
 | F8.4 | Completado | `pruebas/Fase8/Verificar-FallosReinicioMvc.mjs` aprobó 13/13 casos dirigidos sobre fallo real de API, formulario obsoleto y reinicio. Incluye colección vacía, pérdida de respuesta de alta, IDs de catálogo vencidos y edición de una factura desaparecida. Todos los procesos y puertos propios terminaron cerrados. |
 | F8.5 | Completado por inspección estática | Las vistas y scripts del navegador no realizan llamadas REST directas. La aplicación Web envía solicitudes desde controladores MVC; las escrituras y transiciones de inventario se centralizan en la API. Los proyectos no incluyen acceso a base de datos, almacenamiento persistente ni paquetes externos inesperados. |
 | F8.6 | Completado | QA aprobó 19/19 comprobaciones en Edge emulado después de corregir la tabla: escritorio 1440 px muestra número, estado y total en una línea; móvil 390 px conserva el desplazamiento horizontal sin ampliar la ventana y el formulario sigue legible. La revisión no se hizo en un dispositivo físico. |
+| F8.7 | Completado | Se registra el cierre del defecto observado de salto de línea en número, estado y total. Evidencia: QA 19/19 de F8.6. Este cierre se limita a ese defecto y esas condiciones; no afirma que se hayan descartado todos los defectos posibles. |
+| F8.8 | Completado | Se agrega la matriz R01–R24 con trazabilidad a evidencia existente, estado de R24 para F9/F10 y revalidaciones de R02/R23 para F10. La candidata de código queda identificada por commit completo y build CLI reproducible. |
 
 ## Auditoría arquitectónica F8.5
 
@@ -23,6 +25,8 @@ F8 registra la ejecución actual de las suites T01–T32 disponibles, añade esc
 La primera pasada de navegador detectó que el número, el estado y el total se partían en varias líneas a 1440 px. `Carniceria.Web/Views/Facturas/Index.cshtml` identifica la tabla con una clase propia y `site.css` evita esos cortes solo en esas tres columnas; el contenedor conserva el desplazamiento horizontal.
 
 Después del ajuste, QA aprobó **19/19 comprobaciones** en Edge emulado: a 1440 px las columnas clave se muestran en una línea; a 390 px la tabla se desplaza horizontalmente sin ampliar la ventana y el formulario se mantiene legible. Este resultado cubre escritorio y emulación móvil, no un dispositivo físico. Las capturas de verificación se conservaron fuera del repositorio.
+
+F8.7 cierra el defecto concreto que originó la corrección: el salto de línea de número, estado y total en la tabla a escritorio. La aprobación 19/19 cubre el recorrido visual descrito en F8.6, incluidos escritorio y móvil emulado. No se declara una auditoría exhaustiva de defectos abiertos ni cobertura en dispositivos físicos.
 
 ## Matriz de pruebas T01–T32
 
@@ -74,3 +78,46 @@ F8.4 aprobó **13/13**: colección vacía, API apagada durante alta con formular
 ## Límites
 
 Las suites actuales cubrieron T02–T30 en los grupos indicados; no se afirma que cada fila del plan tenga una aserción individual ni que las 2 249 verificaciones sean una única suite. El candidato de T31–T32 es técnico, no el paquete definitivo. La matriz no sustituye la revisión visual ni la regresión final de F10.
+
+## Matriz de requisitos R01–R24
+
+La traza identifica evidencia real existente por requisito. “Cubierto” significa que el seguimiento o la suite referida documenta ese alcance; no implica que cada subrequisito tenga una aserción individual. Los estados de candidato y pendientes se conservan explícitos para evitar presentar el paquete técnico como entrega final.
+
+| Requisito | Alcance resumido | Evidencia disponible | Estado |
+| --- | --- | --- | --- |
+| R01 | Tecnologías y POO | [`Seguimiento-Fase-1.md`](Seguimiento-Fase-1.md), F0–F1 | Cubierto en fases previas |
+| R02 | API/MVC, solución e inicio dual sin HTTPS | [`Seguimiento-Fase-1.md`](Seguimiento-Fase-1.md), F1; confirmación manual T01; candidato técnico identificado abajo | Evidencia de candidato; revalidar en F10 |
+| R03 | Almacenamiento en memoria solo en API | F2/F4 y auditoría estática F8.5 de proyectos y asignaciones | Cubierto por inspección y fases previas |
+| R04 | Conservar campos, reglas y CRUD P1 | [`Seguimiento-Fase-3.md`](Seguimiento-Fase-3.md), [`Seguimiento-Fase-4.md`](Seguimiento-Fase-4.md) | Cubierto por fases previas |
+| R05 | Clientes | Seguimientos F2–F4; F3 API y F4 MVC referidos en T04 | Cubierto en regresión documentada |
+| R06 | Empleados | Seguimientos F2–F4; F3 API y F4 MVC referidos en T05 | Cubierto en regresión documentada |
+| R07 | Proveedores | Seguimientos F2–F4; F3 API y F4 MVC referidos en T06 | Cubierto en regresión documentada |
+| R08 | Productos y proveedor | Seguimientos F2–F4; F3 API y F4 MVC referidos en T07/T09 | Cubierto en regresión documentada |
+| R09 | Factura con cliente, empleado y detalles | [`Seguimiento-Fase-5.md`](Seguimiento-Fase-5.md), F5; F7 formularios 89/89 | Cubierto en regresión documentada |
+| R10 | Número/fecha automáticos y estado Pendiente | F5/F7 y T11/T18 | Cubierto en regresión documentada |
+| R11 | Pago, descuento de 0–25 y estados | F5–F7 y T13/T19/T23 | Cubierto en regresión documentada |
+| R12 | Producto, unidad/precio automáticos, cantidad y stock | F5–F6 y T15–T16 | Cubierto en regresión documentada |
+| R13 | Cálculo API: subtotal, descuento, base, IVA 13 % y total | F5 y T14; suite de vista previa 87/87 | Cubierto en regresión documentada |
+| R14 | Pago descuenta; edición pagada ajusta; anulación reintegra una vez | [`Seguimiento-Fase-6.md`](Seguimiento-Fase-6.md), T19–T23 | Cubierto en regresión documentada |
+| R15 | Solo borrar Pendiente; Anulada inmutable | F6–F7 y T23–T24 | Cubierto en regresión documentada |
+| R16 | Cuatro restricciones de baja por relaciones | F3/F6 y T10 | Cubierto en regresión documentada |
+| R17 | Rechazo íntegro y sin mutación | F3/F5–F6 y T12/T17/T25–T26 | Cubierto en regresión documentada |
+| R18 | CRUD, búsqueda y anulación de facturas | F5–F7; T11/T19/T23 y grupos MVC F7 | Cubierto en regresión documentada |
+| R19 | Semilla con factura Pendiente y al menos dos detalles | F5 `Verificar-SemillasHttp.mjs`, 36/36; T02 | Cubierto en regresión documentada |
+| R20 | Menú, fechas, mensajes y búsqueda vacía | F4/F7–F8; T08/T29/T30 y smoke MVC 83/83 | Cubierto en regresión documentada |
+| R21 | Editar/agregar/quitar líneas y mostrar importes | F7 formularios 89/89; T27 y cálculo de F7.5–F7.6 | Cubierto en regresión documentada |
+| R22 | Preservar formulario, confirmaciones y caída de API | F4/F7–F8; F7 83/83 y F8.4 13/13 | Cubierto en regresión documentada |
+| R23 | ZIP, paquetes, ausencia de bin/obj y compilación extraído | T31–T32 en ZIP candidato técnico: hash SHA-256 `0E364C59DD438DFE87D84C1882FE62F0CC698B2E6E3D4572774DC742B1EF4822`; build CLI de fuente actual abajo | Evidencia de candidato; repetir sobre paquete final en F10 |
+| R24 | Video y defensa | Sin evidencia de video/defensa en F8 | Futuro: preparar en F9 y validar en F10 |
+
+### Candidata de código y compilación reproducible
+
+La candidata estable de código para esta revisión corresponde al commit completo **`814258ab915ddf379fd89c40bc54b8ad60346c7b`** (`Completar revision visual de facturas`), que incluye el ajuste visual y la evidencia F8.6. Es una referencia al commit, no al paquete final. El ZIP técnico anterior de T31–T32 se identifica por su SHA-256 arriba; no se atribuye ese hash al commit actual ni se afirma que sea el artefacto final de F10.
+
+Sobre el código versionado en ese commit se ejecutó por CLI, sin Visual Studio GUI:
+
+```powershell
+dotnet build .\Carniceria.slnx --no-restore --disable-build-servers -m:1 -v:minimal
+```
+
+Resultado: **build correcto, 0 advertencias y 0 errores**. Esto es una compilación reproducible de la fuente actual; no valida por sí sola la extracción del ZIP ni reemplaza la compilación del paquete final requerida en F10. La corrida se hizo por CLI, por lo que no se afirma una compilación dentro de Visual Studio.
