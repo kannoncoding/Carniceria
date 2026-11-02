@@ -85,3 +85,15 @@ node .\pruebas\Fase6\Integridad\Verificar-IntegridadHttp.mjs --raiz . --salida (
 ```
 
 QA aprobo 174/174 verificaciones. En las 12 carreras acotadas se observo primero la baja, que termino en 204, y luego se rechazo la escritura relacionada; no se observaron referencias huerfanas ni mutaciones parciales. Esta muestra no demuestra formalmente ambos ordenes concurrentes.
+
+## Atomicidad de calculo
+
+La auditoria de `ActualizarFactura`, `PagarFactura` y `AnularFactura` confirma que los candidatos y stocks se preparan antes de escribir. El grupo HTTP fuerza un desbordamiento de calculo despues de preparar un delta valido para una factura Pagada y comprueba que factura, productos, existencias y secuencia no cambien. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\Atomicidad\Verificar-AtomicidadHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'atomicidad')
+```
+
+QA aprobo 28/28 verificaciones; el desbordamiento controlado devolvio 400, preservo los datos y la siguiente factura recibio FAC000003. No se repitieron los grupos anteriores.
