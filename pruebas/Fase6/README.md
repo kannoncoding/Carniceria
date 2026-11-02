@@ -73,3 +73,15 @@ node .\pruebas\Fase6\EliminacionFactura\Verificar-EliminacionHttp.mjs --raiz . -
 ```
 
 QA aprobo 55/55 verificaciones HTTP; las bajas Pagadas y Anuladas devolvieron 409.
+
+## Integridad de relaciones
+
+El grupo verifica las cuatro guardas de bajas, el bloqueo de cambio de unidad en los tres estados de factura, bajas libres y carreras acotadas de alta/baja y edicion/baja. Requiere Node.js 24 y la API compilada previamente.
+
+```powershell
+$carpetaEvidencia = Join-Path $env:TEMP 'fase6'
+New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+node .\pruebas\Fase6\Integridad\Verificar-IntegridadHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'integridad-relaciones')
+```
+
+QA aprobo 174/174 verificaciones. En las 12 carreras acotadas se observo primero la baja, que termino en 204, y luego se rechazo la escritura relacionada; no se observaron referencias huerfanas ni mutaciones parciales. Esta muestra no demuestra formalmente ambos ordenes concurrentes.
