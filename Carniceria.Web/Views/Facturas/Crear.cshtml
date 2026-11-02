@@ -1,0 +1,13 @@
+@model FormularioFactura
+@* Presenta la creacion de una factura con catalogos de la API. *@
+
+@{
+    ViewData["Title"] = "Crear factura";
+}
+
+<h1>Crear factura</h1>
+<partial name="_FormularioFactura" model="Model" />
+
+@section Scripts {
+    <script src="~/js/facturas-formulario.js" asp-append-version="true"></script>
+}

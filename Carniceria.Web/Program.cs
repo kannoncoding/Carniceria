@@ -196,7 +196,7 @@ aplicacion.MapControllerRoute(
     constraints: new
     {
         controller = "^Facturas$",
-        action = "^(Detalles|Buscar|Pagar|PagarConfirmado|Anular|AnularConfirmado|Eliminar|EliminarConfirmado)$"
+        action = "^(Detalles|Buscar|Crear|Editar|Pagar|PagarConfirmado|Anular|AnularConfirmado|Eliminar|EliminarConfirmado)$"
     })
     .WithStaticAssets();
 

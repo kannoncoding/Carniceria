@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Carniceria.Controllers;
 
 // Consulta facturas y confirma sus transiciones disponibles.
-public sealed class FacturasController : ControladorApiMvcBase
+public sealed partial class FacturasController : ControladorApiMvcBase
 {
     // Recibe la fabrica del cliente HTTP usado por las acciones.
     public FacturasController(IHttpClientFactory fabricaClientesHttp)

@@ -1,31 +1,38 @@
 # Verificacion de Fase 7
 
-## Consultas y transiciones MVC
-
-El verificador inicia la API, el sitio MVC y un proxy en puertos aislados. Comprueba menu, listado, detalle, busqueda codificada, confirmaciones GET sin mutacion, antifalsificacion, pago/anulacion/baja con PRG, errores del servicio, cantidades y descuentos decimales, y respuesta de pago perdida con consulta posterior del estado.
-
-Requiere .NET 10, Node.js 24 y los binarios de API y Web compilados. El script no restaura ni compila proyectos. Desde la raiz del repositorio:
+Requisitos: .NET 10, Node.js 24 y la solucion compilada. Los verificadores Node no restauran ni compilan proyectos. Desde la raiz del repositorio, prepara los binarios y una carpeta de salida temporal:
 
 ```powershell
 dotnet restore .\Carniceria.slnx
 dotnet build .\Carniceria.slnx --no-restore --disable-build-servers -m:1 -v:minimal
 $carpetaEvidencia = Join-Path $env:TEMP 'fase7'
 New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
+```
+
+## Formularios de factura
+
+El grupo `Verificar-FormulariosMvc.mjs` inicia API, MVC y un proxy en puertos aislados. Cubre creación y edición, catálogos, filas con claves estables, preservación de valores y errores, cálculos de creación y edición, valores históricos y optativos, y campos de servidor no confiables.
+
+```powershell
+node .\pruebas\Fase7\Verificar-FormulariosMvc.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'formularios')
+```
+
+QA aprobó **89/89 verificaciones**. La prueba confirmó que la previsualización no modifica factura, existencias ni secuencia, y que los formularios conservan los Id de detalle del registro editado.
+
+## Consultas y transiciones MVC
+
+El grupo `Verificar-ConsultasTransicionesMvc.mjs` verifica menú, listado, detalle, búsqueda codificada, confirmaciones GET sin mutación, antifalsificación, pago, anulación y eliminación con PRG, errores del servicio y recuperación ante respuesta de pago perdida.
+
+```powershell
 node .\pruebas\Fase7\Verificar-ConsultasTransicionesMvc.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'consultas-transiciones')
 ```
 
-QA aprobo **83/83 verificaciones**. El grupo confirma 404 y errores controlados, no repite mutaciones al abrir GET, rechaza POST sin antifalsificacion y conserva los importes y cantidades de la API. Ante una respuesta de pago perdida, observa un solo POST, consulta el estado y muestra el resultado confirmado. Los puertos de API, MVC y proxy son 5234, 5235 y 5236; pueden cambiarse con `--puerto-api`, `--puerto-web` y `--puerto-proxy`.
+QA aprobó **83/83 verificaciones** en la regresión adaptada: Crear y Editar están disponibles y los flujos anteriores se conservan. Una ejecución diagnóstica parcial de 48 casos no se cuenta.
 
-Crear, Editar y la casilla `ActualizarPreciosYUnidades` siguen pendientes. La revision visual del sitio en navegador tambien queda pendiente; el verificador ejercita el flujo MVC mediante HTTP.
+## Resultado actual
 
-## Calculo previo de edicion en API
+Los grupos actuales suman **172/172 verificaciones HTTP** (89 + 83). La compilación de la solución terminó con 0 errores y 0 advertencias. La comprobación del prerequisito de cálculo de edición en API fue una ejecución separada de **363/363** y no se suma al total MVC.
 
-Este grupo comprueba `POST /api/facturas/{numero}/calcular` con el contrato de edicion. La API comparte el calculo con el guardado y no modifica factura, existencias ni secuencia. Requiere Node.js 24 y los binarios compilados de la API; el verificador inicia y cierra su propio proceso en el puerto 5234. No compila los proyectos. Desde la raiz del repositorio:
+Las pruebas inician y cierran sus propios procesos. Los puertos predeterminados son API 5234, MVC 5235 y proxy 5236; cada script admite opciones para cambiarlos. Guarda cada ejecución en su propia subcarpeta para conservar sus resúmenes.
 
-```powershell
-$carpetaEvidencia = Join-Path $env:TEMP 'fase7'
-New-Item -ItemType Directory -Force -Path $carpetaEvidencia | Out-Null
-node .\pruebas\Fase7\Verificar-CalculoEdicionHttp.mjs --raiz . --salida (Join-Path $carpetaEvidencia 'calculo-edicion-api')
-```
-
-QA aprobo **363/363 verificaciones**: 76 del calculo de edicion, 144 de actualizacion Pendiente, 115 de actualizacion Pagada y 28 de atomicidad. Estos grupos prueban historicos y la opcion de usar precios/unidades actuales, errores de Id y referencias, disponibilidad efectiva al editar una Pagada y ausencia de efectos de la vista previa. El resultado de API no contiene identidades de linea; MVC conserva los Id del formulario.
+Los pasos F7.1–F7.5 están completados en el alcance comprobado. F7.6–F7.10 siguen pendientes; la revisión visual en navegador también queda fuera de esta verificación HTTP.

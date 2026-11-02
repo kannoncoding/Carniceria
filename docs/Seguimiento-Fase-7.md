@@ -1,18 +1,26 @@
 # Seguimiento de la fase 7
 
-Fase 7 integra la interfaz MVC de facturas con la API. El primer incremento ofrece consultas y confirmaciones reales de las transiciones disponibles; el registro y la edicion se completaran en pasos posteriores.
+La interfaz MVC de facturas ya permite consultar, crear, editar, calcular y guardar facturas, además de confirmar y ejecutar las transiciones disponibles. Los cálculos y las reglas de negocio permanecen en la API. El incremento F7.1–F7.5 está completado en el alcance HTTP probado; los pasos F7.6–F7.10 siguen pendientes.
 
-| Paso | Estado | Alcance |
+| Paso | Estado | Evidencia y alcance |
 | --- | --- | --- |
-| F7.1 | Parcial | Se agregaron navegacion, listado, detalle y busqueda de facturas desde la API. Las confirmaciones GET son de solo lectura; los POST protegidos solicitan pago, anulacion o eliminacion segun el estado actual. Se valida la respuesta, se conserva el flujo PRG y se manejan conflictos, faltantes y fallas de transporte. Ante una respuesta de pago incierta, el controlador consulta primero el estado y no reintenta automaticamente; el flujo se verifico con un proxy en la prueba HTTP MVC. Build de solucion: 0 errores y 0 advertencias. QA aprobo 83/83 verificaciones. La revision visual en navegador queda pendiente. Crear y Editar no se ofrecen hasta que sus flujos esten completos. |
+| F7.1 | Completado | Navegación, listado, detalle, búsqueda, enlaces a Crear/Editar y confirmaciones GET de solo lectura. Los POST protegidos ejecutan pago, anulación y eliminación con PRG, errores controlados y consulta del estado ante una respuesta de pago incierta. Regresión actual: 83/83 verificaciones HTTP MVC. |
+| F7.2 | Completado | Formularios Crear y Editar cargan clientes, empleados, productos y configuración desde la API; los métodos de pago provienen de la enumeración compartida. La opción de edición conserva los valores históricos por defecto y permite solicitar los actuales. |
+| F7.3 | Completado | Agregar, modificar y quitar líneas con claves de enlace estables. Se conserva el Id de detalle, la entrada sin procesar y los errores de cada fila; quitar una fila intermedia no desplaza las restantes. |
+| F7.4 | Completado | Campos de servidor informativos; el formulario conserva valores editables y vuelve a cargar catálogos. Los valores de presentación no son autoridad para guardar. |
+| F7.5 | Completado | Previsualización de creación y edición por API. La MVC muestra el cálculo devuelto sin recalcular ni alterar existencias o identidades. |
+| F7.6–F7.10 | Pendientes | Continúan según el plan original. |
 
-## Prerequisito para el calculo de edicion
+## Verificación del incremento
 
-El prerequisito API de F7.5 esta completado: `POST /api/facturas/{numero}/calcular` recibe `SolicitudEdicionFactura` y devuelve `RespuestaCalculoFactura`. Comparte con la actualizacion la validacion, los valores historicos u optativos, el control de existencias y el calculo. La vista previa no reemplaza la factura ni aplica existencias, y la respuesta no expone identidades de lineas. La compilacion de solucion termino con 0 errores y 0 advertencias. QA aprobo 363/363 verificaciones: 76 del calculo de edicion, 144 de actualizacion Pendiente, 115 de actualizacion Pagada y 28 de atomicidad. Este hito de API prepara el calculo MVC, pero no completa los formularios Crear ni Editar ni el paso F7.5 en MVC.
-## Limites del incremento
+La comprobación actual suma **172/172 verificaciones HTTP**: 89 del grupo de formularios y 83 del grupo de consultas y transiciones. La regresión de 83 casos conserva el alcance anterior y actualiza la expectativa de que Crear y Editar están disponibles. Los 48 casos parciales de una ejecución diagnóstica no se cuentan.
 
-- Los importes, estados y detalles mostrados provienen de `RespuestaFactura`; MVC no recalcula ni modifica el inventario.
-- La API es autoridad para las transiciones. GET de confirmacion no muta; los POST protegidos son la unica solicitud de cambio.
-- La recuperacion de una respuesta de pago perdida ya consulta el estado actual y evita el reintento automatico; la verificacion HTTP MVC paso. La revision visual en navegador queda pendiente.
-- La casilla `ActualizarPreciosYUnidades` y los formularios Crear/Editar se incorporaran con sus flujos funcionales posteriores.
-- Los pasos restantes de F7 siguen pendientes segun el plan del proyecto.
+El prerequisito de cálculo de edición en API tuvo una ejecución separada de 363/363 verificaciones. Ese resultado documenta la API usada por F7.5 y no se suma a las 172 verificaciones MVC.
+
+La compilación de la solución terminó con 0 errores y 0 advertencias. La regresión confirmó formularios y catálogos, filas dinámicas, preservación de entradas inválidas, valores históricos y opción de actualización, previsualización sin efectos, controles contra campos de servidor manipulados, y flujos de consulta y transición.
+
+## Límites
+
+- La API conserva la autoridad sobre estados, referencias, precios, unidades, importes e inventario.
+- El resultado de cálculo es informativo hasta que la API confirma el guardado.
+- F7.6–F7.10 y la revisión visual en navegador no forman parte de esta entrega.

@@ -1,0 +1,205 @@
+@model FormularioFactura
+@using System.Globalization
+@* Comparte cabecera, detalle, calculo y acciones del formulario. *@
+
+@{
+    string accionFormulario = Model.EsEdicion ? "Editar" : "Crear";
+    string clienteIntentado = ViewData.ModelState["ClienteId"]?.AttemptedValue ?? Model.ClienteId?.ToString() ?? string.Empty;
+    string empleadoIntentado = ViewData.ModelState["EmpleadoId"]?.AttemptedValue ?? Model.EmpleadoId?.ToString() ?? string.Empty;
+    string metodoIntentado = ViewData.ModelState["MetodoPago"]?.AttemptedValue ??
+        (Model.MetodoPago.HasValue
+            ? ((int)Model.MetodoPago.Value).ToString(CultureInfo.InvariantCulture)
+            : string.Empty);
+
+    var opcionesClientes = Model.Clientes.Select(cliente => new SelectListItem
+    {
+        Value = cliente.Id.ToString(),
+        Text = $"{cliente.Identificacion} — {cliente.Nombre} {cliente.PrimerApellido} {cliente.SegundoApellido}".Trim()
+    }).ToList();
+    var opcionesEmpleados = Model.Empleados.Select(empleado => new SelectListItem
+    {
+        Value = empleado.Id.ToString(),
+        Text = $"{empleado.Identificacion} — {empleado.Nombre} {empleado.PrimerApellido} {empleado.SegundoApellido}".Trim()
+    }).ToList();
+    var opcionesMetodos = Html.GetEnumSelectList<MetodoPago>().ToList();
+    bool soloLectura = Model.EsEdicion && !Model.PuedeEditar;
+    var atributosSeleccion = new Dictionary<string, object>
+    {
+        ["class"] = "control",
+        ["required"] = "required"
+    };
+    if (soloLectura)
+        atributosSeleccion["disabled"] = "disabled";
+
+    if (!string.IsNullOrWhiteSpace(clienteIntentado) && opcionesClientes.All(opcion => opcion.Value != clienteIntentado))
+        opcionesClientes.Insert(0, new SelectListItem { Value = clienteIntentado, Text = "Opción seleccionada no disponible" });
+    if (!string.IsNullOrWhiteSpace(empleadoIntentado) && opcionesEmpleados.All(opcion => opcion.Value != empleadoIntentado))
+        opcionesEmpleados.Insert(0, new SelectListItem { Value = empleadoIntentado, Text = "Opción seleccionada no disponible" });
+    if (!string.IsNullOrWhiteSpace(metodoIntentado) && opcionesMetodos.All(opcion => opcion.Value != metodoIntentado))
+        opcionesMetodos.Insert(0, new SelectListItem { Value = metodoIntentado, Text = "Método enviado no disponible" });
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.NumeroFactura))
+{
+    @* Cabecera de solo lectura consultada para la edicion. *@
+    <dl class="detalle-registro">
+        <div><dt>Numero</dt><dd>@Model.NumeroFactura</dd></div>
+        <div><dt>Fecha de emisión</dt><dd>@Model.FechaEmision?.ToString("dd/MM/yyyy HH:mm:ss")</dd></div>
+        <div><dt>Estado actual</dt><dd>@Html.DisplayFor(modelo => modelo.EstadoActual)</dd></div>
+    </dl>
+}
+else
+{
+    @* Los datos de emision se asignan al registrar la factura. *@
+    <dl class="detalle-registro">
+        <div><dt>Número</dt><dd>Se asignará al registrar</dd></div>
+        <div><dt>Fecha de emisión</dt><dd>Se asignará al registrar</dd></div>
+        <div><dt>Estado inicial</dt><dd>Pendiente</dd></div>
+    </dl>
+}
+
+<form id="formulario-factura" asp-action="@accionFormulario" asp-route-numero="@(Model.EsEdicion ? Model.NumeroRuta : null)" method="post" class="formulario" asp-antiforgery="true" novalidate>
+    <div asp-validation-summary="All" role="alert"></div>
+
+    @* Relaciones y condiciones comerciales editables. *@
+    <fieldset>
+        <legend>Datos de la factura</legend>
+        <div class="campo">
+            <label asp-for="ClienteId"></label>
+            @Html.DropDownListFor(modelo => modelo.ClienteId, opcionesClientes, "Seleccione un cliente", atributosSeleccion)
+            <span asp-validation-for="ClienteId"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="EmpleadoId"></label>
+            @Html.DropDownListFor(modelo => modelo.EmpleadoId, opcionesEmpleados, "Seleccione un empleado", atributosSeleccion)
+            <span asp-validation-for="EmpleadoId"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="MetodoPago"></label>
+            @Html.DropDownListFor(modelo => modelo.MetodoPago, opcionesMetodos, "Seleccione un metodo de pago", atributosSeleccion)
+            <span asp-validation-for="MetodoPago"></span>
+        </div>
+        <div class="campo">
+            <label asp-for="PorcentajeDescuento"></label>
+            <input asp-for="PorcentajeDescuento" type="text" inputmode="decimal" class="control" autocomplete="off" disabled="@(!Model.PuedeEditar && Model.EsEdicion)" />
+            <span class="ayuda-campo">Máximo permitido: @Model.PorcentajeDescuentoMaximo.ToString("G")%</span>
+            <span asp-validation-for="PorcentajeDescuento"></span>
+        </div>
+
+        @if (Model.EsEdicion)
+        {
+            <div class="campo">
+                @if (Model.PuedeEditar)
+                {
+                    <div class="opciones">
+                        <input asp-for="ActualizarPreciosYUnidades" />
+                        <label asp-for="ActualizarPreciosYUnidades"></label>
+                    </div>
+                }
+                else
+                {
+                    <input type="checkbox" disabled aria-label="Actualizar precios y unidades actuales" />
+                }
+                @if (!Model.PuedeEditar)
+                {
+                    <label asp-for="ActualizarPreciosYUnidades"></label>
+                }
+                <span class="ayuda-campo">Si se marca, las líneas retenidas usan el precio y la unidad actuales de la API.</span>
+            </div>
+        }
+    </fieldset>
+
+    @* Filas con indices estables que conservan el Id propio de cada linea. *@
+    <fieldset>
+        <legend>Líneas de factura</legend>
+        @for (int indice = 0; indice < Model.Detalles.Count; indice++)
+        {
+            var fila = Model.Detalles[indice];
+            string clave = fila.ClaveFormulario;
+            string prefijo = $"Detalles[{clave}]";
+            string campoProducto = $"{prefijo}.ProductoId";
+            string productoIntentado = ViewData.ModelState[campoProducto]?.AttemptedValue ?? fila.ProductoId?.ToString() ?? string.Empty;
+            var opcionesProductos = Model.Productos.Select(producto => new SelectListItem
+            {
+                Value = producto.Id.ToString(),
+                Text = $"{producto.Codigo} — {producto.Nombre} ({producto.UnidadMedida})",
+                Selected = string.Equals(
+                    producto.Id.ToString(), productoIntentado, StringComparison.OrdinalIgnoreCase)
+            }).ToList();
+            if (!string.IsNullOrWhiteSpace(productoIntentado) && opcionesProductos.All(opcion => opcion.Value != productoIntentado))
+            {
+                opcionesProductos.Insert(0, new SelectListItem
+                {
+                    Value = productoIntentado,
+                    Text = "Producto enviado no disponible",
+                    Selected = true
+                });
+            }
+
+            <div class="campo">
+                <h3>Línea @(indice + 1)</h3>
+                <input type="hidden" name="Detalles.Index" value="@clave" />
+                @Html.Hidden($"{prefijo}.ClaveFormulario", clave)
+                @Html.Hidden($"{prefijo}.Id", fila.Id)
+                <div class="campo">
+                    @Html.Label(campoProducto, "Producto")
+                    @Html.DropDownList(campoProducto, opcionesProductos, "Seleccione un producto", atributosSeleccion)
+                    @Html.ValidationMessage(campoProducto)
+                </div>
+                <div class="campo">
+                    @Html.Label($"{prefijo}.Cantidad", "Cantidad")
+                    @Html.TextBox($"{prefijo}.Cantidad", fila.Cantidad, new Dictionary<string, object>(atributosSeleccion)
+                    {
+                        ["type"] = "text",
+                        ["inputmode"] = "decimal",
+                        ["autocomplete"] = "off"
+                    })
+                    @Html.ValidationMessage($"{prefijo}.Cantidad")
+                </div>
+
+                @if (fila.PrecioUnitario.HasValue && fila.UnidadMedida.HasValue)
+                {
+                    <p class="valores-linea">Precio unitario capturado: @fila.PrecioUnitario.Value.ToString("G") por @Html.DisplayFor(_ => fila.UnidadMedida)</p>
+                }
+                @if (fila.SubtotalLinea.HasValue)
+                {
+                    <p class="valores-linea">Subtotal de la línea: @fila.SubtotalLinea.Value.ToString("C2")</p>
+                }
+
+                @if (Model.PuedeEditar || !Model.EsEdicion)
+                {
+                    <button type="submit" name="comandoFila" value="quitar:@clave" class="boton boton-peligro">Quitar línea</button>
+                }
+            </div>
+        }
+
+        @if (Model.PuedeEditar || !Model.EsEdicion)
+        {
+            <button type="submit" name="comandoFila" value="agregar" class="boton boton-secundario">Agregar línea</button>
+        }
+    </fieldset>
+
+    @* Importes informativos provistos por la API y nunca reenviados como autoridad. *@
+    @if (Model.Calculo is not null)
+    {
+        <fieldset id="resumen-calculo">
+            <legend>Cálculo de la API</legend>
+            <dl class="detalle-registro">
+                <div><dt>Subtotal</dt><dd>@Model.Calculo.Subtotal.ToString("C2")</dd></div>
+                <div><dt>Descuento (@Model.Calculo.PorcentajeDescuento.ToString("G")%)</dt><dd>@Model.Calculo.MontoDescuento.ToString("C2")</dd></div>
+                <div><dt>Base gravable</dt><dd>@Model.Calculo.BaseGravable.ToString("C2")</dd></div>
+                <div><dt>IVA</dt><dd>@Model.Calculo.MontoIva.ToString("C2")</dd></div>
+                <div><dt>Total</dt><dd><strong>@Model.Calculo.Total.ToString("C2")</strong></dd></div>
+            </dl>
+        </fieldset>
+    }
+
+    <div class="acciones">
+        @if (Model.PuedeEditar || !Model.EsEdicion)
+        {
+            <button type="submit" name="accion" value="calcular" class="boton boton-secundario" disabled="@(!Model.CatalogosDisponibles)">Calcular</button>
+            <button type="submit" name="accion" value="guardar" class="boton" disabled="@(!Model.CatalogosDisponibles)">@(Model.EsEdicion ? "Guardar cambios" : "Registrar factura")</button>
+        }
+        <a class="boton boton-secundario" asp-controller="Facturas" asp-action="Index">Cancelar</a>
+    </div>
+</form>

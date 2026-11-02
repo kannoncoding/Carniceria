@@ -1,0 +1,13 @@
+@model FormularioFactura
+@* Presenta la edicion de una factura existente. *@
+
+@{
+    ViewData["Title"] = $"Editar factura {Model.NumeroFactura}";
+}
+
+<h1>Editar factura @Model.NumeroFactura</h1>
+<partial name="_FormularioFactura" model="Model" />
+
+@section Scripts {
+    <script src="~/js/facturas-formulario.js" asp-append-version="true"></script>
+}

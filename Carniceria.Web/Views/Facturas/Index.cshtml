@@ -9,6 +9,7 @@
 
 @* Enlace a la busqueda de facturas existentes. *@
 <div class="acciones">
+    <a class="boton" asp-controller="Facturas" asp-action="Crear">Crear factura</a>
     <a class="boton boton-secundario"
        asp-controller="Facturas"
        asp-action="Buscar">
@@ -57,6 +58,15 @@ else
                                    asp-route-numero="@factura.Numero">
                                     Ver detalles
                                 </a>
+                                @if (factura.Estado is EstadoFactura.Pendiente or EstadoFactura.Pagada)
+                                {
+                                    <a class="boton boton-secundario"
+                                       asp-controller="Facturas"
+                                       asp-action="Editar"
+                                       asp-route-numero="@factura.Numero">
+                                        Editar
+                                    </a>
+                                }
                                 @if (factura.Estado == EstadoFactura.Pendiente)
                                 {
                                     <a class="boton"
