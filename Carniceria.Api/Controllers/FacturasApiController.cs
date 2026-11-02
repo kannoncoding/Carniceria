@@ -277,6 +277,30 @@ public class FacturasApiController : ControladorApiBase
         return Ok(actualizacion.Respuesta);
     }
 
+    // Calcula una edicion sin guardar cambios ni aplicar existencias.
+    [HttpPost("{numero}/calcular")]
+    public IActionResult CalcularEdicion(
+        string numero,
+        [FromBody] SolicitudEdicionFactura solicitud)
+    {
+        var calculo = _almacen.EjecutarConBloqueo(() =>
+        {
+            var resultado = _almacen.PrevisualizarEdicionFactura(numero, solicitud);
+            var respuesta = resultado.Factura is null
+                ? null
+                : MapearCalculo(resultado.Factura);
+
+            return (resultado.Error, Respuesta: respuesta);
+        });
+
+        if (calculo.Error is not null)
+        {
+            return ConvertirResultadoFallido(calculo.Error);
+        }
+
+        return Ok(calculo.Respuesta);
+    }
+
     // Proyecta una copia de factura y sus relaciones mientras se mantiene el bloqueo.
     private RespuestaFactura MapearFactura(Factura factura)
     {

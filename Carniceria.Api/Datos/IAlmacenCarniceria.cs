@@ -155,4 +155,9 @@ public interface IAlmacenCarniceria
     ResultadoOperacion ActualizarFactura(
         string numero,
         SolicitudEdicionFactura solicitud);
+
+    // Calcula una edicion sin guardar la factura ni aplicar existencias.
+    (ResultadoOperacion? Error, Factura? Factura) PrevisualizarEdicionFactura(
+        string numero,
+        SolicitudEdicionFactura solicitud);
 }
